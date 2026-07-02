@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     headers: { cookie: cookieHeader },
   }).catch(() => {});
 
-  const res = NextResponse.json({ ok: true });
+  const res = NextResponse.redirect(new URL('/login', req.url));
   res.cookies.delete('access_token');
   res.cookies.delete('refresh_token');
   return res;
