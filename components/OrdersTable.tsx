@@ -10,10 +10,71 @@ const STATUS_COLORS: Record<string, string> = {
 function JsonView({ data }: { data: any }) {
   if (data == null) return <p className="text-sm text-muted italic">No data</p>;
   return (
-    <pre className="text-xs text-ink bg-surface rounded-lg p-4 overflow-auto max-h-[55vh] whitespace-pre-wrap break-words">
+    <pre className="text-xs text-ink bg-surface rounded-lg p-4 overflow-auto max-h-[40vh] whitespace-pre-wrap break-words">
       {JSON.stringify(data, null, 2)}
     </pre>
   );
+}
+
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em]">{label}</p>
+      {children}
+    </div>
+  );
+}
+
+function TabContent({ order, tab }: { order: any; tab: string }) {
+  if (tab === 'shopify') {
+    return (
+      <div className="space-y-4">
+        <Section label="Request — Shopify webhook">
+          <JsonView data={order.payload} />
+        </Section>
+      </div>
+    );
+  }
+
+  if (tab === 'frameworks') {
+    const response = order.frameworksOrderNo
+      ? { orderNo: order.frameworksOrderNo, orderSuffix: order.frameworksOrderSuffix ?? null, status: 'success' }
+      : order.error
+      ? { status: 'failed', error: order.error }
+      : null;
+
+    return (
+      <div className="space-y-4">
+        <Section label="Request — sent to Frameworks">
+          <JsonView data={order.frameworksPayload} />
+        </Section>
+        <Section label="Response — from Frameworks">
+          <JsonView data={response} />
+        </Section>
+      </div>
+    );
+  }
+
+  if (tab === 'payment') {
+    const response = order.invoiceStatus
+      ? { invoiceStatus: order.invoiceStatus }
+      : order.paymentError
+      ? { status: 'failed', error: order.paymentError }
+      : null;
+
+    return (
+      <div className="space-y-4">
+        <Section label="Request — payment payload">
+          <JsonView data={order.paymentPayload} />
+        </Section>
+        <Section label="Response — payment result">
+          <JsonView data={response} />
+        </Section>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 export default function OrdersTable({ orders }: { orders: any[] }) {
@@ -83,7 +144,9 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
                 <p className="text-[0.9375rem] font-semibold text-ink">{selected.orderName}</p>
                 <p className="text-xs text-muted mt-0.5">
                   {selected.storeLabel} · {new Date(selected.createdAt).toLocaleString()}
-                  {selected.frameworksOrderNo && <> · <span className="text-ink">FW {selected.frameworksOrderNo}{selected.frameworksOrderSuffix ? `-${selected.frameworksOrderSuffix}` : ''}</span></>}
+                  {selected.frameworksOrderNo && (
+                    <> · <span className="text-ink">FW {selected.frameworksOrderNo}{selected.frameworksOrderSuffix ? `-${selected.frameworksOrderSuffix}` : ''}</span></>
+                  )}
                 </p>
               </div>
               <button onClick={() => setSelected(null)} className="text-muted hover:text-ink transition-colors p-1 rounded-lg hover:bg-surface-hover">
@@ -94,7 +157,7 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 px-5 pt-3 border-b border-frame pb-3">
+            <div className="flex gap-1 px-5 pt-3 pb-3 border-b border-frame">
               {(['shopify', 'frameworks', 'payment'] as const).map(t => (
                 <button
                   key={t}
@@ -111,16 +174,9 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
               {loading ? (
                 <p className="text-sm text-muted">Loading…</p>
               ) : (
-                <JsonView data={tab === 'shopify' ? selected.payload : tab === 'frameworks' ? selected.frameworksPayload : selected.paymentPayload} />
+                <TabContent order={selected} tab={tab} />
               )}
             </div>
-
-            {selected.error && (
-              <div className="px-5 pb-5">
-                <p className="text-xs font-medium text-failed mb-1">Error</p>
-                <p className="text-xs text-ink bg-failed-bg rounded-lg px-3 py-2">{selected.error}</p>
-              </div>
-            )}
           </div>
         </div>
       )}
