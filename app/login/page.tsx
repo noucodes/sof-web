@@ -2,6 +2,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-surface">
       <div className="w-full max-w-[400px] bg-white rounded-xl shadow-card px-8 py-8">
         <div className="flex flex-col items-center mb-8">
-          <img src="/logo.avif" alt="Burdens" className="h-16 w-16 object-contain mb-3" />
+          <Image src="/logo.avif" alt="Burdens" width={80} height={80} className="object-contain mb-3" />
           <p className="text-[0.9375rem] font-semibold text-ink tracking-tight">Burdens Integrations</p>
           <p className="text-xs text-muted mt-0.5">Sign in to your account</p>
         </div>
