@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import LogoutButton from '@/components/LogoutButton';
+import AppShell from '@/components/AppShell';
 import UsersClient from './UsersClient';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -13,7 +12,7 @@ async function getUsers(cookieHeader: string) {
   });
   if (res.status === 401) redirect('/login');
   if (res.status === 403) redirect('/orders');
-  if (!res.ok) throw new Error('Failed to load users');
+  if (!res.ok) throw new Error(`Failed to load users: ${res.status} ${await res.text()}`);
   return res.json();
 }
 
@@ -23,17 +22,11 @@ export default async function UsersPage() {
   const users = await getUsers(cookieHeader);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <h1 className="text-lg font-semibold text-gray-900">Users</h1>
-          <Link href="/orders" className="text-sm text-gray-500 hover:text-gray-800">Orders</Link>
-        </div>
-        <LogoutButton />
-      </header>
-      <main className="p-6">
+    <AppShell>
+      <div className="p-6 space-y-4">
+        <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Users</h1>
         <UsersClient initialUsers={users} />
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

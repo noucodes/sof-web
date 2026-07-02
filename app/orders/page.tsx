@@ -2,16 +2,11 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import Link from 'next/link';
-import LogoutButton from '@/components/LogoutButton';
+import AppShell from '@/components/AppShell';
 import OrderFilters from '@/components/OrderFilters';
+import OrdersTable from '@/components/OrdersTable';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-
-const STATUS_COLORS: Record<string, string> = {
-  success: 'bg-green-100 text-green-800',
-  failed: 'bg-red-100 text-red-800',
-  pending: 'bg-yellow-100 text-yellow-800',
-};
 
 async function getOrders(cookieHeader: string, params: Record<string, string>) {
   const qs = new URLSearchParams();
@@ -43,71 +38,38 @@ export default async function OrdersPage({
   const totalPages = Math.ceil(total / 50);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <h1 className="text-lg font-semibold text-gray-900">
-            Orders <span className="text-gray-400 font-normal text-sm">({total})</span>
+    <AppShell>
+      <div className="p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
+            Orders <span className="text-sm font-normal text-muted">({total})</span>
           </h1>
-          <Link href="/admin/users" className="text-sm text-gray-500 hover:text-gray-800">Users</Link>
         </div>
-        <LogoutButton />
-      </header>
 
-      <main className="p-6 space-y-4">
         <Suspense>
           <OrderFilters />
         </Suspense>
 
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                {['Order', 'Customer', 'Store', 'Status', 'Frameworks #', 'Created'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {orders.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-400">No orders found</td>
-                </tr>
-              )}
-              {orders.map((o: any) => (
-                <tr key={o.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{o.orderName}</td>
-                  <td className="px-4 py-3 text-gray-600">{o.customer?.name ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-600">{o.storeLabel}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[o.status] ?? 'bg-gray-100 text-gray-700'}`}>
-                      {o.statusLabel}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">{o.frameworksOrderNo ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-400">{new Date(o.createdAt).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="bg-white rounded-xl shadow-card overflow-hidden">
+          <OrdersTable orders={orders} />
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center justify-between text-sm text-muted">
             <span>Page {page} of {totalPages}</span>
             <div className="flex gap-2">
               {page > 1 && (
                 <Link
-                  href={`/orders?${new URLSearchParams({ ...params, page: String(page - 1) }).toString()}`}
-                  className="px-3 py-1 border rounded-lg hover:bg-gray-50"
+                  href={`/orders?${new URLSearchParams({ ...params, page: String(page - 1) })}`}
+                  className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]"
                 >
                   Previous
                 </Link>
               )}
               {page < totalPages && (
                 <Link
-                  href={`/orders?${new URLSearchParams({ ...params, page: String(page + 1) }).toString()}`}
-                  className="px-3 py-1 border rounded-lg hover:bg-gray-50"
+                  href={`/orders?${new URLSearchParams({ ...params, page: String(page + 1) })}`}
+                  className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]"
                 >
                   Next
                 </Link>
@@ -115,7 +77,7 @@ export default async function OrdersPage({
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

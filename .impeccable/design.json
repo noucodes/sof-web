@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-02T00:00:00Z",
+  "title": "Design System: Burdens SOF",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Cobalt Ink",
+        "canonical": "oklch(0.478 0.136 252)",
+        "tonalRamp": [
+          "oklch(0.150 0.120 252)",
+          "oklch(0.240 0.130 252)",
+          "oklch(0.320 0.134 252)",
+          "oklch(0.380 0.130 252)",
+          "oklch(0.478 0.136 252)",
+          "oklch(0.570 0.115 252)",
+          "oklch(0.710 0.085 252)",
+          "oklch(0.930 0.035 252)"
+        ]
+      },
+      "primary-deep": {
+        "role": "primary",
+        "displayName": "Deep Cobalt",
+        "canonical": "oklch(0.380 0.130 252)",
+        "tonalRamp": []
+      },
+      "primary-wash": {
+        "role": "primary",
+        "displayName": "Cobalt Wash",
+        "canonical": "oklch(0.930 0.035 252)",
+        "tonalRamp": []
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Background White",
+        "canonical": "oklch(1.000 0.000 0)",
+        "tonalRamp": []
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Panel",
+        "canonical": "oklch(0.972 0.006 252)",
+        "tonalRamp": []
+      },
+      "surface-hover": {
+        "role": "neutral",
+        "displayName": "Hover Canvas",
+        "canonical": "oklch(0.952 0.012 252)",
+        "tonalRamp": []
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Frame",
+        "canonical": "oklch(0.860 0.008 252)",
+        "tonalRamp": []
+      },
+      "border-input": {
+        "role": "neutral",
+        "displayName": "Input Frame",
+        "canonical": "oklch(0.620 0.018 252)",
+        "tonalRamp": []
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Signal Gray",
+        "canonical": "oklch(0.440 0.018 252)",
+        "tonalRamp": [
+          "oklch(0.160 0.015 252)",
+          "oklch(0.220 0.016 252)",
+          "oklch(0.300 0.017 252)",
+          "oklch(0.380 0.018 252)",
+          "oklch(0.440 0.018 252)",
+          "oklch(0.560 0.016 252)",
+          "oklch(0.700 0.012 252)",
+          "oklch(0.880 0.008 252)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Control Black",
+        "canonical": "oklch(0.165 0.020 252)",
+        "tonalRamp": [
+          "oklch(0.080 0.010 252)",
+          "oklch(0.120 0.015 252)",
+          "oklch(0.165 0.020 252)",
+          "oklch(0.220 0.020 252)",
+          "oklch(0.300 0.018 252)",
+          "oklch(0.440 0.018 252)",
+          "oklch(0.620 0.015 252)",
+          "oklch(0.850 0.008 252)"
+        ]
+      },
+      "success": {
+        "role": "tertiary",
+        "displayName": "Verified Green",
+        "canonical": "oklch(0.450 0.150 152)",
+        "tonalRamp": [
+          "oklch(0.200 0.120 152)",
+          "oklch(0.280 0.135 152)",
+          "oklch(0.350 0.145 152)",
+          "oklch(0.450 0.150 152)",
+          "oklch(0.540 0.140 152)",
+          "oklch(0.650 0.110 152)",
+          "oklch(0.800 0.070 152)",
+          "oklch(0.950 0.045 152)"
+        ]
+      },
+      "failed": {
+        "role": "tertiary",
+        "displayName": "Alert Red",
+        "canonical": "oklch(0.460 0.180 22)",
+        "tonalRamp": [
+          "oklch(0.210 0.140 22)",
+          "oklch(0.290 0.158 22)",
+          "oklch(0.370 0.170 22)",
+          "oklch(0.460 0.180 22)",
+          "oklch(0.550 0.165 22)",
+          "oklch(0.660 0.130 22)",
+          "oklch(0.800 0.085 22)",
+          "oklch(0.955 0.045 22)"
+        ]
+      },
+      "pending": {
+        "role": "tertiary",
+        "displayName": "Amber Hold",
+        "canonical": "oklch(0.520 0.160 80)",
+        "tonalRamp": [
+          "oklch(0.200 0.125 80)",
+          "oklch(0.290 0.140 80)",
+          "oklch(0.380 0.152 80)",
+          "oklch(0.520 0.160 80)",
+          "oklch(0.620 0.148 80)",
+          "oklch(0.730 0.115 80)",
+          "oklch(0.840 0.078 80)",
+          "oklch(0.960 0.060 80)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Page-level titles. Used once per page in the header bar." },
+      "title": { "displayName": "Title", "purpose": "Sub-headings, modal titles, form section headings." },
+      "body": { "displayName": "Body", "purpose": "All table cell data — names, labels, store identifiers." },
+      "label": { "displayName": "Label", "purpose": "Column headers, filter labels, badge text. Always uppercase." },
+      "mono": { "displayName": "Mono", "purpose": "Order IDs, reference numbers, timestamps. Geist Mono only." }
+    },
+    "shadows": [
+      {
+        "name": "shadow-card",
+        "value": "0 1px 2px oklch(0 0 0 / 0.06), 0 2px 8px oklch(0 0 0 / 0.04)",
+        "purpose": "Orders table container, login card, persistent content panels."
+      },
+      {
+        "name": "shadow-raised",
+        "value": "0 4px 16px oklch(0 0 0 / 0.10), 0 1px 4px oklch(0 0 0 / 0.06)",
+        "purpose": "Dropdown menus, popovers, dialogs — anything floating above the base layer."
+      },
+      {
+        "name": "shadow-header",
+        "value": "0 1px 2px oklch(0 0 0 / 0.04)",
+        "purpose": "Application header bar micro-shadow."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Default easing for state transitions — hover, focus, color changes."
+      },
+      {
+        "name": "ease-decel",
+        "value": "cubic-bezier(0.0, 0.0, 0.2, 1)",
+        "purpose": "Elements entering the viewport — dropdowns opening, toasts appearing."
+      },
+      {
+        "name": "duration-fast",
+        "value": "120ms",
+        "purpose": "Hover and focus state changes — border color, background tint."
+      },
+      {
+        "name": "duration-base",
+        "value": "200ms",
+        "purpose": "Standard transitions — button color, shadow shifts, panel reveals."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action — process, submit, confirm. Cobalt fill, white text.",
+      "html": "<button class=\"ds-btn-primary\">Process Order</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background-color: oklch(0.478 0.136 252); color: oklch(1.000 0.000 0); font-family: var(--font-geist-sans, system-ui, sans-serif); font-size: 0.875rem; font-weight: 500; line-height: 1; padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background-color: oklch(0.380 0.130 252); } .ds-btn-primary:focus-visible { outline: 2px solid oklch(0.478 0.136 252); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action — cancel, navigate. Bordered, no fill.",
+      "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; background-color: oklch(1.000 0.000 0); color: oklch(0.478 0.136 252); font-family: var(--font-geist-sans, system-ui, sans-serif); font-size: 0.875rem; font-weight: 500; line-height: 1; padding: 9px 20px; border-radius: 8px; border: 1.5px solid oklch(0.620 0.018 252); cursor: pointer; transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-ghost:hover { background-color: oklch(0.930 0.035 252); border-color: oklch(0.478 0.136 252); } .ds-btn-ghost:focus-visible { outline: 2px solid oklch(0.478 0.136 252); outline-offset: 2px; }"
+    },
+    {
+      "name": "Status Badge — Success",
+      "kind": "chip",
+      "refersTo": "badge-success",
+      "description": "Fulfilled / success order status. Meadow bg, Verified Green text.",
+      "html": "<span class=\"ds-badge ds-badge-success\">Success</span><span class=\"ds-badge ds-badge-failed\">Failed</span><span class=\"ds-badge ds-badge-pending\">Pending</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; font-family: var(--font-geist-sans, system-ui, sans-serif); font-size: 0.6875rem; font-weight: 500; line-height: 1; padding: 3px 10px; border-radius: 9999px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; } .ds-badge-success { background-color: oklch(0.950 0.045 152); color: oklch(0.450 0.150 152); } .ds-badge-failed { background-color: oklch(0.955 0.045 22); color: oklch(0.460 0.180 22); } .ds-badge-pending { background-color: oklch(0.960 0.060 80); color: oklch(0.520 0.160 80); }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Text input with label. Stroke border, cobalt focus ring.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-demo-input\">Order search</label><input class=\"ds-input\" id=\"ds-demo-input\" type=\"text\" placeholder=\"Order name or customer…\" /></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 5px; } .ds-field-label { font-family: var(--font-geist-sans, system-ui, sans-serif); font-size: 0.75rem; font-weight: 500; color: oklch(0.165 0.020 252); letter-spacing: 0.01em; } .ds-input { width: 100%; background-color: oklch(1.000 0.000 0); color: oklch(0.165 0.020 252); font-family: var(--font-geist-sans, system-ui, sans-serif); font-size: 0.875rem; font-weight: 400; line-height: 1.5; padding: 9px 12px; border: 1.5px solid oklch(0.620 0.018 252); border-radius: 8px; outline: none; transition: border-color 120ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 120ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-input::placeholder { color: oklch(0.600 0.012 252); } .ds-input:focus { border-color: oklch(0.478 0.136 252); box-shadow: 0 0 0 3px oklch(0.930 0.035 252); }"
+    },
+    {
+      "name": "Data Table",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Orders table — the primary interface surface. Header row, data rows, status badge in cell.",
+      "html": "<div class=\"ds-table-wrap\"><table class=\"ds-table\"><thead><tr><th class=\"ds-th\">Order</th><th class=\"ds-th\">Customer</th><th class=\"ds-th\">Store</th><th class=\"ds-th\">Status</th><th class=\"ds-th\">Created</th></tr></thead><tbody><tr class=\"ds-tr\"><td class=\"ds-td ds-td-mono\">#SOF-1042</td><td class=\"ds-td\">Jane Smith</td><td class=\"ds-td ds-td-muted\">Burdens Online</td><td class=\"ds-td\"><span class=\"ds-badge ds-badge-success\">Success</span></td><td class=\"ds-td ds-td-mono ds-td-muted\">02 Jul 2026</td></tr><tr class=\"ds-tr\"><td class=\"ds-td ds-td-mono\">#SOF-1041</td><td class=\"ds-td\">Mark Johnson</td><td class=\"ds-td ds-td-muted\">Trade Direct</td><td class=\"ds-td\"><span class=\"ds-badge ds-badge-pending\">Pending</span></td><td class=\"ds-td ds-td-mono ds-td-muted\">01 Jul 2026</td></tr><tr class=\"ds-tr\"><td class=\"ds-td ds-td-mono\">#SOF-1040</td><td class=\"ds-td\">Sarah Lee</td><td class=\"ds-td ds-td-muted\">Burdens Online</td><td class=\"ds-td\"><span class=\"ds-badge ds-badge-failed\">Failed</span></td><td class=\"ds-td ds-td-mono ds-td-muted\">01 Jul 2026</td></tr></tbody></table></div>",
+      "css": ".ds-table-wrap { background: oklch(1.000 0.000 0); border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px oklch(0 0 0 / 0.06), 0 2px 8px oklch(0 0 0 / 0.04); } .ds-table { width: 100%; border-collapse: collapse; font-family: var(--font-geist-sans, system-ui, sans-serif); } .ds-th { text-align: left; padding: 10px 16px; font-size: 0.6875rem; font-weight: 500; color: oklch(0.440 0.018 252); text-transform: uppercase; letter-spacing: 0.07em; background-color: oklch(0.972 0.006 252); border-bottom: 1px solid oklch(0.860 0.008 252); white-space: nowrap; } .ds-tr { border-bottom: 1px solid oklch(0.860 0.008 252); transition: background-color 100ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-tr:last-child { border-bottom: none; } .ds-tr:hover { background-color: oklch(0.952 0.012 252); } .ds-td { padding: 12px 16px; font-size: 0.875rem; color: oklch(0.165 0.020 252); } .ds-td-mono { font-family: var(--font-geist-mono, ui-monospace, monospace); font-size: 0.8125rem; } .ds-td-muted { color: oklch(0.440 0.018 252); } .ds-badge { display: inline-flex; align-items: center; font-family: var(--font-geist-sans, system-ui, sans-serif); font-size: 0.6875rem; font-weight: 500; line-height: 1; padding: 3px 10px; border-radius: 9999px; white-space: nowrap; } .ds-badge-success { background-color: oklch(0.950 0.045 152); color: oklch(0.450 0.150 152); } .ds-badge-failed { background-color: oklch(0.955 0.045 22); color: oklch(0.460 0.180 22); } .ds-badge-pending { background-color: oklch(0.960 0.060 80); color: oklch(0.520 0.160 80); }"
+    },
+    {
+      "name": "Header / Navigation Bar",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Application header — page title, sibling nav links, sign-out action.",
+      "html": "<header class=\"ds-header\"><div class=\"ds-header-inner\"><nav class=\"ds-nav\"><span class=\"ds-nav-title\">Orders <span class=\"ds-nav-count\">(142)</span></span><a class=\"ds-nav-link\" href=\"#\">Users</a></nav><button class=\"ds-nav-action\">Sign out</button></div></header>",
+      "css": ".ds-header { background-color: oklch(1.000 0.000 0); border-bottom: 1px solid oklch(0.860 0.008 252); box-shadow: 0 1px 2px oklch(0 0 0 / 0.04); } .ds-header-inner { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; } .ds-nav { display: flex; align-items: center; gap: 24px; } .ds-nav-title { font-family: var(--font-geist-sans, system-ui, sans-serif); font-size: 0.9375rem; font-weight: 600; color: oklch(0.165 0.020 252); letter-spacing: -0.01em; } .ds-nav-count { font-weight: 400; color: oklch(0.440 0.018 252); font-size: 0.875rem; margin-left: 4px; } .ds-nav-link { font-family: var(--font-geist-sans, system-ui, sans-serif); font-size: 0.875rem; font-weight: 400; color: oklch(0.440 0.018 252); text-decoration: none; transition: color 120ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-nav-link:hover { color: oklch(0.165 0.020 252); } .ds-nav-action { font-family: var(--font-geist-sans, system-ui, sans-serif); font-size: 0.875rem; font-weight: 400; color: oklch(0.440 0.018 252); background: none; border: none; cursor: pointer; padding: 0; transition: color 120ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-nav-action:hover { color: oklch(0.165 0.020 252); } .ds-nav-action:focus-visible { outline: 2px solid oklch(0.478 0.136 252); outline-offset: 2px; border-radius: 4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Control Room",
+    "overview": "Burdens SOF is a logistics operations interface — the digital equivalent of a well-run dispatch floor. Everything is visible. Nothing requires interpretation. The interface has one job: put order status in front of the right person, immediately, with zero ambiguity. The design recedes so the data comes forward.\n\nThe system uses a single navigational anchor — Cobalt Ink — against a pure white ground. This is the color of precision instruments, of maritime charts, of something that works. There are no decorative layers. The hierarchy is enforced through weight, spacing, and the deliberate withholding of color until it means something: cobalt for actions, semantic green/red/amber for status, silence everywhere else.\n\nThe surface is information-dense but not cluttered. Rows breathe with consistent padding. The header is a control bar, not a billboard. Forms are austere and correct. The system should feel like it was engineered, not assembled — like it comes from a company that takes fulfilment seriously.",
+    "keyCharacteristics": [
+      "Pure white ground, cobalt-only primary — one decisive accent, no noise",
+      "Status is always text-labeled; color reinforces, never substitutes",
+      "Firm, announced interactive elements — buttons and links declare themselves",
+      "Geist Sans at every scale; Geist Mono for order IDs, timestamps, and reference numbers",
+      "Subtle ambient elevation — cards breathe without drama",
+      "WCAG AA throughout — 4.5:1 for all text, 3:1 for interactive borders and UI components"
+    ],
+    "rules": [
+      { "name": "The One Anchor Rule", "body": "Cobalt Ink is the only saturated color on any non-status surface. If a new component is reaching for a second brand hue, stop. The discipline is the design.", "section": "colors" },
+      { "name": "The Status Text Rule", "body": "Every status badge must carry a text label alongside its color. Color blindness is real; 'green' cannot be the only signal that an order fulfilled.", "section": "colors" },
+      { "name": "The Muted Floor Rule", "body": "Signal Gray (oklch(0.440)) is the lightest any secondary text may go. Anything lighter fails WCAG AA and reads as disabled.", "section": "colors" },
+      { "name": "The Mono Discipline Rule", "body": "Geist Mono appears only for reference numbers, order names, and timestamps — values where fixed-width glyph alignment aids scanning. Do not use it for labels, descriptions, or UI copy.", "section": "typography" },
+      { "name": "The Size Floor Rule", "body": "11px (Label scale) is the minimum text size in the interface. Warehouse staff may view this on low-resolution monitors under industrial lighting.", "section": "typography" },
+      { "name": "The Flat-by-Default Rule", "body": "Every surface starts flat. A shadow is added only when the surface permanently holds scrollable or interactive content. A row, a badge, a pagination link: no shadow.", "section": "elevation" },
+      { "name": "The Shadow-Over-Both Rule", "body": "Never apply both a shadow and a non-decorative border to the same container. Cards use shadow-card with a decorative border. Modals use shadow only.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Cobalt Ink (oklch(0.478 0.136 252)) as the primary action color, and only that.",
+      "Do always pair status badges with a text label — never rely on color alone.",
+      "Do use Geist Mono for order IDs, reference numbers, and timestamps.",
+      "Do keep table cell padding at 12px vertical / 16px horizontal minimum.",
+      "Do meet WCAG AA — ≥4.5:1 for all text, ≥3:1 for interactive borders and non-text UI components.",
+      "Do set font-family: var(--font-geist-sans), system-ui, sans-serif on :root in globals.css.",
+      "Do set text-wrap: balance on h1–h3 headings.",
+      "Do include prefers-reduced-motion alternatives for any transitions."
+    ],
+    "donts": [
+      "Don't use cream, warm-neutral, or sand-beige page backgrounds. Background is pure white.",
+      "Don't add gradient text (background-clip: text). Prohibited.",
+      "Don't add glassmorphism or backdrop-filter blur as decoration.",
+      "Don't add a second brand color for variety. Solve flatness with spacing or weight, not hue.",
+      "Don't use side-stripe patterns (border-left > 1px as colored accent on cards or callouts).",
+      "Don't add numbered section markers (01/02/03) to navigation or page sections.",
+      "Don't add uppercase eyebrow kickers above page section headings.",
+      "Don't use light gray as body text for elegance — any text users need to read must be Control Black or Signal Gray.",
+      "Don't build icon-grid cards as the primary content pattern. This is a table interface.",
+      "Don't stack shadows — one shadow level per element."
+    ]
+  }
+}

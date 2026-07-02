@@ -3,7 +3,17 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
 
 const STATUSES = ['all', 'pending', 'success', 'failed'];
-const STORES = ['all', 'burdens', 'bathroomhq', 'plumbershq', 'aspire'];
+
+const STORE_LABELS: Record<string, string> = {
+  all: 'All stores',
+  burdens: 'Burdens',
+  bathroomhq: 'BathroomHQ',
+  plumbershq: 'PlumbersHQ',
+  aspire: 'Aspire',
+};
+
+const inputClass =
+  'border-[1.5px] border-frame-input rounded-lg px-3 py-[9px] text-sm text-ink bg-white focus:outline-none focus:border-primary focus:shadow-focus-ring transition-[border-color,box-shadow] duration-[120ms]';
 
 export default function OrderFilters() {
   const router = useRouter();
@@ -20,24 +30,32 @@ export default function OrderFilters() {
     <div className="flex gap-3 flex-wrap">
       <input
         type="search"
-        placeholder="Search orders..."
+        placeholder="Search orders…"
         defaultValue={params.get('search') ?? ''}
         onChange={e => update('search', e.target.value)}
-        className="border rounded-lg px-3 py-2 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={`${inputClass} w-56`}
       />
+
       <select
         defaultValue={params.get('status') ?? 'all'}
         onChange={e => update('status', e.target.value)}
-        className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={inputClass}
       >
-        {STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+        {STATUSES.map(s => (
+          <option key={s} value={s}>
+            {s === 'all' ? 'All statuses' : s.charAt(0).toUpperCase() + s.slice(1)}
+          </option>
+        ))}
       </select>
+
       <select
         defaultValue={params.get('store') ?? 'all'}
         onChange={e => update('store', e.target.value)}
-        className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={inputClass}
       >
-        {STORES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+        {Object.entries(STORE_LABELS).map(([value, label]) => (
+          <option key={value} value={value}>{label}</option>
+        ))}
       </select>
     </div>
   );
