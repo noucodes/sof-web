@@ -37,9 +37,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface">
       <div className="w-full max-w-[400px] bg-white rounded-xl shadow-card px-8 py-8">
-        <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight mb-7">
-          Burdens SOF
-        </h1>
+        <div className="flex flex-col items-center mb-8">
+          <img src="/logo.avif" alt="Burdens" className="h-16 w-16 object-contain mb-3" />
+          <p className="text-[0.9375rem] font-semibold text-ink tracking-tight">Burdens Integrations</p>
+          <p className="text-xs text-muted mt-0.5">Sign in to your account</p>
+        </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-[5px]">
