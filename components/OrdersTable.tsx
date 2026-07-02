@@ -25,13 +25,7 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   );
 }
 
-function TabContent({ order, tab, compareResult, comparing, onCompare }: {
-  order: any;
-  tab: string;
-  compareResult: any;
-  comparing: boolean;
-  onCompare: () => void;
-}) {
+function TabContent({ order, tab }: { order: any; tab: string }) {
   if (tab === 'shopify') {
     return (
       <div className="space-y-4">
@@ -57,54 +51,6 @@ function TabContent({ order, tab, compareResult, comparing, onCompare }: {
         <Section label="Response — from Frameworks">
           <JsonView data={response} />
         </Section>
-
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <p className="text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em]">Cross-check vs sof-main</p>
-            <button
-              onClick={onCompare}
-              disabled={comparing}
-              className="px-2.5 py-1 text-xs font-medium text-primary bg-primary-wash rounded-lg hover:bg-primary/10 disabled:opacity-50 transition-colors duration-[120ms]"
-            >
-              {comparing ? 'Comparing…' : 'Compare'}
-            </button>
-            {compareResult && !compareResult.sofApiError && !compareResult.sofMainError && (
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${compareResult.match ? 'bg-success-bg text-success' : 'bg-failed-bg text-failed'}`}>
-                {compareResult.match ? '✓ Match' : `✗ ${compareResult.differences?.length ?? 0} difference${compareResult.differences?.length === 1 ? '' : 's'}`}
-              </span>
-            )}
-            {compareResult?.sofApiError && (
-              <span className="text-xs text-failed" title={compareResult.sofApiError}>sof-api error</span>
-            )}
-            {compareResult?.sofMainError && (
-              <span className="text-xs text-failed" title={compareResult.sofMainError}>sof-main unreachable</span>
-            )}
-          </div>
-
-          {compareResult && !compareResult.match && !compareResult.sofMainError && (
-            <div className="space-y-3">
-              {compareResult.differences?.length > 0 && (
-                <div className="bg-failed-bg rounded-lg p-3">
-                  <ul className="space-y-0.5">
-                    {compareResult.differences.map((d: string, i: number) => (
-                      <li key={i} className="text-xs font-mono text-failed">{d}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] mb-1">sof-api</p>
-                  <JsonView data={compareResult.sofApi} />
-                </div>
-                <div>
-                  <p className="text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] mb-1">sof-main</p>
-                  <JsonView data={compareResult.sofMain} />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     );
   }
@@ -136,8 +82,6 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
   const [loading, setLoading] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [tab, setTab] = useState<'shopify' | 'frameworks' | 'payment'>('shopify');
-  const [compareResult, setCompareResult] = useState<any | null>(null);
-  const [comparing, setComparing] = useState(false);
 
   async function retry() {
     if (!selected) return;
@@ -156,25 +100,11 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
     setLoading(true);
     setSelected({ ...o, _loading: true });
     setTab('shopify');
-    setCompareResult(null);
     try {
       const res = await fetch(`/api/orders/${o.id}`);
       if (res.ok) setSelected(await res.json());
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function runCompare() {
-    if (!selected) return;
-    setComparing(true);
-    setCompareResult(null);
-    try {
-      const res = await fetch(`/api/orders/${selected.id}/compare`);
-      const data = await res.json();
-      setCompareResult(data);
-    } finally {
-      setComparing(false);
     }
   }
 
@@ -222,7 +152,6 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
             className="relative bg-white rounded-xl shadow-xl w-full max-w-2xl flex flex-col max-h-[85vh]"
             onClick={e => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-frame">
               <div>
                 <p className="text-[0.9375rem] font-semibold text-ink">{selected.orderName}</p>
@@ -249,7 +178,6 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
               </button>
             </div>
 
-            {/* Tabs */}
             <div className="flex gap-1 px-5 pt-3 pb-3 border-b border-frame">
               {(['shopify', 'frameworks', 'payment'] as const).map(t => (
                 <button
@@ -262,12 +190,11 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
               ))}
             </div>
 
-            {/* Content */}
             <div className="p-5 overflow-auto flex-1">
               {loading ? (
                 <p className="text-sm text-muted">Loading…</p>
               ) : (
-                <TabContent order={selected} tab={tab} compareResult={compareResult} comparing={comparing} onCompare={runCompare} />
+                <TabContent order={selected} tab={tab} />
               )}
             </div>
           </div>
