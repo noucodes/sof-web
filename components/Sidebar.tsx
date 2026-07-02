@@ -55,8 +55,12 @@ export default function Sidebar() {
 
   return (
     <aside className="w-56 shrink-0 h-screen sticky top-0 bg-white border-r border-frame flex flex-col">
-      <div className="h-14 flex items-center px-5 border-b border-frame">
-        <span className="text-[0.9375rem] font-semibold text-ink tracking-tight">Burdens SOF</span>
+      <div className="h-14 flex items-center px-4 border-b border-frame gap-2.5">
+        <img src="/logo.avif" alt="Burdens" className="h-8 w-8 object-contain" />
+        <div className="flex flex-col leading-tight">
+          <span className="text-[0.9375rem] font-semibold text-ink tracking-tight">Burdens</span>
+          <span className="text-[0.6rem] font-medium text-muted uppercase tracking-[0.1em]">Integrations</span>
+        </div>
       </div>
 
       <nav className="flex-1 p-3 space-y-0.5">
