@@ -80,7 +80,21 @@ function TabContent({ order, tab }: { order: any; tab: string }) {
 export default function OrdersTable({ orders }: { orders: any[] }) {
   const [selected, setSelected] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   const [tab, setTab] = useState<'shopify' | 'frameworks' | 'payment'>('shopify');
+
+  async function retry() {
+    if (!selected) return;
+    setRetrying(true);
+    try {
+      const res = await fetch(`/api/orders/${selected.id}/retry`, { method: 'POST' });
+      if (res.ok) {
+        setSelected((prev: any) => ({ ...prev, status: 'pending', statusLabel: 'Pending', error: null }));
+      }
+    } finally {
+      setRetrying(false);
+    }
+  }
 
   async function openOrder(o: any) {
     setLoading(true);
@@ -149,6 +163,15 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
                   )}
                 </p>
               </div>
+              {selected.status === 'failed' && (
+                <button
+                  onClick={retry}
+                  disabled={retrying}
+                  className="px-3 py-1.5 text-sm font-medium text-white bg-primary hover:bg-primary-deep rounded-lg disabled:opacity-50 transition-colors duration-150 mr-2"
+                >
+                  {retrying ? 'Retrying…' : 'Retry'}
+                </button>
+              )}
               <button onClick={() => setSelected(null)} className="text-muted hover:text-ink transition-colors p-1 rounded-lg hover:bg-surface-hover">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

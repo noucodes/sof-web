@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AppShell from '@/components/AppShell';
 import OrderFilters from '@/components/OrderFilters';
 import OrdersTable from '@/components/OrdersTable';
+import SyncTrigger from '@/components/SyncTrigger';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -45,6 +46,7 @@ export default async function OrdersPage({
             Orders <span className="text-sm font-normal text-muted">({total})</span>
           </h1>
         </div>
+        <SyncTrigger />
 
         <Suspense>
           <OrderFilters />
