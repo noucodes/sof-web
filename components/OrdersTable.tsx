@@ -7,22 +7,31 @@ const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-pending-bg text-pending',
 };
 
-function JsonView({ data }: { data: string | null }) {
-  if (!data) return <p className="text-sm text-muted">No data</p>;
-  try {
-    return (
-      <pre className="text-xs text-ink bg-surface rounded-lg p-4 overflow-auto max-h-[60vh] whitespace-pre-wrap break-words">
-        {JSON.stringify(JSON.parse(data), null, 2)}
-      </pre>
-    );
-  } catch {
-    return <pre className="text-xs text-ink bg-surface rounded-lg p-4 overflow-auto max-h-[60vh] whitespace-pre-wrap break-words">{data}</pre>;
-  }
+function JsonView({ data }: { data: any }) {
+  if (data == null) return <p className="text-sm text-muted italic">No data</p>;
+  return (
+    <pre className="text-xs text-ink bg-surface rounded-lg p-4 overflow-auto max-h-[55vh] whitespace-pre-wrap break-words">
+      {JSON.stringify(data, null, 2)}
+    </pre>
+  );
 }
 
 export default function OrdersTable({ orders }: { orders: any[] }) {
   const [selected, setSelected] = useState<any | null>(null);
-  const [tab, setTab] = useState<'shopify' | 'frameworks'>('shopify');
+  const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState<'shopify' | 'frameworks' | 'payment'>('shopify');
+
+  async function openOrder(o: any) {
+    setLoading(true);
+    setSelected({ ...o, _loading: true });
+    setTab('shopify');
+    try {
+      const res = await fetch(`/api/orders/${o.id}`);
+      if (res.ok) setSelected(await res.json());
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -43,7 +52,7 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
           {orders.map((o: any) => (
             <tr
               key={o.id}
-              onClick={() => { setSelected(o); setTab('shopify'); }}
+              onClick={() => openOrder(o)}
               className="hover:bg-surface-hover transition-colors duration-100 cursor-pointer"
             >
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{o.orderName}</td>
@@ -62,10 +71,7 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
       </table>
 
       {selected && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelected(null)}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
           <div
             className="relative bg-white rounded-xl shadow-xl w-full max-w-2xl flex flex-col max-h-[85vh]"
@@ -75,12 +81,12 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
             <div className="flex items-center justify-between px-5 py-4 border-b border-frame">
               <div>
                 <p className="text-[0.9375rem] font-semibold text-ink">{selected.orderName}</p>
-                <p className="text-xs text-muted mt-0.5">{selected.storeLabel} · {new Date(selected.createdAt).toLocaleString()}</p>
+                <p className="text-xs text-muted mt-0.5">
+                  {selected.storeLabel} · {new Date(selected.createdAt).toLocaleString()}
+                  {selected.frameworksOrderNo && <> · <span className="text-ink">FW {selected.frameworksOrderNo}{selected.frameworksOrderSuffix ? `-${selected.frameworksOrderSuffix}` : ''}</span></>}
+                </p>
               </div>
-              <button
-                onClick={() => setSelected(null)}
-                className="text-muted hover:text-ink transition-colors p-1 rounded-lg hover:bg-surface-hover"
-              >
+              <button onClick={() => setSelected(null)} className="text-muted hover:text-ink transition-colors p-1 rounded-lg hover:bg-surface-hover">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -88,23 +94,25 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 px-5 pt-3">
-              {(['shopify', 'frameworks'] as const).map(t => (
+            <div className="flex gap-1 px-5 pt-3 border-b border-frame pb-3">
+              {(['shopify', 'frameworks', 'payment'] as const).map(t => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`px-3 py-1.5 rounded-lg text-sm transition-colors duration-[120ms] ${
-                    tab === t ? 'bg-primary-wash text-primary font-medium' : 'text-muted hover:text-ink hover:bg-surface-hover'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-sm transition-colors duration-[120ms] ${tab === t ? 'bg-primary-wash text-primary font-medium' : 'text-muted hover:text-ink hover:bg-surface-hover'}`}
                 >
-                  {t === 'shopify' ? 'Shopify payload' : 'Frameworks payload'}
+                  {t === 'shopify' ? 'Shopify' : t === 'frameworks' ? 'Frameworks' : 'Payment'}
                 </button>
               ))}
             </div>
 
             {/* Content */}
-            <div className="p-5 overflow-auto">
-              <JsonView data={tab === 'shopify' ? selected.payload : selected.frameworksPayload} />
+            <div className="p-5 overflow-auto flex-1">
+              {loading ? (
+                <p className="text-sm text-muted">Loading…</p>
+              ) : (
+                <JsonView data={tab === 'shopify' ? selected.payload : tab === 'frameworks' ? selected.frameworksPayload : selected.paymentPayload} />
+              )}
             </div>
 
             {selected.error && (
