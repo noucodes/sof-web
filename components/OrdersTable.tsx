@@ -68,13 +68,16 @@ function TabContent({ order, tab, compareResult, comparing, onCompare }: {
             >
               {comparing ? 'Comparing…' : 'Compare'}
             </button>
-            {compareResult && !compareResult.sofMainError && (
+            {compareResult && !compareResult.sofApiError && !compareResult.sofMainError && (
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${compareResult.match ? 'bg-success-bg text-success' : 'bg-failed-bg text-failed'}`}>
-                {compareResult.match ? '✓ Match' : `✗ ${compareResult.differences?.length ?? '?'} difference${compareResult.differences?.length === 1 ? '' : 's'}`}
+                {compareResult.match ? '✓ Match' : `✗ ${compareResult.differences?.length ?? 0} difference${compareResult.differences?.length === 1 ? '' : 's'}`}
               </span>
             )}
+            {compareResult?.sofApiError && (
+              <span className="text-xs text-failed" title={compareResult.sofApiError}>sof-api error</span>
+            )}
             {compareResult?.sofMainError && (
-              <span className="text-xs text-failed">sof-main unreachable</span>
+              <span className="text-xs text-failed" title={compareResult.sofMainError}>sof-main unreachable</span>
             )}
           </div>
 
