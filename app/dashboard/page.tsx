@@ -37,7 +37,10 @@ export default async function DashboardPage() {
   return (
     <AppShell>
       <div className="p-6 space-y-6">
-        <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Dashboard</h1>
+        <div className="space-y-0.5">
+          <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted">Live overview of order processing, bridge health, and recent activity.</p>
+        </div>
 
         {/* Stat cards */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">

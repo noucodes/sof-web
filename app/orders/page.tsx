@@ -41,12 +41,15 @@ export default async function OrdersPage({
   return (
     <AppShell>
       <div className="p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
-            Orders <span className="text-sm font-normal text-muted">({total})</span>
-          </h1>
+        <div className="flex items-start justify-between">
+          <div className="space-y-0.5">
+            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
+              Orders <span className="text-sm font-normal text-muted">({total})</span>
+            </h1>
+            <p className="text-sm text-muted">Shopify orders received and processed into Frameworks ERP.</p>
+          </div>
+          <SyncTrigger />
         </div>
-        <SyncTrigger />
 
         <Suspense>
           <OrderFilters />

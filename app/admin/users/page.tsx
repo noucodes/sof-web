@@ -24,7 +24,10 @@ export default async function UsersPage() {
   return (
     <AppShell>
       <div className="p-6 space-y-4">
-        <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Users</h1>
+        <div className="space-y-0.5">
+          <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Users</h1>
+          <p className="text-sm text-muted">Manage who has access to this portal and their permission level.</p>
+        </div>
         <UsersClient initialUsers={users} />
       </div>
     </AppShell>

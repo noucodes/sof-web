@@ -39,10 +39,13 @@ export default async function ShipStationPage({
   return (
     <AppShell>
       <div className="p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
-            ShipStation Jobs <span className="text-sm font-normal text-muted">({total})</span>
-          </h1>
+        <div className="flex items-start justify-between">
+          <div className="space-y-0.5">
+            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
+              ShipStation Jobs <span className="text-sm font-normal text-muted">({total})</span>
+            </h1>
+            <p className="text-sm text-muted">Label print jobs received from ShipStation and linked to Frameworks orders.</p>
+          </div>
           <div className="flex gap-2">
             {STATUSES.map(s => (
               <Link
