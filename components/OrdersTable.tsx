@@ -113,7 +113,7 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
       <table className="w-full text-sm">
         <thead className="bg-surface border-b border-frame">
           <tr>
-            {['Order', 'Customer', 'Store', 'Status', 'Frameworks No.', 'Created'].map(h => (
+            {['Order', 'Customer', 'Store', 'Status', 'Total', 'Payment', 'Items', 'Delivery', 'Frameworks No.', 'Created'].map(h => (
               <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">{h}</th>
             ))}
           </tr>
@@ -121,7 +121,7 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
         <tbody className="divide-y divide-frame">
           {orders.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
+              <td colSpan={10} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
             </tr>
           )}
           {orders.map((o: any) => (
@@ -138,6 +138,14 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
                   {o.statusLabel}
                 </span>
               </td>
+              <td className="px-4 py-3 text-sm text-ink">{o.total ? `$${parseFloat(o.total).toFixed(2)}` : '—'}</td>
+              <td className="px-4 py-3">
+                {o.paymentStatus
+                  ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.6875rem] font-medium bg-pending-bg text-pending uppercase tracking-[0.05em]">{o.paymentStatus}</span>
+                  : <span className="text-sm text-muted">—</span>}
+              </td>
+              <td className="px-4 py-3 text-sm text-muted">{o.lineItemCount != null ? `${o.lineItemCount} item${o.lineItemCount !== 1 ? 's' : ''}` : '—'}</td>
+              <td className="px-4 py-3 text-sm text-muted">{o.deliveryMethod ?? '—'}</td>
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{o.frameworksOrderNo ?? '—'}</td>
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{new Date(o.createdAt).toLocaleDateString()}</td>
             </tr>
