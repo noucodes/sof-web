@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const STATUS_COLORS: Record<string, string> = {
   success: 'bg-success-bg text-success',
@@ -77,7 +77,60 @@ function TabContent({ order, tab }: { order: any; tab: string }) {
   return null;
 }
 
+// ponytail: sequence check only covers orders currently loaded (one page, current filters) —
+// a real gap/duplicate audit across full history would need a backend endpoint.
+function findOrderWarnings(orders: any[]) {
+  const warnings = new Map<string, string>();
+  const byStore = new Map<string, { num: number; id: string }[]>();
+
+  for (const o of orders) {
+    const match = /(\d+)\s*$/.exec(o.orderName ?? '');
+    if (!match) continue;
+    const list = byStore.get(o.storeLabel) ?? [];
+    list.push({ num: parseInt(match[1], 10), id: o.id });
+    byStore.set(o.storeLabel, list);
+  }
+
+  for (const list of byStore.values()) {
+    list.sort((a, b) => a.num - b.num);
+
+    const byNum = new Map<number, string[]>();
+    for (const { num, id } of list) byNum.set(num, [...(byNum.get(num) ?? []), id]);
+    for (const ids of byNum.values()) {
+      if (ids.length > 1) for (const id of ids) warnings.set(id, 'Duplicate order number');
+    }
+
+    for (let i = 1; i < list.length; i++) {
+      const diff = list[i].num - list[i - 1].num;
+      if (diff > 1 && !warnings.has(list[i].id)) {
+        const missing = diff - 1;
+        const range = missing > 1 ? `#${list[i - 1].num + 1}–#${list[i].num - 1}` : `#${list[i - 1].num + 1}`;
+        warnings.set(list[i].id, `Gap in order numbers: ${range} missing`);
+      }
+    }
+  }
+
+  return warnings;
+}
+
+function WarningIcon({ message }: { message: string }) {
+  return (
+    <span title={message}>
+      <svg
+        className="w-3.5 h-3.5 text-pending shrink-0"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={1.75}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+      </svg>
+    </span>
+  );
+}
+
 export default function OrdersTable({ orders }: { orders: any[] }) {
+  const orderWarnings = useMemo(() => findOrderWarnings(orders), [orders]);
   const [selected, setSelected] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [retrying, setRetrying] = useState(false);
@@ -130,7 +183,12 @@ export default function OrdersTable({ orders }: { orders: any[] }) {
               onClick={() => openOrder(o)}
               className="hover:bg-surface-hover transition-colors duration-100 cursor-pointer"
             >
-              <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{o.orderName}</td>
+              <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">
+                <span className="inline-flex items-center gap-1.5">
+                  {o.orderName}
+                  {orderWarnings.has(o.id) && <WarningIcon message={orderWarnings.get(o.id)!} />}
+                </span>
+              </td>
               <td className="px-4 py-3 text-sm text-ink">{o.customer?.name ?? '—'}</td>
               <td className="px-4 py-3 text-sm text-muted">{o.storeLabel}</td>
               <td className="px-4 py-3">
