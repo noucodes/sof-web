@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
+import FetchPriceButton from '@/components/FetchPriceButton';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const PAGE_SIZE = 50;
@@ -45,11 +46,25 @@ export default async function PaymentsPage({
   const rows = orders.map((o: any, i: number) => {
     const d = details[i];
     const payment = d?.paymentPayload?.dsCustomerPayment?.customerPayment?.[0];
+    const paymentAmount = payment?.paymentAmount ?? o.total;
+    const shopifyPrice = o.total;
+    const frameworksPrice = o.frameworksPrice;
+    // Same cross-check as sof-main's transform.service.js: Shopify's total vs.
+    // Frameworks' total (incl. GST) — silent disagreement here is the BHQ3386-style bug.
+    const priceMismatch =
+      frameworksPrice != null &&
+      shopifyPrice != null &&
+      Math.abs(parseFloat(frameworksPrice) - parseFloat(shopifyPrice)) > 0.01;
     return {
       id: o.id,
       shopifyOrderNo: o.orderName,
       paymentMethod: titleCase(d?.payload?.payment_gateway_names?.[0]),
-      paymentAmount: payment?.paymentAmount ?? o.total,
+      paymentAmount,
+      shopifyPrice,
+      frameworksPrice,
+      frameworksPriceError: o.frameworksPriceError,
+      priceMismatch,
+      frameworksOrderNoRaw: o.frameworksOrderNo,
       date: payment?.paymentDate ?? o.createdAt,
       customerName: o.customer?.name ?? '—',
       frameworksOrderNo: o.frameworksOrderNo
@@ -72,7 +87,7 @@ export default async function PaymentsPage({
           <table className="w-full text-sm">
             <thead className="bg-surface border-b border-frame">
               <tr>
-                {['Shopify Order', 'Payment Method', 'Payment Reference', 'Payment Amount', 'Date', 'Customer', 'Framework Order No.'].map(h => (
+                {['Shopify Order', 'Payment Method', 'Payment Reference', 'Payment Amount', 'Shopify Price', 'Frameworks Price (incl. GST)', 'Date', 'Customer', 'Framework Order No.'].map(h => (
                   <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
                     {h}
                   </th>
@@ -82,7 +97,7 @@ export default async function PaymentsPage({
             <tbody className="divide-y divide-frame">
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted">No payments found</td>
+                  <td colSpan={9} className="px-4 py-10 text-center text-sm text-muted">No payments found</td>
                 </tr>
               )}
               {rows.map((r: any) => (
@@ -91,6 +106,25 @@ export default async function PaymentsPage({
                   <td className="px-4 py-3 text-sm text-ink">{r.paymentMethod}</td>
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">—</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.paymentAmount ? `$${parseFloat(r.paymentAmount).toFixed(2)}` : '—'}</td>
+                  <td className="px-4 py-3 text-sm text-ink">{r.shopifyPrice ? `$${parseFloat(r.shopifyPrice).toFixed(2)}` : '—'}</td>
+                  <td className="px-4 py-3 text-sm text-ink">
+                    <div className="flex items-center gap-2">
+                      <span className={r.frameworksPriceError ? 'text-failed' : ''}>
+                        {r.frameworksPrice ? `$${parseFloat(r.frameworksPrice).toFixed(2)}` : '—'}
+                      </span>
+                      {r.priceMismatch && (
+                        <span
+                          title={`Shopify total $${parseFloat(r.shopifyPrice).toFixed(2)} does not match Frameworks total $${parseFloat(r.frameworksPrice).toFixed(2)}`}
+                          className="px-1.5 py-0.5 rounded text-[0.625rem] font-medium bg-pending-bg text-pending"
+                        >
+                          mismatch
+                        </span>
+                      )}
+                      {r.frameworksOrderNoRaw && (
+                        <FetchPriceButton orderId={r.id} hasError={!!r.frameworksPriceError} />
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.date ? new Date(r.date).toLocaleDateString() : '—'}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.customerName}</td>
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.frameworksOrderNo}</td>
