@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AppShell from '@/components/AppShell';
 import OrderFilters from '@/components/OrderFilters';
 import OrdersTable from '@/components/OrdersTable';
+import RetryFailedButton from '@/components/RetryFailedButton';
 import SyncTrigger from '@/components/SyncTrigger';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -48,7 +49,10 @@ export default async function OrdersPage({
             </h1>
             <p className="text-sm text-muted">Shopify orders received and processed into Frameworks ERP.</p>
           </div>
-          <SyncTrigger />
+          <div className="flex items-center gap-2">
+            <RetryFailedButton />
+            <SyncTrigger />
+          </div>
         </div>
 
         <Suspense>
