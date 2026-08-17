@@ -155,7 +155,7 @@ export default async function PaymentsPage({
                           mismatch
                         </span>
                       )}
-                      {r.frameworksOrderNoRaw && (
+                      {r.frameworksOrderNoRaw && (!r.frameworksPrice || r.frameworksPriceError) && (
                         <FetchPriceButton orderId={r.id} hasError={!!r.frameworksPriceError} />
                       )}
                     </div>
