@@ -87,7 +87,7 @@ export default async function PaymentsPage({
           <table className="w-full text-sm">
             <thead className="bg-surface border-b border-frame">
               <tr>
-                {['Shopify Order', 'Payment Method', 'Payment Reference', 'Payment Amount', 'Shopify Price', 'Frameworks Price (incl. GST)', 'Date', 'Customer', 'Framework Order No.'].map(h => (
+                {['Shopify Order', 'Payment Method', 'Payment Amount', 'Shopify Price', 'Frameworks Price (incl. GST)', 'Date', 'Customer', 'Framework Order No.'].map(h => (
                   <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
                     {h}
                   </th>
@@ -97,14 +97,13 @@ export default async function PaymentsPage({
             <tbody className="divide-y divide-frame">
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-sm text-muted">No payments found</td>
+                  <td colSpan={8} className="px-4 py-10 text-center text-sm text-muted">No payments found</td>
                 </tr>
               )}
               {rows.map((r: any) => (
                 <tr key={r.id} className="hover:bg-surface-hover transition-colors duration-100">
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.shopifyOrderNo}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.paymentMethod}</td>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">—</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.paymentAmount ? `$${parseFloat(r.paymentAmount).toFixed(2)}` : '—'}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.shopifyPrice ? `$${parseFloat(r.shopifyPrice).toFixed(2)}` : '—'}</td>
                   <td className="px-4 py-3 text-sm text-ink">
