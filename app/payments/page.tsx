@@ -60,10 +60,11 @@ export default async function PaymentsPage({
       Math.abs(parseFloat(frameworksPrice) - parseFloat(shopifyPrice)) > 0.001;
     const shopifyDiff = priceMismatch ? parseFloat(frameworksPrice) - parseFloat(shopifyPrice) : 0;
     // Separate check: does what the customer actually paid match what Frameworks recorded?
+    const havePaymentAndPrice = paymentAmount != null && frameworksPrice != null;
     const paymentVerified =
-      paymentAmount != null &&
-      frameworksPrice != null &&
+      havePaymentAndPrice &&
       Math.abs(parseFloat(paymentAmount) - parseFloat(frameworksPrice)) <= 0.001;
+    const paymentMismatch = havePaymentAndPrice && !paymentVerified;
     return {
       id: o.id,
       shopifyOrderNo: o.orderName,
@@ -75,6 +76,7 @@ export default async function PaymentsPage({
       priceMismatch,
       shopifyDiff,
       paymentVerified,
+      paymentMismatch,
       frameworksOrderNoRaw: o.frameworksOrderNo,
       date: payment?.paymentDate ?? o.createdAt,
       customerName: o.customer?.name ?? '—',
@@ -179,8 +181,8 @@ export default async function PaymentsPage({
                           </span>
                         )
                       )}
-                      {r.frameworksOrderNoRaw && (!r.frameworksPrice || r.frameworksPriceError) && (
-                        <FetchPriceButton orderId={r.id} hasError={!!r.frameworksPriceError} />
+                      {r.frameworksOrderNoRaw && (!r.frameworksPrice || r.frameworksPriceError || r.paymentMismatch) && (
+                        <FetchPriceButton orderId={r.id} hasError={!!r.frameworksPriceError || r.paymentMismatch} />
                       )}
                     </div>
                   </td>
