@@ -58,6 +58,12 @@ export default async function PaymentsPage({
       frameworksPrice != null &&
       shopifyPrice != null &&
       Math.abs(parseFloat(frameworksPrice) - parseFloat(shopifyPrice)) > 0.001;
+    const shopifyDiff = priceMismatch ? parseFloat(frameworksPrice) - parseFloat(shopifyPrice) : 0;
+    // Separate check: does what the customer actually paid match what Frameworks recorded?
+    const paymentVerified =
+      paymentAmount != null &&
+      frameworksPrice != null &&
+      Math.abs(parseFloat(paymentAmount) - parseFloat(frameworksPrice)) <= 0.001;
     return {
       id: o.id,
       shopifyOrderNo: o.orderName,
@@ -67,6 +73,8 @@ export default async function PaymentsPage({
       frameworksPrice,
       frameworksPriceError: o.frameworksPriceError,
       priceMismatch,
+      shopifyDiff,
+      paymentVerified,
       frameworksOrderNoRaw: o.frameworksOrderNo,
       date: payment?.paymentDate ?? o.createdAt,
       customerName: o.customer?.name ?? '—',
@@ -123,7 +131,7 @@ export default async function PaymentsPage({
           <table className="w-full text-sm">
             <thead className="bg-surface border-b border-frame">
               <tr>
-                {['Shopify Order', 'Payment Method', 'Payment Amount', 'Shopify Price', 'Frameworks Price (incl. GST)', 'Date', 'Customer', 'Framework Order No.'].map(h => (
+                {['Shopify Order', 'Payment Method', 'Shopify Price', 'Frameworks Price (incl. GST)', 'Date', 'Customer', 'Framework Order No.'].map(h => (
                   <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
                     {h}
                   </th>
@@ -133,7 +141,7 @@ export default async function PaymentsPage({
             <tbody className="divide-y divide-frame">
               {visibleRows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-sm text-muted">
+                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted">
                     {mismatchOnly ? 'No mismatches on this page' : 'No payments found'}
                   </td>
                 </tr>
@@ -142,20 +150,34 @@ export default async function PaymentsPage({
                 <tr key={r.id} className="hover:bg-surface-hover transition-colors duration-100">
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.shopifyOrderNo}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.paymentMethod}</td>
-                  <td className="px-4 py-3 text-sm text-ink">{r.paymentAmount ? `$${parseFloat(r.paymentAmount).toFixed(2)}` : '—'}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.shopifyPrice ? `$${parseFloat(r.shopifyPrice).toFixed(2)}` : '—'}</td>
                   <td className="px-4 py-3 text-sm text-ink">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <span className={r.frameworksPriceError ? 'text-failed' : ''}>
                         {r.frameworksPrice ? `$${parseFloat(r.frameworksPrice).toFixed(2)}` : '—'}
                       </span>
                       {r.priceMismatch && (
-                        <span
-                          title={`Shopify total $${parseFloat(r.shopifyPrice).toFixed(2)} does not match Frameworks total $${parseFloat(r.frameworksPrice).toFixed(2)}`}
-                          className="px-1.5 py-0.5 rounded text-[0.625rem] font-medium bg-pending-bg text-pending"
-                        >
-                          mismatch
+                        <span className="text-[0.75rem] font-medium text-pending">
+                          ({r.shopifyDiff > 0 ? '+' : '-'}${Math.abs(r.shopifyDiff).toFixed(2)})
                         </span>
+                      )}
+                      {r.frameworksPrice != null && (
+                        r.paymentVerified ? (
+                          <span title="Verified on Frameworks" className="shrink-0">
+                            <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                          </span>
+                        ) : (
+                          <span
+                            title={`Payment $${parseFloat(r.paymentAmount).toFixed(2)} does not match Frameworks $${parseFloat(r.frameworksPrice).toFixed(2)}`}
+                            className="shrink-0"
+                          >
+                            <svg className="w-4 h-4 text-pending" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3h.008v.008H12v-.008ZM21.75 12a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z" />
+                            </svg>
+                          </span>
+                        )
                       )}
                       {r.frameworksOrderNoRaw && (!r.frameworksPrice || r.frameworksPriceError) && (
                         <FetchPriceButton orderId={r.id} hasError={!!r.frameworksPriceError} />
