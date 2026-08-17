@@ -78,8 +78,8 @@ export default async function PaymentsPage({
   // consistent with the N+1 detail-fetch scope above. A reliable "every mismatch
   // across all orders" view needs a server-side filter in sof-api; revisit if this
   // page-scoped check isn't enough.
-  const mismatchCount = rows.filter(r => r.priceMismatch).length;
-  const visibleRows = mismatchOnly ? rows.filter(r => r.priceMismatch) : rows;
+  const mismatchCount = rows.filter((r: any) => r.priceMismatch).length;
+  const visibleRows = mismatchOnly ? rows.filter((r: any) => r.priceMismatch) : rows;
   const toggleHref = mismatchOnly
     ? `/payments?page=${page}`
     : `/payments?page=${page}&mismatch=1`;
