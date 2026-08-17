@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function FetchPriceButton({ orderId, hasError }: { orderId: string | number; hasError: boolean }) {
   const router = useRouter();
@@ -10,7 +11,20 @@ export default function FetchPriceButton({ orderId, hasError }: { orderId: strin
     setLoading(true);
     try {
       const res = await fetch(`/api/orders/${orderId}/fetch-price`, { method: 'POST' });
-      if (res.ok) router.refresh();
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        toast.error(data?.message ?? 'Payment not found on Frameworks');
+        return;
+      }
+      if (data?.frameworksPriceError) {
+        toast.error('Payment not found on Frameworks');
+      } else {
+        toast.success('Verified on Frameworks');
+      }
+      router.refresh();
+    } catch {
+      toast.error('Payment not found on Frameworks');
     } finally {
       setLoading(false);
     }

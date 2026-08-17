@@ -4,7 +4,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary:       'var(--color-primary)',
+        primary: {
+          DEFAULT:    'var(--color-primary)',
+          foreground: 'oklch(1 0 0)',
+        },
         'primary-deep':'var(--color-primary-deep)',
         'primary-wash':'var(--color-primary-wash)',
         surface:       'var(--color-surface)',
@@ -19,6 +22,16 @@ module.exports = {
         'failed-bg':   'var(--color-failed-bg)',
         pending:       'var(--color-pending)',
         'pending-bg':  'var(--color-pending-bg)',
+        // shadcn/ui primitives (components/ui/*) reference these generic slots.
+        // Kept as thin aliases onto the Cobalt Ink tokens above -- one source
+        // of truth, not a second parallel palette.
+        background:  'var(--color-bg)',
+        foreground:  'var(--color-ink)',
+        ring:        'var(--color-primary)',
+        destructive: {
+          DEFAULT:    'var(--color-failed)',
+          foreground: 'oklch(1 0 0)',
+        },
       },
       fontFamily: {
         sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
@@ -30,7 +43,12 @@ module.exports = {
         header:     '0 1px 2px rgba(0,0,0,0.04)',
         'focus-ring':'0 0 0 3px var(--color-primary-wash)',
       },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
     },
   },
-  plugins: [],
+  plugins: [require('tailwindcss-animate')],
 };

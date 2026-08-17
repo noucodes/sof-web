@@ -24,6 +24,10 @@
   --color-failed-bg:    oklch(0.955 0.045 22);
   --color-pending:      oklch(0.520 0.160 80);
   --color-pending-bg:   oklch(0.960 0.060 80);
+
+  /* shadcn/ui primitives read this for rounded-{lg,md,sm}. 0.5rem matches
+     Tailwind's default rounded-lg, so existing rounded-lg usage is unchanged. */
+  --radius: 0.5rem;
 }
 
 body {

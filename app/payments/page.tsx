@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
 import FetchPriceButton from '@/components/FetchPriceButton';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const PAGE_SIZE = 50;
@@ -165,20 +166,29 @@ export default async function PaymentsPage({
                       )}
                       {r.paymentAmount != null && r.frameworksPrice != null && (
                         r.paymentVerified ? (
-                          <span title="Verified on Frameworks" className="shrink-0">
-                            <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="shrink-0">
+                                <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>Verified on Frameworks</TooltipContent>
+                          </Tooltip>
                         ) : (
-                          <span
-                            title={`Payment $${parseFloat(r.paymentAmount).toFixed(2)} does not match Frameworks $${parseFloat(r.frameworksPrice).toFixed(2)}`}
-                            className="shrink-0"
-                          >
-                            <svg className="w-4 h-4 text-pending" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3h.008v.008H12v-.008ZM21.75 12a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z" />
-                            </svg>
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="shrink-0">
+                                <svg className="w-4 h-4 text-pending" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3h.008v.008H12v-.008ZM21.75 12a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z" />
+                                </svg>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Payment ${parseFloat(r.paymentAmount).toFixed(2)} does not match Frameworks ${parseFloat(r.frameworksPrice).toFixed(2)}
+                            </TooltipContent>
+                          </Tooltip>
                         )
                       )}
                       {r.frameworksOrderNoRaw && (!r.frameworksPrice || r.frameworksPriceError || r.paymentMismatch) && (
