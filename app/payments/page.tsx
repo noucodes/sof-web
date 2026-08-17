@@ -52,10 +52,12 @@ export default async function PaymentsPage({
     const frameworksPrice = o.frameworksPrice;
     // Same cross-check as sof-main's transform.service.js: Shopify's total vs.
     // Frameworks' total (incl. GST) — silent disagreement here is the BHQ3386-style bug.
+    // Threshold is a hair above 0 (not a flat 0) to absorb float rounding noise from
+    // parseFloat, while still catching genuine 1-cent gaps like #BHQ3823/#BURWEB3054.
     const priceMismatch =
       frameworksPrice != null &&
       shopifyPrice != null &&
-      Math.abs(parseFloat(frameworksPrice) - parseFloat(shopifyPrice)) > 0.01;
+      Math.abs(parseFloat(frameworksPrice) - parseFloat(shopifyPrice)) > 0.001;
     return {
       id: o.id,
       shopifyOrderNo: o.orderName,
