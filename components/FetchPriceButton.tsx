@@ -20,10 +20,10 @@ export default function FetchPriceButton({ orderId, hasError }: { orderId: strin
     <button
       onClick={fetchPrice}
       disabled={loading}
-      title={hasError ? 'Last fetch failed — retry' : 'Fetch price from Frameworks'}
+      title={hasError ? 'Last verification failed — retry' : 'Verify against Frameworks'}
       className="text-[0.6875rem] font-medium text-primary hover:text-primary-deep disabled:opacity-50 transition-colors duration-[120ms]"
     >
-      {loading ? 'Fetching…' : hasError ? 'Retry' : 'Fetch'}
+      {loading ? 'Verifying…' : hasError ? 'Retry' : 'Verify'}
     </button>
   );
 }

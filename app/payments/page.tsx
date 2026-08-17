@@ -131,7 +131,7 @@ export default async function PaymentsPage({
           <table className="w-full text-sm">
             <thead className="bg-surface border-b border-frame">
               <tr>
-                {['Shopify Order', 'Payment Method', 'Shopify Price', 'Frameworks Price (incl. GST)', 'Date', 'Customer', 'Framework Order No.'].map(h => (
+                {['Shopify Order', 'Payment Method', 'Shopify Price', 'Payment Amount', 'Date', 'Customer', 'Framework Order No.'].map(h => (
                   <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
                     {h}
                   </th>
@@ -154,14 +154,14 @@ export default async function PaymentsPage({
                   <td className="px-4 py-3 text-sm text-ink">
                     <div className="flex items-center gap-1.5">
                       <span className={r.frameworksPriceError ? 'text-failed' : ''}>
-                        {r.frameworksPrice ? `$${parseFloat(r.frameworksPrice).toFixed(2)}` : '—'}
+                        {r.paymentAmount ? `$${parseFloat(r.paymentAmount).toFixed(2)}` : '—'}
                       </span>
                       {r.priceMismatch && (
                         <span className="text-[0.75rem] font-medium text-pending">
                           ({r.shopifyDiff > 0 ? '+' : '-'}${Math.abs(r.shopifyDiff).toFixed(2)})
                         </span>
                       )}
-                      {r.frameworksPrice != null && (
+                      {r.paymentAmount != null && r.frameworksPrice != null && (
                         r.paymentVerified ? (
                           <span title="Verified on Frameworks" className="shrink-0">
                             <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
