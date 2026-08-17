@@ -35,6 +35,7 @@ export default async function PaymentsPage({
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
   const params = await searchParams;
   const page = Number(params.page ?? 1);
+  const mismatchOnly = params.mismatch === '1';
   const { orders, total } = await getOrders(cookieHeader, page);
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -73,15 +74,48 @@ export default async function PaymentsPage({
     };
   });
 
+  // ponytail: mismatch detection/filtering only sees the current page's 50 rows —
+  // consistent with the N+1 detail-fetch scope above. A reliable "every mismatch
+  // across all orders" view needs a server-side filter in sof-api; revisit if this
+  // page-scoped check isn't enough.
+  const mismatchCount = rows.filter(r => r.priceMismatch).length;
+  const visibleRows = mismatchOnly ? rows.filter(r => r.priceMismatch) : rows;
+  const toggleHref = mismatchOnly
+    ? `/payments?page=${page}`
+    : `/payments?page=${page}&mismatch=1`;
+
   return (
     <AppShell>
       <div className="p-6 space-y-4">
-        <div className="space-y-0.5">
-          <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
-            Payments <span className="text-sm font-normal text-muted">({total})</span>
-          </h1>
-          <p className="text-sm text-muted">Payment records for accounts reconciliation.</p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-0.5">
+            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
+              Payments <span className="text-sm font-normal text-muted">({total})</span>
+            </h1>
+            <p className="text-sm text-muted">Payment records for accounts reconciliation.</p>
+          </div>
+          <Link
+            href={toggleHref}
+            className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors duration-[120ms] ${
+              mismatchOnly
+                ? 'bg-primary text-white border-primary hover:bg-primary-deep'
+                : 'border-frame-input text-ink hover:bg-surface-hover'
+            }`}
+          >
+            {mismatchOnly ? 'Showing mismatches only' : 'Show mismatches only'}
+          </Link>
         </div>
+
+        {mismatchCount > 0 && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-pending-bg text-pending text-sm">
+            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3h.008v.008H12v-.008ZM21.75 12a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z" />
+            </svg>
+            <span className="font-medium">
+              {mismatchCount} order{mismatchCount === 1 ? '' : 's'} on this page {mismatchCount === 1 ? 'has' : 'have'} a Shopify/Frameworks price mismatch.
+            </span>
+          </div>
+        )}
 
         <div className="bg-white rounded-xl shadow-card overflow-hidden">
           <table className="w-full text-sm">
@@ -95,12 +129,14 @@ export default async function PaymentsPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-frame">
-              {rows.length === 0 && (
+              {visibleRows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-sm text-muted">No payments found</td>
+                  <td colSpan={8} className="px-4 py-10 text-center text-sm text-muted">
+                    {mismatchOnly ? 'No mismatches on this page' : 'No payments found'}
+                  </td>
                 </tr>
               )}
-              {rows.map((r: any) => (
+              {visibleRows.map((r: any) => (
                 <tr key={r.id} className="hover:bg-surface-hover transition-colors duration-100">
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.shopifyOrderNo}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.paymentMethod}</td>
@@ -139,7 +175,7 @@ export default async function PaymentsPage({
             <div className="flex gap-2">
               {page > 1 && (
                 <Link
-                  href={`/payments?page=${page - 1}`}
+                  href={`/payments?page=${page - 1}${mismatchOnly ? '&mismatch=1' : ''}`}
                   className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]"
                 >
                   Previous
@@ -147,7 +183,7 @@ export default async function PaymentsPage({
               )}
               {page < totalPages && (
                 <Link
-                  href={`/payments?page=${page + 1}`}
+                  href={`/payments?page=${page + 1}${mismatchOnly ? '&mismatch=1' : ''}`}
                   className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]"
                 >
                   Next
