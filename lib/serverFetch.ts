@@ -37,3 +37,35 @@ export async function proxyJson(path: string, init?: RequestInit) {
   refreshedSetCookies?.forEach(c => out.headers.append('Set-Cookie', c));
   return out;
 }
+
+// Same cookie-forward + one-shot 401 refresh as proxyJson, but for a raw
+// (non-JSON) response body — e.g. the contribution CSV export.
+export async function proxyFile(path: string, init?: RequestInit) {
+  const store = await cookies();
+  let cookieHeader = store.getAll().map(c => `${c.name}=${c.value}`).join('; ');
+  let res = await fetch(`${API}${path}`, { ...init, headers: { ...init?.headers, cookie: cookieHeader } });
+
+  let refreshedSetCookies: string[] | null = null;
+  if (res.status === 401) {
+    const refreshToken = store.get('refresh_token')?.value;
+    if (refreshToken) {
+      const refreshed = await refreshAccessToken(refreshToken);
+      if (refreshed) {
+        refreshedSetCookies = refreshed.setCookieHeaders;
+        cookieHeader = withAccessToken(cookieHeader, refreshed.accessToken);
+        res = await fetch(`${API}${path}`, { ...init, headers: { ...init?.headers, cookie: cookieHeader } });
+      }
+    }
+  }
+
+  const body = await res.arrayBuffer();
+  const out = new NextResponse(body, {
+    status: res.status,
+    headers: {
+      'Content-Type': res.headers.get('content-type') ?? 'application/octet-stream',
+      ...(res.headers.get('content-disposition') ? { 'Content-Disposition': res.headers.get('content-disposition')! } : {}),
+    },
+  });
+  refreshedSetCookies?.forEach(c => out.headers.append('Set-Cookie', c));
+  return out;
+}

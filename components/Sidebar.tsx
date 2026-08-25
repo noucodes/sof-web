@@ -31,6 +31,15 @@ const NAV = [
     ),
   },
   {
+    href: '/contribution',
+    label: 'Contribution',
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M7 15l4-4 3 3 5-6" />
+      </svg>
+    ),
+  },
+  {
     href: '/inventory',
     label: 'Inventory',
     icon: (
@@ -45,6 +54,15 @@ const NAV = [
     icon: (
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+      </svg>
+    ),
+  },
+  {
+    href: '/b2b-sync',
+    label: 'B2B Price Sync',
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 8a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4zM7 16h10M7 16a2 2 0 100 4 2 2 0 000-4zm10 0a2 2 0 100 4 2 2 0 000-4z" />
       </svg>
     ),
   },
