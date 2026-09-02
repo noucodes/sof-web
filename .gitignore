@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# local status store (lib/statusStore.ts)
+/data/
+
 # production
 /build
 
