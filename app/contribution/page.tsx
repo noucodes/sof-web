@@ -31,6 +31,10 @@ function money(n: number | string | null) {
   return n != null ? `$${parseFloat(String(n)).toFixed(2)}` : '—';
 }
 
+function shortDate(iso: string | null) {
+  return iso ? new Date(iso).toLocaleDateString() : '—';
+}
+
 export default async function ContributionPage({
   searchParams,
 }: {
@@ -102,7 +106,7 @@ export default async function ContributionPage({
           <table className="w-full text-sm">
             <thead className="bg-surface border-b border-frame">
               <tr>
-                {['Order', 'Store', 'Frameworks No.', 'Net Sales', 'COGS', 'Freight', 'Payment Fees', 'Contribution'].map(h => (
+                {['Order', 'Date', 'Store', 'Frameworks No.', 'Net Sales', 'COGS', 'Freight', 'Payment Fees', 'Contribution'].map(h => (
                   <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
                     {h}
                   </th>
@@ -112,12 +116,13 @@ export default async function ContributionPage({
             <tbody className="divide-y divide-frame">
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
+                  <td colSpan={9} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
                 </tr>
               )}
               {rows.map((r: any) => (
                 <tr key={r.orderId} className={`hover:bg-surface-hover transition-colors duration-100 ${r.error ? 'opacity-60' : ''}`}>
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.orderName}</td>
+                  <td className="px-4 py-3 text-sm text-muted whitespace-nowrap">{shortDate(r.orderDate)}</td>
                   <td className="px-4 py-3 text-sm text-muted">{r.storeLabel}</td>
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.frameworksOrderNo ?? '—'}</td>
                   <td className="px-4 py-3 text-sm text-ink">{money(r.netSales)}</td>
