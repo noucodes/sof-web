@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AppShell from '@/components/AppShell';
 import ContributionFilters from '@/components/ContributionFilters';
 import FetchPriceButton from '@/components/FetchPriceButton';
+import VerifyAllButton from '@/components/VerifyAllButton';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -13,7 +14,7 @@ const PAGE_SIZE = 50;
 async function getContribution(cookieHeader: string, params: Record<string, string>) {
   const qs = new URLSearchParams();
   qs.set('status', params.status ?? 'success');
-  if (params.store) qs.set('store', params.store);
+  if (params.store && params.store !== 'all') qs.set('store', params.store);
   if (params.from) qs.set('from', params.from);
   if (params.to) qs.set('to', params.to);
   if (params.page) qs.set('page', params.page);
@@ -21,7 +22,8 @@ async function getContribution(cookieHeader: string, params: Record<string, stri
 
   const res = await fetch(`${API}/orders/contribution?${qs}`, { headers: { cookie: cookieHeader }, cache: 'no-store' });
   if (res.status === 401) redirect('/login');
-  if (!res.ok) throw new Error('Failed to load contribution report');
+  if (!res.ok) throw new Error(`Failed to load contribution report: ${res.status} ${await
+   res.text()}`);
   return res.json();
 }
 
@@ -43,7 +45,7 @@ export default async function ContributionPage({
 
   const exportQs = new URLSearchParams();
   exportQs.set('status', params.status ?? 'success');
-  if (params.store) exportQs.set('store', params.store);
+  if (params.store && params.store !== 'all') exportQs.set('store', params.store);
   if (params.from) exportQs.set('from', params.from);
   if (params.to) exportQs.set('to', params.to);
 
@@ -59,12 +61,22 @@ export default async function ContributionPage({
               Net sales (ex GST) − COGS − freight − payment fees (1.8%), per order from Frameworks.
             </p>
           </div>
-          <Link
-            href={`/api/orders/contribution/export?${exportQs.toString()}`}
-            className="shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium border border-frame-input text-ink hover:bg-surface-hover transition-colors duration-[120ms]"
-          >
-            Export CSV
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <VerifyAllButton />
+            {[
+              ['CSV', 'csv'],
+              ['JSON', 'json'],
+            ].map(([label, format]) => (
+              // Plain <a>, not <Link>: a download endpoint must not be hover-prefetched.
+              <a
+                key={format}
+                href={`/api/orders/contribution/export?${exportQs.toString()}&format=${format}`}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium border border-frame-input text-ink hover:bg-surface-hover transition-colors duration-[120ms]"
+              >
+                Export {label}
+              </a>
+            ))}
+          </div>
         </div>
 
         <Suspense>
