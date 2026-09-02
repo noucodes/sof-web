@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AppShell from '@/components/AppShell';
-import { readStatus } from '@/lib/statusStore';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -10,14 +9,23 @@ const STATUS_COLORS: Record<string, string> = {
   failed: 'bg-failed-bg text-failed',
 };
 
-// This page's data comes from lib/statusStore, not sof-api — b2b-push (a
-// separate Catsy/Shopify sync, unrelated to the orders/ERP domain sof-api
-// owns) posts here directly. There's no sof-api cookie to naturally 401
-// against, so we make one cheap authenticated call just to validate the
-// session, same as every other page does via its own sof-api fetch.
-async function requireSession(cookieHeader: string) {
-  const res = await fetch(`${API}/metrics`, { headers: { cookie: cookieHeader }, cache: 'no-store' });
+type Entry = {
+  status: 'success' | 'failed';
+  source?: string;
+  itemsSynced?: number;
+  itemsFailed?: number;
+  error?: string;
+  finishedAt?: string;
+};
+
+// b2b-push writes run status straight into sof-api's b2b_sync_status table
+// (SOF_API_STATUS_URL). This page just reads it back — the session cookie is
+// forwarded, so an expired session 401s and redirects like every other page.
+async function getStatus(cookieHeader: string): Promise<{ latest: Entry | null; history: Entry[] }> {
+  const res = await fetch(`${API}/api/b2b-sync/status`, { headers: { cookie: cookieHeader }, cache: 'no-store' });
   if (res.status === 401) redirect('/login');
+  if (!res.ok) throw new Error(`Failed to load B2B sync status: ${res.status} ${await res.text()}`);
+  return res.json();
 }
 
 function formatDate(iso?: string) {
@@ -29,9 +37,8 @@ function formatDate(iso?: string) {
 export default async function B2BSyncPage() {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
-  await requireSession(cookieHeader);
 
-  const { latest, history } = readStatus();
+  const { latest, history } = await getStatus(cookieHeader);
 
   const cards = [
     {
