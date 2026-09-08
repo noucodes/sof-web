@@ -35,6 +35,15 @@ function shortDate(iso: string | null) {
   return iso ? new Date(iso).toLocaleDateString() : '—';
 }
 
+// GP% = ((net sales − COGS) / net sales) * 100. Sell price is net sales (ex GST, ex freight).
+const GP_ALERT_THRESHOLD = 10;
+function gpPct(netSales: number | string | null, cogs: number | string | null): number | null {
+  const s = netSales != null ? parseFloat(String(netSales)) : NaN;
+  const c = cogs != null ? parseFloat(String(cogs)) : NaN;
+  if (!Number.isFinite(s) || !Number.isFinite(c) || s === 0) return null;
+  return ((s - c) / s) * 100;
+}
+
 export default async function ContributionPage({
   searchParams,
 }: {
@@ -87,7 +96,7 @@ export default async function ContributionPage({
           <ContributionFilters />
         </Suspense>
 
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-6 gap-3">
           {[
             ['Net Sales', totals.netSales],
             ['COGS', totals.cogs],
@@ -100,13 +109,25 @@ export default async function ContributionPage({
               <p className="text-lg font-semibold text-ink mt-1">{money(value as number)}</p>
             </div>
           ))}
+          {(() => {
+            const p = gpPct(totals.netSales, totals.cogs);
+            const low = p != null && p < GP_ALERT_THRESHOLD;
+            return (
+              <div className="bg-white rounded-xl shadow-card p-4">
+                <p className="text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em]">GP %</p>
+                <p className={`text-lg font-semibold mt-1 ${low ? 'text-failed' : 'text-ink'}`}>
+                  {p != null ? `${p.toFixed(1)}%` : '—'}
+                </p>
+              </div>
+            );
+          })()}
         </div>
 
         <div className="bg-white rounded-xl shadow-card overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-surface border-b border-frame">
               <tr>
-                {['Order', 'Date', 'Store', 'Frameworks No.', 'Net Sales', 'COGS', 'Freight', 'Payment Fees', 'Contribution'].map(h => (
+                {['Order', 'Date', 'Store', 'Frameworks No.', 'Net Sales', 'COGS', 'GP %', 'Freight', 'Payment Fees', 'Contribution'].map(h => (
                   <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
                     {h}
                   </th>
@@ -116,7 +137,7 @@ export default async function ContributionPage({
             <tbody className="divide-y divide-frame">
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
+                  <td colSpan={10} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
                 </tr>
               )}
               {rows.map((r: any) => (
@@ -127,6 +148,28 @@ export default async function ContributionPage({
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.frameworksOrderNo ?? '—'}</td>
                   <td className="px-4 py-3 text-sm text-ink">{money(r.netSales)}</td>
                   <td className="px-4 py-3 text-sm text-ink">{money(r.cogs)}</td>
+                  <td className="px-4 py-3 text-sm font-medium whitespace-nowrap">
+                    {(() => {
+                      const p = gpPct(r.netSales, r.cogs);
+                      if (p == null) return <span className="text-muted font-normal">—</span>;
+                      const low = p < GP_ALERT_THRESHOLD;
+                      return low ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center gap-1 rounded-md bg-failed-bg px-1.5 py-0.5 text-failed">
+                              {p.toFixed(1)}%
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3h.008v.008H12v-.008ZM21.75 12a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z" />
+                              </svg>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>GP below {GP_ALERT_THRESHOLD}%</TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <span className="text-ink">{p.toFixed(1)}%</span>
+                      );
+                    })()}
+                  </td>
                   <td className="px-4 py-3 text-sm text-ink">{money(r.freight)}</td>
                   <td className="px-4 py-3 text-sm text-ink">{money(r.paymentFees)}</td>
                   <td className="px-4 py-3 text-sm text-ink font-medium">
