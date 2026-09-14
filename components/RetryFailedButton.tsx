@@ -3,11 +3,22 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-// Recurring bridge-down symptom: Frameworks bridge 404s/502s and every push
-// in the wave fails with one of these exact error strings.
+// Recurring bridge-down symptom: every push in the wave fails with one of
+// these exact error strings. Two formats show up depending on which service
+// wrote the row: sof-bridge's own response body (type + error fields,
+// written as-is when the row predates sof-api's rollout) and sof-api's
+// processOrder wrapping axios's default message for a thrown 5xx
+// (`[processing_error] Request failed with status code <n>` — see
+// webhooks.service.ts). A 404 never reaches sof-api's failed state — it's
+// treated as bridge_unreachable and left pending for the cron to retry
+// automatically, so it's not listed here.
 const BRIDGE_ERRORS = [
   '[bridge_server_error] unknown_bridge_error: Bridge server error: 404 Not Found',
   '[bridge_server_error] unknown_bridge_error: Bridge server error: 502 Bad Gateway',
+  '[processing_error] Request failed with status code 500',
+  '[processing_error] Request failed with status code 502',
+  '[processing_error] Request failed with status code 503',
+  '[processing_error] Request failed with status code 504',
 ];
 
 export default function RetryFailedButton() {

@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
+import RetryFailedReleasesButton from '@/components/RetryFailedReleasesButton';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -46,7 +47,8 @@ export default async function ShipStationPage({
             </h1>
             <p className="text-sm text-muted">Label print jobs received from ShipStation and linked to Frameworks orders.</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <RetryFailedReleasesButton />
             {STATUSES.map(s => (
               <Link
                 key={s}
