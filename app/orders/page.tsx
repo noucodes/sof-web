@@ -27,6 +27,17 @@ async function getOrders(cookieHeader: string, params: Record<string, string>) {
   return res.json();
 }
 
+// Real gap check across full order history per store (not just the current
+// page/filter) — see OrdersService.findNumberGaps in sof-api.
+async function getNumberGaps(cookieHeader: string) {
+  const res = await fetch(`${API}/orders/number-gaps`, {
+    headers: { cookie: cookieHeader },
+    cache: 'no-store',
+  });
+  if (!res.ok) return []; // non-fatal — page still works without gap warnings
+  return res.json();
+}
+
 export default async function OrdersPage({
   searchParams,
 }: {
@@ -36,7 +47,10 @@ export default async function OrdersPage({
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
   const params = await searchParams;
   const page = Number(params.page ?? 1);
-  const { orders, total } = await getOrders(cookieHeader, params);
+  const [{ orders, total }, gaps] = await Promise.all([
+    getOrders(cookieHeader, params),
+    getNumberGaps(cookieHeader),
+  ]);
   const totalPages = Math.ceil(total / 50);
 
   return (
@@ -60,7 +74,7 @@ export default async function OrdersPage({
         </Suspense>
 
         <div className="bg-white rounded-xl shadow-card overflow-hidden">
-          <OrdersTable orders={orders} />
+          <OrdersTable orders={orders} gaps={gaps} />
         </div>
 
         {totalPages > 1 && (

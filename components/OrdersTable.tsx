@@ -77,9 +77,15 @@ function TabContent({ order, tab }: { order: any; tab: string }) {
   return null;
 }
 
-// ponytail: sequence check only covers orders currently loaded (one page, current filters) —
-// a real gap/duplicate audit across full history would need a backend endpoint.
-function findOrderWarnings(orders: any[]) {
+type NumberGap = { storeLabel: string; nextOrderNumber: number; gapFrom: number; gapTo: number; missingCount: number };
+
+// ponytail: duplicate check only covers orders currently loaded (one page,
+// current filters) — real duplicates are rare enough in practice that this
+// still catches them. Gaps are different: a "missing" number is just as
+// likely to be sitting on another page or hidden by the current filter, so
+// that check is backed by GET /orders/number-gaps (full history, all
+// stores) instead of guessing from whatever's loaded here.
+function findOrderWarnings(orders: any[], gaps: NumberGap[]) {
   const warnings = new Map<string, string>();
   const byStore = new Map<string, { num: number; id: string }[]>();
 
@@ -92,20 +98,21 @@ function findOrderWarnings(orders: any[]) {
   }
 
   for (const list of byStore.values()) {
-    list.sort((a, b) => a.num - b.num);
-
     const byNum = new Map<number, string[]>();
     for (const { num, id } of list) byNum.set(num, [...(byNum.get(num) ?? []), id]);
     for (const ids of byNum.values()) {
       if (ids.length > 1) for (const id of ids) warnings.set(id, 'Duplicate order number');
     }
+  }
 
-    for (let i = 1; i < list.length; i++) {
-      const diff = list[i].num - list[i - 1].num;
-      if (diff > 1 && !warnings.has(list[i].id)) {
-        const missing = diff - 1;
-        const range = missing > 1 ? `#${list[i - 1].num + 1}–#${list[i].num - 1}` : `#${list[i - 1].num + 1}`;
-        warnings.set(list[i].id, `Gap in order numbers: ${range} missing`);
+  const gapByStoreAndNum = new Map(gaps.map((g) => [`${g.storeLabel}:${g.nextOrderNumber}`, g]));
+  for (const [storeLbl, list] of byStore.entries()) {
+    for (const { num, id } of list) {
+      if (warnings.has(id)) continue;
+      const gap = gapByStoreAndNum.get(`${storeLbl}:${num}`);
+      if (gap) {
+        const range = gap.missingCount > 1 ? `#${gap.gapFrom}–#${gap.gapTo}` : `#${gap.gapFrom}`;
+        warnings.set(id, `Gap in order numbers: ${range} missing`);
       }
     }
   }
@@ -129,8 +136,8 @@ function WarningIcon({ message }: { message: string }) {
   );
 }
 
-export default function OrdersTable({ orders }: { orders: any[] }) {
-  const orderWarnings = useMemo(() => findOrderWarnings(orders), [orders]);
+export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps?: NumberGap[] }) {
+  const orderWarnings = useMemo(() => findOrderWarnings(orders, gaps), [orders, gaps]);
   const [selected, setSelected] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [retrying, setRetrying] = useState(false);
