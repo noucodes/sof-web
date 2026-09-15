@@ -8,11 +8,27 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 function JsonView({ data }: { data: any }) {
+  const [copied, setCopied] = useState(false);
   if (data == null) return <p className="text-sm text-muted italic">No data</p>;
+
+  async function copy() {
+    await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
   return (
-    <pre className="text-xs text-ink bg-surface rounded-lg p-4 overflow-auto max-h-[40vh] whitespace-pre-wrap break-words">
-      {JSON.stringify(data, null, 2)}
-    </pre>
+    <div className="relative">
+      <button
+        onClick={copy}
+        className="absolute top-2 right-2 px-2 py-1 text-[0.6875rem] font-medium rounded-md bg-white/80 text-muted hover:text-ink hover:bg-white transition-colors duration-150"
+      >
+        {copied ? 'Copied' : 'Copy'}
+      </button>
+      <pre className="text-xs text-ink bg-surface rounded-lg p-4 pr-16 overflow-auto max-h-[40vh] whitespace-pre-wrap break-words">
+        {JSON.stringify(data, null, 2)}
+      </pre>
+    </div>
   );
 }
 
