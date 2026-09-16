@@ -1,11 +1,53 @@
 'use client';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const STATUS_COLORS: Record<string, string> = {
   success: 'bg-success-bg text-success',
   failed: 'bg-failed-bg text-failed',
   pending: 'bg-pending-bg text-pending',
 };
+
+type Column = { key: string; label: string; getValue: (o: any) => string | number };
+
+const COLUMNS: Column[] = [
+  { key: 'order', label: 'Order', getValue: (o) => { const m = /(\d+)\s*$/.exec(o.orderName ?? ''); return m ? parseInt(m[1], 10) : (o.orderName ?? ''); } },
+  { key: 'customer', label: 'Customer', getValue: (o) => o.customer?.name ?? '' },
+  { key: 'store', label: 'Store', getValue: (o) => o.storeLabel ?? '' },
+  { key: 'status', label: 'Status', getValue: (o) => o.statusLabel ?? '' },
+  { key: 'total', label: 'Total', getValue: (o) => (o.total ? parseFloat(o.total) : 0) },
+  { key: 'payment', label: 'Payment', getValue: (o) => o.paymentStatus ?? '' },
+  { key: 'items', label: 'Items', getValue: (o) => o.lineItemCount ?? 0 },
+  { key: 'delivery', label: 'Delivery', getValue: (o) => o.deliveryMethod ?? '' },
+  { key: 'frameworks', label: 'Frameworks No.', getValue: (o) => o.frameworksOrderNo ?? 0 },
+  { key: 'created', label: 'Created', getValue: (o) => new Date(o.createdAt).getTime() },
+];
+
+function SortIcon({ direction }: { direction: 'asc' | 'desc' | null }) {
+  if (direction === null) {
+    return (
+      <svg className="w-3 h-3 text-muted/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4-4 4 4M8 15l4 4 4-4" />
+      </svg>
+    );
+  }
+  return (
+    <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      {direction === 'asc'
+        ? <path strokeLinecap="round" strokeLinejoin="round" d="M8 15l4-4 4 4" />
+        : <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4 4 4-4" />}
+    </svg>
+  );
+}
+
+function KebabIcon() {
+  return (
+    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 6.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+    </svg>
+  );
+}
 
 function JsonView({ data }: { data: any }) {
   const [copied, setCopied] = useState(false);
@@ -153,11 +195,46 @@ function WarningIcon({ message }: { message: string }) {
 }
 
 export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps?: NumberGap[] }) {
+  const router = useRouter();
   const orderWarnings = useMemo(() => findOrderWarnings(orders, gaps), [orders, gaps]);
   const [selected, setSelected] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [tab, setTab] = useState<'shopify' | 'frameworks' | 'payment'>('shopify');
+  const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(null);
+  const [actionMenuId, setActionMenuId] = useState<string | null>(null);
+
+  const sortedOrders = useMemo(() => {
+    if (!sort) return orders;
+    const column = COLUMNS.find(c => c.key === sort.key);
+    if (!column) return orders;
+    return [...orders].sort((a, b) => {
+      const av = column.getValue(a);
+      const bv = column.getValue(b);
+      if (av < bv) return sort.dir === 'asc' ? -1 : 1;
+      if (av > bv) return sort.dir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [orders, sort]);
+
+  function toggleSort(key: string) {
+    setSort(prev => {
+      if (!prev || prev.key !== key) return { key, dir: 'asc' };
+      if (prev.dir === 'asc') return { key, dir: 'desc' };
+      return null;
+    });
+  }
+
+  async function retryOrderRow(id: string) {
+    setActionMenuId(null);
+    const res = await fetch(`/api/orders/${id}/retry`, { method: 'POST' });
+    if (res.ok) {
+      toast.success('Order queued for retry');
+      router.refresh();
+    } else {
+      toast.error('Retry failed');
+    }
+  }
 
   async function retry() {
     if (!selected) return;
@@ -186,25 +263,35 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
 
   return (
     <>
+      {actionMenuId && <div className="fixed inset-0 z-10" onClick={() => setActionMenuId(null)} />}
       <table className="w-full text-sm">
         <thead className="bg-surface border-b border-frame">
           <tr>
-            {['Order', 'Customer', 'Store', 'Status', 'Total', 'Payment', 'Items', 'Delivery', 'Frameworks No.', 'Created'].map(h => (
-              <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">{h}</th>
+            {COLUMNS.map(col => (
+              <th key={col.key} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
+                <button
+                  onClick={() => toggleSort(col.key)}
+                  className="inline-flex items-center gap-1 hover:text-ink transition-colors duration-100"
+                >
+                  {col.label}
+                  <SortIcon direction={sort?.key === col.key ? sort.dir : null} />
+                </button>
+              </th>
             ))}
+            <th className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-frame">
           {orders.length === 0 && (
             <tr>
-              <td colSpan={10} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
+              <td colSpan={COLUMNS.length + 1} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
             </tr>
           )}
-          {orders.map((o: any) => (
+          {sortedOrders.map((o: any, idx: number) => (
             <tr
               key={o.id}
               onClick={() => openOrder(o)}
-              className="hover:bg-surface-hover transition-colors duration-100 cursor-pointer"
+              className={`${idx % 2 === 1 ? 'bg-surface/40' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100 cursor-pointer`}
             >
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">
                 <span className="inline-flex items-center gap-1.5">
@@ -229,6 +316,32 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
               <td className="px-4 py-3 text-sm text-muted">{o.deliveryMethod ?? '—'}</td>
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{o.frameworksOrderNo ?? '—'}</td>
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{new Date(o.createdAt).toLocaleDateString()}</td>
+              <td className="px-4 py-3 relative" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={() => setActionMenuId(actionMenuId === o.id ? null : o.id)}
+                  className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-surface-hover transition-colors duration-100"
+                >
+                  <KebabIcon />
+                </button>
+                {actionMenuId === o.id && (
+                  <div className="absolute right-4 top-10 z-20 w-40 bg-white rounded-lg shadow-xl border border-frame py-1">
+                    <button
+                      onClick={() => { setActionMenuId(null); openOrder(o); }}
+                      className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-hover transition-colors duration-100"
+                    >
+                      View details
+                    </button>
+                    {o.status === 'failed' && (
+                      <button
+                        onClick={() => retryOrderRow(o.id)}
+                        className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-hover transition-colors duration-100"
+                      >
+                        Retry
+                      </button>
+                    )}
+                  </div>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

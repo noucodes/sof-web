@@ -1,10 +1,10 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
-import Link from 'next/link';
 import AppShell from '@/components/AppShell';
 import OrderFilters from '@/components/OrderFilters';
 import OrdersTable from '@/components/OrdersTable';
+import Pagination from '@/components/Pagination';
 import RetryFailedButton from '@/components/RetryFailedButton';
 import SyncTrigger from '@/components/SyncTrigger';
 
@@ -80,24 +80,7 @@ export default async function OrdersPage({
         {totalPages > 1 && (
           <div className="flex items-center justify-between text-sm text-muted">
             <span>Page {page} of {totalPages}</span>
-            <div className="flex gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/orders?${new URLSearchParams({ ...params, page: String(page - 1) })}`}
-                  className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]"
-                >
-                  Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  href={`/orders?${new URLSearchParams({ ...params, page: String(page + 1) })}`}
-                  className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]"
-                >
-                  Next
-                </Link>
-              )}
-            </div>
+            <Pagination page={page} totalPages={totalPages} params={params} />
           </div>
         )}
       </div>
