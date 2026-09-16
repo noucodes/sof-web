@@ -13,8 +13,10 @@ import { toast } from 'sonner';
 // treated as bridge_unreachable and left pending for the cron to retry
 // automatically, so it's not listed here.
 const BRIDGE_ERRORS = [
+  '[bridge_server_error] unknown_bridge_error: Bridge server error: 403 Forbidden',
   '[bridge_server_error] unknown_bridge_error: Bridge server error: 404 Not Found',
   '[bridge_server_error] unknown_bridge_error: Bridge server error: 502 Bad Gateway',
+  '[processing_error] Request failed with status code 403',
   '[processing_error] Request failed with status code 500',
   '[processing_error] Request failed with status code 502',
   '[processing_error] Request failed with status code 503',
@@ -48,13 +50,13 @@ export default function RetryFailedButton() {
     <button
       onClick={retryAll}
       disabled={loading}
-      title="Retry every failed order with a bridge 404 or 502 error"
+      title="Retry every failed order with a bridge 403, 404, or 502 error"
       className="flex items-center gap-2 px-4 py-2 border border-frame-input text-ink text-sm font-medium rounded-lg hover:bg-surface-hover disabled:opacity-50 transition-colors duration-150"
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
       </svg>
-      {loading ? 'Retrying…' : 'Retry bridge 404/502s'}
+      {loading ? 'Retrying…' : 'Retry bridge 403/404/502s'}
     </button>
   );
 }
