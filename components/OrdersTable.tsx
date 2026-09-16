@@ -180,6 +180,20 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
   const [retrying, setRetrying] = useState(false);
   const [tab, setTab] = useState<'shopify' | 'frameworks' | 'payment'>('shopify');
   const [actionMenuId, setActionMenuId] = useState<string | null>(null);
+  const [actionMenuPos, setActionMenuPos] = useState<{ top: number; left: number } | null>(null);
+
+  // fixed (not absolute) so the menu isn't clipped by the table card's
+  // overflow-hidden — with only a row or two, an absolutely-positioned
+  // dropdown would spill past the card's bottom edge and get cut off.
+  function toggleActionMenu(id: string, button: HTMLElement) {
+    if (actionMenuId === id) {
+      setActionMenuId(null);
+      return;
+    }
+    const rect = button.getBoundingClientRect();
+    setActionMenuPos({ top: rect.bottom + 4, left: rect.right - 160 });
+    setActionMenuId(id);
+  }
 
   const activeSortBy = searchParams.get('sortBy');
   const activeSortDir = searchParams.get('sortDir') as 'asc' | 'desc' | null;
@@ -288,15 +302,18 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
               <td className="px-4 py-3 text-sm text-muted">{o.deliveryMethod ?? '—'}</td>
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{o.frameworksOrderNo ?? '—'}</td>
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{new Date(o.createdAt).toLocaleDateString()}</td>
-              <td className="px-4 py-3 relative" onClick={e => e.stopPropagation()}>
+              <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                 <button
-                  onClick={() => setActionMenuId(actionMenuId === o.id ? null : o.id)}
+                  onClick={e => toggleActionMenu(o.id, e.currentTarget)}
                   className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-surface-hover transition-colors duration-100"
                 >
                   <KebabIcon />
                 </button>
-                {actionMenuId === o.id && (
-                  <div className="absolute right-4 top-10 z-20 w-40 bg-white rounded-lg shadow-xl border border-frame py-1">
+                {actionMenuId === o.id && actionMenuPos && (
+                  <div
+                    className="fixed z-20 w-40 bg-white rounded-lg shadow-xl border border-frame py-1"
+                    style={{ top: actionMenuPos.top, left: actionMenuPos.left }}
+                  >
                     <button
                       onClick={() => { setActionMenuId(null); openOrder(o); }}
                       className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-hover transition-colors duration-100"
