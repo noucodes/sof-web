@@ -2,15 +2,11 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
+import Pagination from '@/components/Pagination';
 import RetryFailedReleasesButton from '@/components/RetryFailedReleasesButton';
+import ShipStationTable from '@/components/ShipStationTable';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-
-const STATUS_COLORS: Record<string, string> = {
-  success: 'bg-success-bg text-success',
-  failed: 'bg-failed-bg text-failed',
-  pending: 'bg-pending-bg text-pending',
-};
 
 async function getJobs(cookieHeader: string, params: Record<string, string>) {
   const qs = new URLSearchParams();
@@ -66,61 +62,13 @@ export default async function ShipStationPage({
         </div>
 
         <div className="bg-white rounded-xl shadow-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-surface border-b border-frame">
-              <tr>
-                {['Shipment ID', 'Order', 'Ship To', 'Carrier', 'Tracking', 'Status', 'Attempts', 'Date'].map(h => (
-                  <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-frame">
-              {jobs.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-sm text-muted">No jobs found</td>
-                </tr>
-              )}
-              {jobs.map((j: any) => (
-                <tr key={j.id} className="hover:bg-surface-hover transition-colors duration-100">
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{j.shipmentId}</td>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">
-                    {j.orderNumber ?? '—'}
-                    {j.linkedOrder?.orderNo && <span className="text-muted ml-1">→ FW {j.linkedOrder.orderNo}</span>}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-ink">{j.shipTo ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-muted">{j.carrier ?? '—'}</td>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{j.trackingNumber ?? '—'}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.6875rem] font-medium uppercase tracking-[0.05em] ${STATUS_COLORS[j.status] ?? 'bg-surface text-muted'}`}>
-                      {j.statusLabel}
-                    </span>
-                    {j.error && <p className="text-[0.7rem] text-failed mt-0.5 max-w-[200px] truncate">{j.error}</p>}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted text-center">{j.attempts}</td>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{new Date(j.createdAt).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ShipStationTable jobs={jobs} />
         </div>
 
         {totalPages > 1 && (
           <div className="flex items-center justify-between text-sm text-muted">
             <span>Page {page} of {totalPages}</span>
-            <div className="flex gap-2">
-              {page > 1 && (
-                <Link href={`/shipstation?${new URLSearchParams({ ...params, page: String(page - 1) })}`}
-                  className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]">
-                  Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link href={`/shipstation?${new URLSearchParams({ ...params, page: String(page + 1) })}`}
-                  className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]">
-                  Next
-                </Link>
-              )}
-            </div>
+            <Pagination page={page} totalPages={totalPages} params={params} basePath="/shipstation" />
           </div>
         )}
       </div>

@@ -1,15 +1,27 @@
 'use client';
 import { useState } from 'react';
+import { useClientSort } from '@/components/table/useClientSort';
+import SortableTh from '@/components/table/SortableTh';
 
 type User = { id: number; email: string; role: string; isActive: boolean; createdAt: string };
 
 const ROLES = ['viewer', 'operator', 'admin'];
+
+const COLUMNS = [
+  { key: 'email', label: 'Email', getValue: (u: User) => u.email },
+  { key: 'role', label: 'Role', getValue: (u: User) => u.role },
+  { key: 'status', label: 'Status', getValue: (u: User) => (u.isActive ? 1 : 0) },
+  { key: 'created', label: 'Created', getValue: (u: User) => new Date(u.createdAt).getTime() },
+];
+
+const GETTERS = Object.fromEntries(COLUMNS.map(c => [c.key, c.getValue]));
 
 const inputClass =
   'border-[1.5px] border-frame-input rounded-lg px-3 py-[9px] text-sm text-ink bg-white focus:outline-none focus:border-primary focus:shadow-focus-ring transition-[border-color,box-shadow] duration-[120ms]';
 
 export default function UsersClient({ initialUsers }: { initialUsers: User[] }) {
   const [users, setUsers] = useState<User[]>(initialUsers);
+  const { sorted, sort, toggleSort } = useClientSort(users, GETTERS);
   const [form, setForm] = useState({ email: '', password: '', role: 'viewer' });
   const [error, setError] = useState('');
   const [creating, setCreating] = useState(false);
@@ -112,14 +124,15 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
         <table className="w-full text-sm">
           <thead className="bg-surface border-b border-frame">
             <tr>
-              {['Email', 'Role', 'Status', 'Created', ''].map(h => (
-                <th
-                  key={h}
-                  className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em]"
-                >
-                  {h}
-                </th>
+              {COLUMNS.map(col => (
+                <SortableTh
+                  key={col.key}
+                  label={col.label}
+                  direction={sort?.key === col.key ? sort.dir : null}
+                  onClick={() => toggleSort(col.key)}
+                />
               ))}
+              <th className="text-left px-4 py-[10px] text-xs font-medium text-muted" />
             </tr>
           </thead>
           <tbody className="divide-y divide-frame">
@@ -130,10 +143,10 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
                 </td>
               </tr>
             )}
-            {users.map(u => (
+            {sorted.map((u, idx) => (
               <tr
                 key={u.id}
-                className={`transition-colors duration-100 hover:bg-surface-hover${u.isActive ? '' : ' opacity-50'}`}
+                className={`${idx % 2 === 1 ? 'bg-surface/40' : 'bg-white'} transition-colors duration-100 hover:bg-surface-hover${u.isActive ? '' : ' opacity-50'}`}
               >
                 <td className="px-4 py-3 text-sm text-ink">{u.email}</td>
                 <td className="px-4 py-3">

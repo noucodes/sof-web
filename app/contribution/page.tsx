@@ -1,12 +1,11 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
-import Link from 'next/link';
 import AppShell from '@/components/AppShell';
 import ContributionFilters from '@/components/ContributionFilters';
-import FetchPriceButton from '@/components/FetchPriceButton';
+import ContributionTable from '@/components/ContributionTable';
+import Pagination from '@/components/Pagination';
 import VerifyAllButton from '@/components/VerifyAllButton';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const PAGE_SIZE = 50;
@@ -29,10 +28,6 @@ async function getContribution(cookieHeader: string, params: Record<string, stri
 
 function money(n: number | string | null) {
   return n != null ? `$${parseFloat(String(n)).toFixed(2)}` : '—';
-}
-
-function shortDate(iso: string | null) {
-  return iso ? new Date(iso).toLocaleDateString() : '—';
 }
 
 // GP% = ((net sales − COGS) / net sales) * 100. Sell price is net sales (ex GST, ex freight).
@@ -124,105 +119,13 @@ export default async function ContributionPage({
         </div>
 
         <div className="bg-white rounded-xl shadow-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-surface border-b border-frame">
-              <tr>
-                {['Order', 'Date', 'Store', 'Frameworks No.', 'Net Sales', 'COGS', 'GP %', 'Freight', 'Payment Fees', 'Contribution'].map(h => (
-                  <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-frame">
-              {rows.length === 0 && (
-                <tr>
-                  <td colSpan={10} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
-                </tr>
-              )}
-              {rows.map((r: any) => (
-                <tr key={r.orderId} className={`hover:bg-surface-hover transition-colors duration-100 ${r.error ? 'opacity-60' : ''}`}>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.orderName}</td>
-                  <td className="px-4 py-3 text-sm text-muted whitespace-nowrap">{shortDate(r.orderDate)}</td>
-                  <td className="px-4 py-3 text-sm text-muted">{r.storeLabel}</td>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.frameworksOrderNo ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-ink">{money(r.netSales)}</td>
-                  <td className="px-4 py-3 text-sm text-ink">{money(r.cogs)}</td>
-                  <td className="px-4 py-3 text-sm font-medium whitespace-nowrap">
-                    {(() => {
-                      const p = gpPct(r.netSales, r.cogs);
-                      if (p == null) return <span className="text-muted font-normal">—</span>;
-                      const low = p < GP_ALERT_THRESHOLD;
-                      return low ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="inline-flex items-center gap-1 rounded-md bg-failed-bg px-1.5 py-0.5 text-failed">
-                              {p.toFixed(1)}%
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3h.008v.008H12v-.008ZM21.75 12a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z" />
-                              </svg>
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>GP below {GP_ALERT_THRESHOLD}%</TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        <span className="text-ink">{p.toFixed(1)}%</span>
-                      );
-                    })()}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-ink">{money(r.freight)}</td>
-                  <td className="px-4 py-3 text-sm text-ink">{money(r.paymentFees)}</td>
-                  <td className="px-4 py-3 text-sm text-ink font-medium">
-                    <div className="flex items-center gap-1.5">
-                      {r.contribution == null ? (
-                        <span className="text-muted font-normal">Not calculated</span>
-                      ) : (
-                        <span>{money(r.contribution)}</span>
-                      )}
-                      {r.error && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="shrink-0">
-                              <svg className="w-4 h-4 text-pending" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3h.008v.008H12v-.008ZM21.75 12a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z" />
-                              </svg>
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>{r.error}</TooltipContent>
-                        </Tooltip>
-                      )}
-                      {r.frameworksOrderNo && (r.contribution == null || r.error) && (
-                        <FetchPriceButton orderId={r.orderId} hasError={!!r.error} />
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ContributionTable rows={rows} />
         </div>
 
         {totalPages > 1 && (
           <div className="flex items-center justify-between text-sm text-muted">
             <span>Page {page} of {totalPages}</span>
-            <div className="flex gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/contribution?${new URLSearchParams({ ...params, page: String(page - 1) })}`}
-                  className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]"
-                >
-                  Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  href={`/contribution?${new URLSearchParams({ ...params, page: String(page + 1) })}`}
-                  className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]"
-                >
-                  Next
-                </Link>
-              )}
-            </div>
+            <Pagination page={page} totalPages={totalPages} params={params} basePath="/contribution" />
           </div>
         )}
       </div>

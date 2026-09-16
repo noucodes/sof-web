@@ -1,7 +1,9 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { KebabIcon } from '@/components/table/icons';
+import SortableTh from '@/components/table/SortableTh';
 
 const STATUS_COLORS: Record<string, string> = {
   success: 'bg-success-bg text-success',
@@ -9,45 +11,20 @@ const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-pending-bg text-pending',
 };
 
-type Column = { key: string; label: string; getValue: (o: any) => string | number };
-
-const COLUMNS: Column[] = [
-  { key: 'order', label: 'Order', getValue: (o) => { const m = /(\d+)\s*$/.exec(o.orderName ?? ''); return m ? parseInt(m[1], 10) : (o.orderName ?? ''); } },
-  { key: 'customer', label: 'Customer', getValue: (o) => o.customer?.name ?? '' },
-  { key: 'store', label: 'Store', getValue: (o) => o.storeLabel ?? '' },
-  { key: 'status', label: 'Status', getValue: (o) => o.statusLabel ?? '' },
-  { key: 'total', label: 'Total', getValue: (o) => (o.total ? parseFloat(o.total) : 0) },
-  { key: 'payment', label: 'Payment', getValue: (o) => o.paymentStatus ?? '' },
-  { key: 'items', label: 'Items', getValue: (o) => o.lineItemCount ?? 0 },
-  { key: 'delivery', label: 'Delivery', getValue: (o) => o.deliveryMethod ?? '' },
-  { key: 'frameworks', label: 'Frameworks No.', getValue: (o) => o.frameworksOrderNo ?? 0 },
-  { key: 'created', label: 'Created', getValue: (o) => new Date(o.createdAt).getTime() },
+// Keys match sof-api's ORDER_SORT_KEYS — sorting happens server-side across
+// the whole filtered dataset, not just the loaded page (see OrdersService.findAll).
+const COLUMNS = [
+  { key: 'order', label: 'Order' },
+  { key: 'customer', label: 'Customer' },
+  { key: 'store', label: 'Store' },
+  { key: 'status', label: 'Status' },
+  { key: 'total', label: 'Total' },
+  { key: 'payment', label: 'Payment' },
+  { key: 'items', label: 'Items' },
+  { key: 'delivery', label: 'Delivery' },
+  { key: 'frameworks', label: 'Frameworks No.' },
+  { key: 'created', label: 'Created' },
 ];
-
-function SortIcon({ direction }: { direction: 'asc' | 'desc' | null }) {
-  if (direction === null) {
-    return (
-      <svg className="w-3 h-3 text-muted/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4-4 4 4M8 15l4 4 4-4" />
-      </svg>
-    );
-  }
-  return (
-    <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      {direction === 'asc'
-        ? <path strokeLinecap="round" strokeLinejoin="round" d="M8 15l4-4 4 4" />
-        : <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4 4 4-4" />}
-    </svg>
-  );
-}
-
-function KebabIcon() {
-  return (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 6.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-    </svg>
-  );
-}
 
 function JsonView({ data }: { data: any }) {
   const [copied, setCopied] = useState(false);
@@ -196,33 +173,32 @@ function WarningIcon({ message }: { message: string }) {
 
 export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps?: NumberGap[] }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const orderWarnings = useMemo(() => findOrderWarnings(orders, gaps), [orders, gaps]);
   const [selected, setSelected] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [tab, setTab] = useState<'shopify' | 'frameworks' | 'payment'>('shopify');
-  const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(null);
   const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
-  const sortedOrders = useMemo(() => {
-    if (!sort) return orders;
-    const column = COLUMNS.find(c => c.key === sort.key);
-    if (!column) return orders;
-    return [...orders].sort((a, b) => {
-      const av = column.getValue(a);
-      const bv = column.getValue(b);
-      if (av < bv) return sort.dir === 'asc' ? -1 : 1;
-      if (av > bv) return sort.dir === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [orders, sort]);
+  const activeSortBy = searchParams.get('sortBy');
+  const activeSortDir = searchParams.get('sortDir') as 'asc' | 'desc' | null;
 
   function toggleSort(key: string) {
-    setSort(prev => {
-      if (!prev || prev.key !== key) return { key, dir: 'asc' };
-      if (prev.dir === 'asc') return { key, dir: 'desc' };
-      return null;
-    });
+    const next = new URLSearchParams(searchParams.toString());
+    const current = activeSortBy === key ? activeSortDir : null;
+    if (current === 'asc') {
+      next.set('sortBy', key);
+      next.set('sortDir', 'desc');
+    } else if (current === 'desc') {
+      next.delete('sortBy');
+      next.delete('sortDir');
+    } else {
+      next.set('sortBy', key);
+      next.set('sortDir', 'asc');
+    }
+    next.set('page', '1');
+    router.push(`/orders?${next.toString()}`);
   }
 
   async function retryOrderRow(id: string) {
@@ -268,17 +244,14 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
         <thead className="bg-surface border-b border-frame">
           <tr>
             {COLUMNS.map(col => (
-              <th key={col.key} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
-                <button
-                  onClick={() => toggleSort(col.key)}
-                  className="inline-flex items-center gap-1 hover:text-ink transition-colors duration-100"
-                >
-                  {col.label}
-                  <SortIcon direction={sort?.key === col.key ? sort.dir : null} />
-                </button>
-              </th>
+              <SortableTh
+                key={col.key}
+                label={col.label}
+                direction={activeSortBy === col.key ? activeSortDir : null}
+                onClick={() => toggleSort(col.key)}
+              />
             ))}
-            <th className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">Actions</th>
+            <th className="text-left px-4 py-[10px] text-xs font-medium text-muted whitespace-nowrap">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-frame">
@@ -287,11 +260,10 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
               <td colSpan={COLUMNS.length + 1} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
             </tr>
           )}
-          {sortedOrders.map((o: any, idx: number) => (
+          {orders.map((o: any, idx: number) => (
             <tr
               key={o.id}
-              onClick={() => openOrder(o)}
-              className={`${idx % 2 === 1 ? 'bg-surface/40' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100 cursor-pointer`}
+              className={`${idx % 2 === 1 ? 'bg-surface/40' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}
             >
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">
                 <span className="inline-flex items-center gap-1.5">

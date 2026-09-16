@@ -15,6 +15,8 @@ async function getOrders(cookieHeader: string, params: Record<string, string>) {
   if (params.search) qs.set('search', params.search);
   if (params.status && params.status !== 'all') qs.set('status', params.status);
   if (params.store && params.store !== 'all') qs.set('store', params.store);
+  if (params.sortBy) qs.set('sortBy', params.sortBy);
+  if (params.sortDir) qs.set('sortDir', params.sortDir);
   if (params.page) qs.set('page', params.page);
   qs.set('limit', '50');
 

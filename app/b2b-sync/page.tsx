@@ -1,13 +1,9 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AppShell from '@/components/AppShell';
+import B2BSyncTable from '@/components/B2BSyncTable';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-
-const STATUS_COLORS: Record<string, string> = {
-  success: 'bg-success-bg text-success',
-  failed: 'bg-failed-bg text-failed',
-};
 
 type Entry = {
   status: 'success' | 'failed';
@@ -80,36 +76,7 @@ export default async function B2BSyncPage() {
           <div className="px-5 py-4 border-b border-frame">
             <h2 className="text-sm font-semibold text-ink">Run history</h2>
           </div>
-          <table className="w-full text-sm">
-            <thead className="bg-surface border-b border-frame">
-              <tr>
-                {['Status', 'Source', 'Synced', 'Unmatched', 'Finished', 'Error'].map(h => (
-                  <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-frame">
-              {history.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-sm text-muted">No runs recorded yet</td>
-                </tr>
-              )}
-              {history.map((h, i) => (
-                <tr key={i} className="hover:bg-surface-hover transition-colors duration-100">
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.6875rem] font-medium uppercase tracking-[0.05em] ${STATUS_COLORS[h.status] ?? 'bg-surface text-muted'}`}>
-                      {h.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted">{h.source ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-ink">{h.itemsSynced ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-ink">{h.itemsFailed ?? '—'}</td>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{formatDate(h.finishedAt)}</td>
-                  <td className="px-4 py-3 text-[0.8125rem] text-failed max-w-[280px] truncate">{h.error ?? '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <B2BSyncTable history={history} />
         </div>
       </div>
     </AppShell>

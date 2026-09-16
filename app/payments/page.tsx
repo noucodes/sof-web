@@ -3,13 +3,29 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
 import FetchPriceButton from '@/components/FetchPriceButton';
+import Pagination from '@/components/Pagination';
+import { SortIcon } from '@/components/table/icons';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const PAGE_SIZE = 50;
 
-async function getOrders(cookieHeader: string, page: number) {
-  const qs = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE) });
+// Columns backed by base order fields sof-api can sort across the whole
+// dataset (see ORDER_SORT_GETTERS in orders.service.ts). Payment
+// method/amount live in the per-order detail fetch below, not the list
+// endpoint, so they stay display-only for now.
+const SORTABLE_COLUMNS: Record<string, string> = {
+  'Shopify Order': 'order',
+  'Shopify Price': 'total',
+  Customer: 'customer',
+  'Framework Order No.': 'frameworks',
+};
+
+async function getOrders(cookieHeader: string, params: Record<string, string>) {
+  const qs = new URLSearchParams({ page: String(params.page ?? 1), limit: String(PAGE_SIZE) });
+  if (params.mismatch === '1') qs.set('mismatch', '1');
+  if (params.sortBy) qs.set('sortBy', params.sortBy);
+  if (params.sortDir) qs.set('sortDir', params.sortDir);
   const res = await fetch(`${API}/orders?${qs}`, { headers: { cookie: cookieHeader }, cache: 'no-store' });
   if (res.status === 401) redirect('/login');
   if (!res.ok) throw new Error('Failed to load orders');
@@ -37,8 +53,25 @@ export default async function PaymentsPage({
   const params = await searchParams;
   const page = Number(params.page ?? 1);
   const mismatchOnly = params.mismatch === '1';
-  const { orders, total } = await getOrders(cookieHeader, page);
+  const { orders, total } = await getOrders(cookieHeader, params);
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  function sortHref(key: string) {
+    const next = new URLSearchParams(params);
+    const current = params.sortBy === key ? params.sortDir : null;
+    if (current === 'asc') {
+      next.set('sortBy', key);
+      next.set('sortDir', 'desc');
+    } else if (current === 'desc') {
+      next.delete('sortBy');
+      next.delete('sortDir');
+    } else {
+      next.set('sortBy', key);
+      next.set('sortDir', 'asc');
+    }
+    next.set('page', '1');
+    return `/payments?${next.toString()}`;
+  }
 
   // ponytail: N+1 detail fetch per row — the /orders list endpoint doesn't carry payment
   // amount/date/method, only the per-order detail endpoint does. Fine at 50 rows/page;
@@ -87,15 +120,16 @@ export default async function PaymentsPage({
     };
   });
 
-  // ponytail: mismatch detection/filtering only sees the current page's 50 rows —
-  // consistent with the N+1 detail-fetch scope above. A reliable "every mismatch
-  // across all orders" view needs a server-side filter in sof-api; revisit if this
-  // page-scoped check isn't enough.
-  const mismatchCount = rows.filter((r: any) => r.priceMismatch).length;
-  const visibleRows = mismatchOnly ? rows.filter((r: any) => r.priceMismatch) : rows;
-  const toggleHref = mismatchOnly
-    ? `/payments?page=${page}`
-    : `/payments?page=${page}&mismatch=1`;
+  // Backend already filtered to mismatches across the whole dataset when
+  // mismatchOnly is set (see OrdersService.findAll's `mismatch` flag) — `total`
+  // is the real count, not just what's on this page.
+  const mismatchCount = mismatchOnly ? total : rows.filter((r: any) => r.priceMismatch).length;
+  const visibleRows = rows;
+  const toggleHrefParams = new URLSearchParams(params);
+  toggleHrefParams.set('page', '1');
+  if (mismatchOnly) toggleHrefParams.delete('mismatch');
+  else toggleHrefParams.set('mismatch', '1');
+  const toggleHref = `/payments?${toggleHrefParams.toString()}`;
 
   return (
     <AppShell>
@@ -125,7 +159,7 @@ export default async function PaymentsPage({
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3h.008v.008H12v-.008ZM21.75 12a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z" />
             </svg>
             <span className="font-medium">
-              {mismatchCount} order{mismatchCount === 1 ? '' : 's'} on this page {mismatchCount === 1 ? 'has' : 'have'} a Shopify/Frameworks price mismatch.
+              {mismatchCount} order{mismatchCount === 1 ? '' : 's'} {mismatchOnly ? 'total' : 'on this page'} {mismatchCount === 1 ? 'has' : 'have'} a Shopify/Frameworks price mismatch.
             </span>
           </div>
         )}
@@ -134,11 +168,20 @@ export default async function PaymentsPage({
           <table className="w-full text-sm">
             <thead className="bg-surface border-b border-frame">
               <tr>
-                {['Shopify Order', 'Payment Method', 'Shopify Price', 'Payment Amount', 'Date', 'Customer', 'Framework Order No.'].map(h => (
-                  <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
-                    {h}
-                  </th>
-                ))}
+                {['Shopify Order', 'Payment Method', 'Shopify Price', 'Payment Amount', 'Date', 'Customer', 'Framework Order No.'].map(h => {
+                  const sortKey = SORTABLE_COLUMNS[h];
+                  const direction = sortKey && params.sortBy === sortKey ? (params.sortDir as 'asc' | 'desc') ?? 'asc' : null;
+                  return (
+                    <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
+                      {sortKey ? (
+                        <Link href={sortHref(sortKey)} className="inline-flex items-center gap-1 hover:text-ink transition-colors duration-100">
+                          {h}
+                          <SortIcon direction={direction} />
+                        </Link>
+                      ) : h}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody className="divide-y divide-frame">
@@ -149,8 +192,8 @@ export default async function PaymentsPage({
                   </td>
                 </tr>
               )}
-              {visibleRows.map((r: any) => (
-                <tr key={r.id} className="hover:bg-surface-hover transition-colors duration-100">
+              {visibleRows.map((r: any, idx: number) => (
+                <tr key={r.id} className={`${idx % 2 === 1 ? 'bg-surface/40' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}>
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.shopifyOrderNo}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.paymentMethod}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.shopifyPrice ? `$${parseFloat(r.shopifyPrice).toFixed(2)}` : '—'}</td>
@@ -208,24 +251,7 @@ export default async function PaymentsPage({
         {totalPages > 1 && (
           <div className="flex items-center justify-between text-sm text-muted">
             <span>Page {page} of {totalPages}</span>
-            <div className="flex gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/payments?page=${page - 1}${mismatchOnly ? '&mismatch=1' : ''}`}
-                  className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]"
-                >
-                  Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  href={`/payments?page=${page + 1}${mismatchOnly ? '&mismatch=1' : ''}`}
-                  className="px-3 py-1.5 border border-frame-input rounded-lg text-sm text-primary hover:bg-primary-wash transition-colors duration-[120ms]"
-                >
-                  Next
-                </Link>
-              )}
-            </div>
+            <Pagination page={page} totalPages={totalPages} params={params} basePath="/payments" />
           </div>
         )}
       </div>
