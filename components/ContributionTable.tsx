@@ -11,7 +11,7 @@ function money(n: number | string | null) {
 }
 
 function shortDate(iso: string | null) {
-  return iso ? new Date(iso).toLocaleDateString() : '—';
+  return iso ? new Date(iso).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }) : '—';
 }
 
 function gpPct(netSales: number | string | null, cogs: number | string | null): number | null {
@@ -41,7 +41,7 @@ export default function ContributionTable({ rows }: { rows: any[] }) {
 
   return (
     <table className="w-full text-sm">
-      <thead className="bg-surface border-b border-frame">
+      <thead className="bg-surface-strong border-b border-frame">
         <tr>
           {COLUMNS.map(col => (
             <SortableTh
@@ -53,7 +53,7 @@ export default function ContributionTable({ rows }: { rows: any[] }) {
           ))}
         </tr>
       </thead>
-      <tbody className="divide-y divide-frame">
+      <tbody>
         {sorted.length === 0 && (
           <tr>
             <td colSpan={COLUMNS.length} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
@@ -62,7 +62,7 @@ export default function ContributionTable({ rows }: { rows: any[] }) {
         {sorted.map((r: any, idx: number) => (
           <tr
             key={r.orderId}
-            className={`${idx % 2 === 1 ? 'bg-surface/40' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100 ${r.error ? 'opacity-60' : ''}`}
+            className={`${idx % 2 === 1 ? 'bg-surface' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100 ${r.error ? 'opacity-60' : ''}`}
           >
             <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.orderName}</td>
             <td className="px-4 py-3 text-sm text-muted whitespace-nowrap">{shortDate(r.orderDate)}</td>
@@ -92,7 +92,16 @@ export default function ContributionTable({ rows }: { rows: any[] }) {
                 );
               })()}
             </td>
-            <td className="px-4 py-3 text-sm text-ink">{money(r.freight)}</td>
+            <td className="px-4 py-3 text-sm text-ink whitespace-nowrap">
+              {/* Freight is the ShipStation label cost — 0 until a label prints. */}
+              {r.freight != null && parseFloat(r.freight) === 0 ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[0.6875rem] font-medium uppercase tracking-[0.05em] bg-pending-bg text-pending">
+                  Not shipped
+                </span>
+              ) : (
+                money(r.freight)
+              )}
+            </td>
             <td className="px-4 py-3 text-sm text-ink">{money(r.paymentFees)}</td>
             <td className="px-4 py-3 text-sm text-ink font-medium">
               <div className="flex items-center gap-1.5">

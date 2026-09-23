@@ -2,6 +2,8 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -46,24 +48,22 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-[5px]">
             <label className="text-xs font-medium text-ink" htmlFor="login-email">Email</label>
-            <input
+            <Input
               id="login-email"
               name="email"
               type="email"
               required
               autoFocus
-              className="border-[1.5px] border-frame-input rounded-lg px-3 py-[9px] text-sm text-ink placeholder:text-muted bg-white focus:outline-none focus:border-primary focus:shadow-focus-ring transition-[border-color,box-shadow] duration-[120ms]"
             />
           </div>
 
           <div className="flex flex-col gap-[5px]">
             <label className="text-xs font-medium text-ink" htmlFor="login-password">Password</label>
-            <input
+            <Input
               id="login-password"
               name="password"
               type="password"
               required
-              className="border-[1.5px] border-frame-input rounded-lg px-3 py-[9px] text-sm text-ink placeholder:text-muted bg-white focus:outline-none focus:border-primary focus:shadow-focus-ring transition-[border-color,box-shadow] duration-[120ms]"
             />
           </div>
 
@@ -71,13 +71,9 @@ export default function LoginPage() {
             <p className="text-sm text-failed" role="alert">{error}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary text-white rounded-lg py-[9px] text-sm font-medium hover:bg-primary-deep disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 mt-1"
-          >
+          <Button type="submit" disabled={loading} className="mt-1 w-full">
             {loading ? 'Signing in…' : 'Sign in'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

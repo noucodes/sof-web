@@ -1,8 +1,16 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { KebabIcon } from '@/components/table/icons';
+import { MoreHorizontal, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import SortableTh from '@/components/table/SortableTh';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -37,14 +45,16 @@ export function JsonView({ data }: { data: any }) {
   }
 
   return (
-    <div className="relative">
-      <button
-        onClick={copy}
-        className="absolute top-2 right-2 px-2 py-1 text-[0.6875rem] font-medium rounded-md bg-white/80 text-muted hover:text-ink hover:bg-white transition-colors duration-150"
-      >
-        {copied ? 'Copied' : 'Copy'}
-      </button>
-      <pre className="text-xs text-ink bg-surface rounded-lg p-4 pr-16 overflow-auto max-h-[40vh] whitespace-pre-wrap break-words">
+    // The whole box scrolls, so the scrollbar runs its full height. Copy lives
+    // in a zero-height sticky row inside the scroll content: it stays pinned
+    // top-right and, being content, always sits left of the scrollbar.
+    <div className="bg-surface rounded-lg overflow-auto max-h-[40vh] [scrollbar-width:thin] [scrollbar-color:var(--color-border)_transparent]">
+      <div className="sticky top-0 flex h-0 items-start justify-end">
+        <Button variant="outline" size="sm" onClick={copy} className="mt-2 mr-2 h-7 bg-white px-2 text-[0.6875rem] text-muted shadow-sm hover:text-ink">
+          {copied ? 'Copied' : 'Copy'}
+        </Button>
+      </div>
+      <pre className="text-xs text-ink p-4 pr-16 whitespace-pre-wrap break-words">
         {JSON.stringify(data, null, 2)}
       </pre>
     </div>
@@ -179,21 +189,8 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
   const [loading, setLoading] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [tab, setTab] = useState<'shopify' | 'frameworks' | 'payment'>('shopify');
-  const [actionMenuId, setActionMenuId] = useState<string | null>(null);
-  const [actionMenuPos, setActionMenuPos] = useState<{ top: number; left: number } | null>(null);
-
-  // fixed (not absolute) so the menu isn't clipped by the table card's
-  // overflow-hidden — with only a row or two, an absolutely-positioned
-  // dropdown would spill past the card's bottom edge and get cut off.
-  function toggleActionMenu(id: string, button: HTMLElement) {
-    if (actionMenuId === id) {
-      setActionMenuId(null);
-      return;
-    }
-    const rect = button.getBoundingClientRect();
-    setActionMenuPos({ top: rect.bottom + 4, left: rect.right - 160 });
-    setActionMenuId(id);
-  }
+  const [isSortPending, startSortTransition] = useTransition();
+  const [pendingSortKey, setPendingSortKey] = useState<string | null>(null);
 
   const activeSortBy = searchParams.get('sortBy');
   const activeSortDir = searchParams.get('sortDir') as 'asc' | 'desc' | null;
@@ -212,11 +209,13 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
       next.set('sortDir', 'asc');
     }
     next.set('page', '1');
-    router.push(`/orders?${next.toString()}`);
+    setPendingSortKey(key);
+    startSortTransition(() => {
+      router.push(`/orders?${next.toString()}`);
+    });
   }
 
   async function retryOrderRow(id: string) {
-    setActionMenuId(null);
     const res = await fetch(`/api/orders/${id}/retry`, { method: 'POST' });
     if (res.ok) {
       toast.success('Order queued for retry');
@@ -253,9 +252,8 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
 
   return (
     <>
-      {actionMenuId && <div className="fixed inset-0 z-10" onClick={() => setActionMenuId(null)} />}
       <table className="w-full text-sm">
-        <thead className="bg-surface border-b border-frame">
+        <thead className="bg-surface-strong border-b border-frame">
           <tr>
             {COLUMNS.map(col => (
               <SortableTh
@@ -263,12 +261,13 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
                 label={col.label}
                 direction={activeSortBy === col.key ? activeSortDir : null}
                 onClick={() => toggleSort(col.key)}
+                loading={isSortPending && pendingSortKey === col.key}
               />
             ))}
             <th className="text-left px-4 py-[10px] text-xs font-medium text-muted whitespace-nowrap">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-frame">
+        <tbody className={`transition-opacity duration-150 ${isSortPending ? 'opacity-50' : ''}`}>
           {orders.length === 0 && (
             <tr>
               <td colSpan={COLUMNS.length + 1} className="px-4 py-10 text-center text-sm text-muted">No orders found</td>
@@ -277,7 +276,7 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
           {orders.map((o: any, idx: number) => (
             <tr
               key={o.id}
-              className={`${idx % 2 === 1 ? 'bg-surface/40' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}
+              className={`${idx % 2 === 1 ? 'bg-surface' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}
             >
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">
                 <span className="inline-flex items-center gap-1.5">
@@ -301,35 +300,21 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
               <td className="px-4 py-3 text-sm text-muted">{o.lineItemCount != null ? `${o.lineItemCount} item${o.lineItemCount !== 1 ? 's' : ''}` : '—'}</td>
               <td className="px-4 py-3 text-sm text-muted">{o.deliveryMethod ?? '—'}</td>
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{o.frameworksOrderNo ?? '—'}</td>
-              <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{new Date(o.createdAt).toLocaleDateString()}</td>
-              <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                <button
-                  onClick={e => toggleActionMenu(o.id, e.currentTarget)}
-                  className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-surface-hover transition-colors duration-100"
-                >
-                  <KebabIcon />
-                </button>
-                {actionMenuId === o.id && actionMenuPos && (
-                  <div
-                    className="fixed z-20 w-40 bg-white rounded-lg shadow-xl border border-frame py-1"
-                    style={{ top: actionMenuPos.top, left: actionMenuPos.left }}
-                  >
-                    <button
-                      onClick={() => { setActionMenuId(null); openOrder(o); }}
-                      className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-hover transition-colors duration-100"
-                    >
-                      View details
-                    </button>
+              <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{new Date(o.createdAt).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' })}</td>
+              <td className="px-4 py-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted" aria-label={`Actions for ${o.orderName}`}>
+                      <MoreHorizontal />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem onSelect={() => openOrder(o)}>View details</DropdownMenuItem>
                     {o.status === 'failed' && (
-                      <button
-                        onClick={() => retryOrderRow(o.id)}
-                        className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-hover transition-colors duration-100"
-                      >
-                        Retry
-                      </button>
+                      <DropdownMenuItem onSelect={() => retryOrderRow(o.id)}>Retry</DropdownMenuItem>
                     )}
-                  </div>
-                )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </td>
             </tr>
           ))}
@@ -347,43 +332,45 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
               <div>
                 <p className="text-[0.9375rem] font-semibold text-ink">{selected.orderName}</p>
                 <p className="text-xs text-muted mt-0.5">
-                  {selected.storeLabel} · {new Date(selected.createdAt).toLocaleString()}
+                  {selected.storeLabel} · {new Date(selected.createdAt).toLocaleString('en-AU', { timeZone: 'Australia/Sydney' })}
                   {selected.frameworksOrderNo && (
                     <> · <span className="text-ink">FW {selected.frameworksOrderNo}{selected.frameworksOrderSuffix ? `-${selected.frameworksOrderSuffix}` : ''}</span></>
                   )}
                 </p>
               </div>
-              {selected.status === 'failed' && (
-                <button
-                  onClick={retry}
-                  disabled={retrying}
-                  className="px-3 py-1.5 text-sm font-medium text-white bg-primary hover:bg-primary-deep rounded-lg disabled:opacity-50 transition-colors duration-150 mr-2"
-                >
-                  {retrying ? 'Retrying…' : 'Retry'}
-                </button>
-              )}
-              <button onClick={() => setSelected(null)} className="text-muted hover:text-ink transition-colors p-1 rounded-lg hover:bg-surface-hover">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <div className="flex items-center gap-2">
+                {selected.status === 'failed' && (
+                  <Button size="sm" onClick={retry} disabled={retrying}>
+                    {retrying ? 'Retrying…' : 'Retry'}
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted" onClick={() => setSelected(null)} aria-label="Close">
+                <X className="!size-5" />
+              </Button>
+              </div>
             </div>
 
             <div className="flex gap-1 px-5 pt-3 pb-3 border-b border-frame">
               {(['shopify', 'frameworks', 'payment'] as const).map(t => (
-                <button
+                <Button
                   key={t}
+                  size="sm"
+                  variant="ghost"
+                  aria-pressed={tab === t}
                   onClick={() => setTab(t)}
-                  className={`px-3 py-1.5 rounded-lg text-sm transition-colors duration-[120ms] ${tab === t ? 'bg-primary-wash text-primary font-medium' : 'text-muted hover:text-ink hover:bg-surface-hover'}`}
+                  className={tab === t ? 'bg-primary-wash text-primary hover:bg-primary-wash' : 'font-normal text-muted hover:text-ink'}
                 >
                   {t === 'shopify' ? 'Shopify' : t === 'frameworks' ? 'Frameworks' : 'Payment'}
-                </button>
+                </Button>
               ))}
             </div>
 
             <div className="p-5 overflow-auto flex-1">
               {loading ? (
-                <p className="text-sm text-muted">Loading…</p>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-40" />
+                  <Skeleton className="h-48 w-full" />
+                </div>
               ) : (
                 <TabContent order={selected} tab={tab} />
               )}

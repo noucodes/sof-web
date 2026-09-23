@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AppShell from '@/components/AppShell';
+import PageHeader from '@/components/PageHeader';
 import UsersClient from './UsersClient';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -23,9 +24,12 @@ export default async function UsersPage() {
 
   return (
     <AppShell>
+      <PageHeader crumbs={['Admin', 'Users']} />
       <div className="p-6 space-y-4">
         <div className="space-y-0.5">
-          <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Users</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Users</h1>
+          </div>
           <p className="text-sm text-muted">Manage who has access to this portal and their permission level.</p>
         </div>
         <UsersClient initialUsers={users} />

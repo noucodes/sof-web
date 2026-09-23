@@ -1,8 +1,14 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const STATUSES = ['all', 'pending', 'success', 'failed'];
+
+// Passed as <SelectValue> children too: Radix only fills the trigger after
+// hydration, so without it the server HTML renders a blank select.
+const statusLabel = (s: string) => (s === 'all' ? 'All statuses' : s.charAt(0).toUpperCase() + s.slice(1));
 
 const STORE_LABELS: Record<string, string> = {
   all: 'All stores',
@@ -11,9 +17,6 @@ const STORE_LABELS: Record<string, string> = {
   plumbershq: 'PlumbersHQ',
   aspire: 'Aspire',
 };
-
-const inputClass =
-  'border-[1.5px] border-frame-input rounded-lg px-3 py-[9px] text-sm text-ink bg-white focus:outline-none focus:border-primary focus:shadow-focus-ring transition-[border-color,box-shadow] duration-[120ms]';
 
 export default function OrderFilters() {
   const router = useRouter();
@@ -28,35 +31,38 @@ export default function OrderFilters() {
 
   return (
     <div className="flex gap-3 flex-wrap">
-      <input
+      <Input
         type="search"
+        aria-label="Search orders"
         placeholder="Search orders…"
         defaultValue={params.get('search') ?? ''}
         onChange={e => update('search', e.target.value)}
-        className={`${inputClass} w-56`}
+        className="w-56"
       />
 
-      <select
-        defaultValue={params.get('status') ?? 'all'}
-        onChange={e => update('status', e.target.value)}
-        className={inputClass}
-      >
-        {STATUSES.map(s => (
-          <option key={s} value={s}>
-            {s === 'all' ? 'All statuses' : s.charAt(0).toUpperCase() + s.slice(1)}
-          </option>
-        ))}
-      </select>
+      <Select defaultValue={params.get('status') ?? 'all'} onValueChange={v => update('status', v)}>
+        <SelectTrigger aria-label="Status" className="w-40">
+          <SelectValue>{statusLabel(params.get('status') ?? 'all')}</SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {STATUSES.map(s => (
+            <SelectItem key={s} value={s}>
+              {statusLabel(s)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-      <select
-        defaultValue={params.get('store') ?? 'all'}
-        onChange={e => update('store', e.target.value)}
-        className={inputClass}
-      >
-        {Object.entries(STORE_LABELS).map(([value, label]) => (
-          <option key={value} value={value}>{label}</option>
-        ))}
-      </select>
+      <Select defaultValue={params.get('store') ?? 'all'} onValueChange={v => update('store', v)}>
+        <SelectTrigger aria-label="Store" className="w-40">
+          <SelectValue>{STORE_LABELS[params.get('store') ?? 'all']}</SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(STORE_LABELS).map(([value, label]) => (
+            <SelectItem key={value} value={value}>{label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

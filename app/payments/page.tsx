@@ -1,10 +1,12 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import AppShell from '@/components/AppShell';
+import PageHeader from '@/components/PageHeader';
 import FetchPriceButton from '@/components/FetchPriceButton';
 import Pagination from '@/components/Pagination';
-import { SortIcon } from '@/components/table/icons';
+import SortLinkIcon from '@/components/table/SortLinkIcon';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -133,24 +135,21 @@ export default async function PaymentsPage({
 
   return (
     <AppShell>
+      <PageHeader crumbs={['Payments']}>
+        <Button asChild size="sm" variant={mismatchOnly ? 'default' : 'outline'}>
+          <Link href={toggleHref} aria-pressed={mismatchOnly}>
+            {mismatchOnly ? 'Showing mismatches only' : 'Show mismatches only'}
+          </Link>
+        </Button>
+      </PageHeader>
       <div className="p-6 space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-0.5">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
               Payments <span className="text-sm font-normal text-muted">({total})</span>
             </h1>
-            <p className="text-sm text-muted">Payment records for accounts reconciliation.</p>
           </div>
-          <Link
-            href={toggleHref}
-            className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors duration-[120ms] ${
-              mismatchOnly
-                ? 'bg-primary text-white border-primary hover:bg-primary-deep'
-                : 'border-frame-input text-ink hover:bg-surface-hover'
-            }`}
-          >
-            {mismatchOnly ? 'Showing mismatches only' : 'Show mismatches only'}
-          </Link>
+          <p className="text-sm text-muted">Payment records for accounts reconciliation.</p>
         </div>
 
         {mismatchCount > 0 && (
@@ -166,7 +165,7 @@ export default async function PaymentsPage({
 
         <div className="bg-white rounded-xl shadow-card overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-surface border-b border-frame">
+            <thead className="bg-surface-strong border-b border-frame">
               <tr>
                 {['Shopify Order', 'Payment Method', 'Shopify Price', 'Payment Amount', 'Date', 'Customer', 'Framework Order No.'].map(h => {
                   const sortKey = SORTABLE_COLUMNS[h];
@@ -176,7 +175,7 @@ export default async function PaymentsPage({
                       {sortKey ? (
                         <Link href={sortHref(sortKey)} className="inline-flex items-center gap-1 hover:text-ink transition-colors duration-100">
                           {h}
-                          <SortIcon direction={direction} />
+                          <SortLinkIcon direction={direction} />
                         </Link>
                       ) : h}
                     </th>
@@ -184,7 +183,7 @@ export default async function PaymentsPage({
                 })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-frame">
+            <tbody>
               {visibleRows.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted">
@@ -193,7 +192,7 @@ export default async function PaymentsPage({
                 </tr>
               )}
               {visibleRows.map((r: any, idx: number) => (
-                <tr key={r.id} className={`${idx % 2 === 1 ? 'bg-surface/40' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}>
+                <tr key={r.id} className={`${idx % 2 === 1 ? 'bg-surface' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}>
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.shopifyOrderNo}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.paymentMethod}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.shopifyPrice ? `$${parseFloat(r.shopifyPrice).toFixed(2)}` : '—'}</td>
@@ -239,7 +238,7 @@ export default async function PaymentsPage({
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.date ? new Date(r.date).toLocaleDateString() : '—'}</td>
+                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.date ? new Date(r.date).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }) : '—'}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.customerName}</td>
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.frameworksOrderNo}</td>
                 </tr>

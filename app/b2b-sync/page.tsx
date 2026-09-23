@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AppShell from '@/components/AppShell';
+import PageHeader from '@/components/PageHeader';
 import B2BSyncTable from '@/components/B2BSyncTable';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -27,7 +28,7 @@ async function getStatus(cookieHeader: string): Promise<{ latest: Entry | null; 
 function formatDate(iso?: string) {
   if (!iso) return '—';
   const d = new Date(iso);
-  return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+  return `${d.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' })} ${d.toLocaleTimeString('en-AU', { timeZone: 'Australia/Sydney' })}`;
 }
 
 export default async function B2BSyncPage() {
@@ -50,9 +51,12 @@ export default async function B2BSyncPage() {
 
   return (
     <AppShell>
+      <PageHeader crumbs={['B2B Price Sync']} />
       <div className="p-6 space-y-6">
         <div className="space-y-0.5">
-          <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">B2B Price Sync</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">B2B Price Sync</h1>
+          </div>
           <p className="text-sm text-muted">Catsy trade prices pushed into Shopify's B2B price list, every 12 hours.</p>
         </div>
 

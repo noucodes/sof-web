@@ -1,6 +1,11 @@
 'use client';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const STORES = ['burdens', 'bathroomhq', 'plumbershq', 'aspire'];
 const FINANCIAL_STATUSES = ['any', 'paid', 'pending', 'refunded'];
@@ -48,19 +53,15 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  const inputClass = 'border-[1.5px] border-frame-input rounded-lg px-3 py-[9px] text-sm text-ink bg-white focus:outline-none focus:border-primary focus:shadow-focus-ring transition-[border-color,box-shadow] duration-[120ms]';
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-frame">
           <p className="text-[0.9375rem] font-semibold text-ink">Manual sync</p>
-          <button onClick={onClose} className="text-muted hover:text-ink transition-colors p-1 rounded-lg hover:bg-surface-hover">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted" onClick={onClose} aria-label="Close">
+            <X className="!size-5" />
+          </Button>
         </div>
 
         <div className="p-5 space-y-4">
@@ -69,17 +70,16 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
             <p className="text-xs font-medium text-ink">Stores</p>
             <div className="flex gap-2 flex-wrap">
               {STORES.map(s => (
-                <button
+                <Button
                   key={s}
+                  size="sm"
+                  variant="outline"
+                  aria-pressed={stores.includes(s)}
                   onClick={() => toggleStore(s)}
-                  className={`px-3 py-1.5 rounded-lg text-sm border transition-colors duration-[120ms] ${
-                    stores.includes(s)
-                      ? 'bg-primary-wash text-primary border-primary/20 font-medium'
-                      : 'border-frame-input text-muted hover:text-ink'
-                  }`}
+                  className={stores.includes(s) ? 'border-primary bg-primary-wash text-primary hover:bg-primary-wash' : 'text-muted hover:text-ink'}
                 >
                   {s.charAt(0).toUpperCase() + s.slice(1)}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -87,30 +87,37 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
           {/* Date range */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-ink">Start date</label>
-              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={inputClass} />
+              <label htmlFor="sync-start" className="text-xs font-medium text-ink">Start date</label>
+              <Input id="sync-start" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-ink">End date</label>
-              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={inputClass} />
+              <label htmlFor="sync-end" className="text-xs font-medium text-ink">End date</label>
+              <Input id="sync-end" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
             </div>
           </div>
 
           {/* Financial status */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-ink">Financial status</label>
-            <select value={financialStatus} onChange={e => setFinancialStatus(e.target.value)} className={`${inputClass} w-full`}>
-              {FINANCIAL_STATUSES.map(s => (
-                <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-              ))}
-            </select>
+            <label htmlFor="sync-financial" className="text-xs font-medium text-ink">Financial status</label>
+            <Select value={financialStatus} onValueChange={setFinancialStatus}>
+              <SelectTrigger id="sync-financial">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FINANCIAL_STATUSES.map(s => (
+                  <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Dry run */}
-          <label className="flex items-center gap-2.5 cursor-pointer">
-            <input type="checkbox" checked={dryRun} onChange={e => setDryRun(e.target.checked)} className="rounded border-frame-input" />
-            <span className="text-sm text-ink">Dry run <span className="text-muted">(preview only, no enqueue)</span></span>
-          </label>
+          <div className="flex items-center gap-2.5">
+            <Checkbox id="sync-dry-run" checked={dryRun} onCheckedChange={c => setDryRun(c === true)} />
+            <label htmlFor="sync-dry-run" className="cursor-pointer text-sm text-ink">
+              Dry run <span className="text-muted">(preview only, no enqueue)</span>
+            </label>
+          </div>
 
           {/* Result */}
           {result && (
@@ -121,16 +128,12 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="px-5 pb-5 flex gap-2 justify-end">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-muted hover:text-ink border border-frame-input rounded-lg hover:bg-surface-hover transition-colors duration-[120ms]">
+          <Button variant="outline" onClick={onClose}>
             Cancel
-          </button>
-          <button
-            onClick={handleSync}
-            disabled={loading || !stores.length}
-            className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-deep disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
-          >
+          </Button>
+          <Button onClick={handleSync} disabled={loading || !stores.length}>
             {loading ? 'Syncing…' : dryRun ? 'Preview' : 'Sync'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

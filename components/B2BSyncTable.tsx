@@ -19,7 +19,7 @@ type Entry = {
 function formatDate(iso?: string) {
   if (!iso) return '—';
   const d = new Date(iso);
-  return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+  return `${d.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' })} ${d.toLocaleTimeString('en-AU', { timeZone: 'Australia/Sydney' })}`;
 }
 
 const COLUMNS = [
@@ -38,7 +38,7 @@ export default function B2BSyncTable({ history }: { history: Entry[] }) {
 
   return (
     <table className="w-full text-sm">
-      <thead className="bg-surface border-b border-frame">
+      <thead className="bg-surface-strong border-b border-frame">
         <tr>
           {COLUMNS.map(col => (
             <SortableTh
@@ -50,14 +50,14 @@ export default function B2BSyncTable({ history }: { history: Entry[] }) {
           ))}
         </tr>
       </thead>
-      <tbody className="divide-y divide-frame">
+      <tbody>
         {sorted.length === 0 && (
           <tr>
             <td colSpan={COLUMNS.length} className="px-4 py-10 text-center text-sm text-muted">No runs recorded yet</td>
           </tr>
         )}
         {sorted.map((h, i) => (
-          <tr key={i} className={`${i % 2 === 1 ? 'bg-surface/40' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}>
+          <tr key={i} className={`${i % 2 === 1 ? 'bg-surface' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}>
             <td className="px-4 py-3">
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.6875rem] font-medium uppercase tracking-[0.05em] ${STATUS_COLORS[h.status] ?? 'bg-surface text-muted'}`}>
                 {h.status}

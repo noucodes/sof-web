@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function VerifyAllButton() {
   const router = useRouter();
@@ -24,13 +26,15 @@ export default function VerifyAllButton() {
   }
 
   return (
-    <button
+    <Button
+      variant="outline"
+      size="sm"
       onClick={verifyAll}
       disabled={loading}
       title="Re-check every order still missing a contribution figure against Frameworks"
-      className="shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium border border-frame-input text-ink hover:bg-surface-hover disabled:opacity-50 transition-colors duration-[120ms]"
     >
+      {loading ? <Loader2 className="animate-spin" /> : <RefreshCw />}
       {loading ? 'Verifying…' : 'Verify all'}
-    </button>
+    </Button>
   );
 }

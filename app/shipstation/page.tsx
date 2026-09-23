@@ -1,7 +1,9 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import AppShell from '@/components/AppShell';
+import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/Pagination';
 import RetryFailedReleasesButton from '@/components/RetryFailedReleasesButton';
 import ShipStationTable from '@/components/ShipStationTable';
@@ -35,30 +37,33 @@ export default async function ShipStationPage({
 
   return (
     <AppShell>
+      <PageHeader crumbs={['ShipStation']}>
+        <RetryFailedReleasesButton />
+        {STATUSES.map(s => {
+          const active = (params.status ?? 'all') === s;
+          return (
+            <Button
+              key={s}
+              asChild
+              size="sm"
+              variant="outline"
+              className={active ? 'border-primary bg-primary-wash text-primary hover:bg-primary-wash' : 'text-muted hover:text-ink'}
+            >
+              <Link href={`/shipstation?status=${s}`} aria-current={active ? 'page' : undefined}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </Link>
+            </Button>
+          );
+        })}
+      </PageHeader>
       <div className="p-6 space-y-4">
-        <div className="flex items-start justify-between">
-          <div className="space-y-0.5">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
               ShipStation Jobs <span className="text-sm font-normal text-muted">({total})</span>
             </h1>
-            <p className="text-sm text-muted">Label print jobs received from ShipStation and linked to Frameworks orders.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <RetryFailedReleasesButton />
-            {STATUSES.map(s => (
-              <Link
-                key={s}
-                href={`/shipstation?status=${s}`}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors duration-[120ms] border ${
-                  (params.status ?? 'all') === s
-                    ? 'bg-primary-wash text-primary border-primary/20 font-medium'
-                    : 'border-frame-input text-muted hover:text-ink hover:bg-surface-hover'
-                }`}
-              >
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </Link>
-            ))}
-          </div>
+          <p className="text-sm text-muted">Label print jobs received from ShipStation and linked to Frameworks orders.</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-card overflow-hidden">

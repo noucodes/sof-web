@@ -2,10 +2,12 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import AppShell from '@/components/AppShell';
+import PageHeader from '@/components/PageHeader';
 import ContributionFilters from '@/components/ContributionFilters';
 import ContributionTable from '@/components/ContributionTable';
 import Pagination from '@/components/Pagination';
 import VerifyAllButton from '@/components/VerifyAllButton';
+import ExportMenu from '@/components/ExportMenu';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const PAGE_SIZE = 50;
@@ -59,32 +61,20 @@ export default async function ContributionPage({
 
   return (
     <AppShell>
+      <PageHeader crumbs={['Contribution']}>
+        <VerifyAllButton />
+        <ExportMenu query={exportQs.toString()} />
+      </PageHeader>
       <div className="p-6 space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-0.5">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
               Contribution <span className="text-sm font-normal text-muted">({total})</span>
             </h1>
-            <p className="text-sm text-muted">
-              Net sales (ex GST, incl. shipping charged) − COGS − freight (ShipStation label cost) − payment fees (1.8%).
-            </p>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <VerifyAllButton />
-            {[
-              ['CSV', 'csv'],
-              ['JSON', 'json'],
-            ].map(([label, format]) => (
-              // Plain <a>, not <Link>: a download endpoint must not be hover-prefetched.
-              <a
-                key={format}
-                href={`/api/orders/contribution/export?${exportQs.toString()}&format=${format}`}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium border border-frame-input text-ink hover:bg-surface-hover transition-colors duration-[120ms]"
-              >
-                Export {label}
-              </a>
-            ))}
-          </div>
+          <p className="text-sm text-muted">
+            Net sales (ex GST, incl. shipping charged) − COGS − freight (ShipStation label cost) − payment fees (1.8%).
+          </p>
         </div>
 
         <Suspense>

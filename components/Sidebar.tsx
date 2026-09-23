@@ -1,128 +1,86 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  CreditCard,
+  HandCoins,
+  Boxes,
+  Ship,
+  ArrowLeftRight,
+  Users,
+} from 'lucide-react';
+import NavUser from '@/components/NavUser';
+import {
+  Sidebar as SidebarPrimitive,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from '@/components/ui/sidebar';
 
 const NAV = [
-  {
-    href: '/dashboard',
-    label: 'Dashboard',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-      </svg>
-    ),
-  },
-  {
-    href: '/orders',
-    label: 'Orders',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-      </svg>
-    ),
-  },
-  {
-    href: '/payments',
-    label: 'Payments',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/contribution',
-    label: 'Contribution',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M7 15l4-4 3 3 5-6" />
-      </svg>
-    ),
-  },
-  {
-    href: '/inventory',
-    label: 'Inventory',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-      </svg>
-    ),
-  },
-  {
-    href: '/shipstation',
-    label: 'ShipStation',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-      </svg>
-    ),
-  },
-  {
-    href: '/b2b-sync',
-    label: 'B2B Price Sync',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 8a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4zM7 16h10M7 16a2 2 0 100 4 2 2 0 000-4zm10 0a2 2 0 100 4 2 2 0 000-4z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/admin/users',
-    label: 'Users',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
-    ),
-  },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/payments', label: 'Payments', icon: CreditCard },
+  { href: '/contribution', label: 'Contribution', icon: HandCoins },
+  { href: '/inventory', label: 'Inventory', icon: Boxes },
+  { href: '/shipstation', label: 'ShipStation', icon: Ship },
+  { href: '/b2b-sync', label: 'B2B Price Sync', icon: ArrowLeftRight },
+  { href: '/admin/users', label: 'Users', icon: Users },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-56 shrink-0 h-screen sticky top-0 bg-white border-r border-frame flex flex-col">
-      <div className="h-14 flex items-center px-4 border-b border-frame gap-2.5">
+    <SidebarPrimitive collapsible="icon" className="border-frame">
+      <SidebarHeader className="h-14 flex-row items-center border-b border-frame px-4 gap-2.5 group-data-[collapsible=icon]:!px-2.5">
         <img src="/favicon.png" alt="Burdens" className="h-7 w-7 object-contain shrink-0" />
-        <div className="flex flex-col leading-tight">
+        <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
           <span className="text-[0.9375rem] font-semibold text-ink tracking-tight">Burdens</span>
           <span className="text-[0.6rem] font-medium text-muted uppercase tracking-[0.1em]">Integrations</span>
         </div>
-      </div>
+      </SidebarHeader>
 
-      <nav className="flex-1 p-3 space-y-0.5">
-        {NAV.map(({ href, label, icon }) => {
-          const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors duration-[120ms] ${
-                active
-                  ? 'bg-primary-wash text-primary font-medium'
-                  : 'text-muted hover:text-ink hover:bg-surface-hover'
-              }`}
-            >
-              {icon}
-              {label}
-            </Link>
-          );
-        })}
-      </nav>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {NAV.map(({ href, label, icon: Icon }) => {
+                const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
+                return (
+                  <SidebarMenuItem key={href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      tooltip={label}
+                      className="data-[active=true]:bg-primary-wash data-[active=true]:text-primary"
+                    >
+                      <Link href={href}>
+                        <Icon />
+                        <span>{label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
 
-      <div className="p-3 border-t border-frame">
-        <form action="/api/logout" method="POST">
-          <button
-            type="submit"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-muted hover:text-ink hover:bg-surface-hover transition-colors duration-[120ms] w-full"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign out
-          </button>
-        </form>
-      </div>
-    </aside>
+      <SidebarFooter className="border-t border-frame">
+        <NavUser />
+      </SidebarFooter>
+
+      <SidebarRail />
+    </SidebarPrimitive>
   );
 }

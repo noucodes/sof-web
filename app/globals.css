@@ -12,6 +12,7 @@
   --color-bg:           oklch(1.000 0.000 0);
   --color-surface:      oklch(0.972 0.006 252);
   --color-surface-hover:oklch(0.952 0.012 252);
+  --color-surface-strong:oklch(0.925 0.014 252);
   --color-border:       oklch(0.860 0.008 252);
   --color-border-input: oklch(0.620 0.018 252);
   --color-muted:        oklch(0.440 0.018 252);

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 export default function FetchPriceButton({ orderId, hasError }: { orderId: string | number; hasError: boolean }) {
   const router = useRouter();
@@ -31,13 +32,14 @@ export default function FetchPriceButton({ orderId, hasError }: { orderId: strin
   }
 
   return (
-    <button
+    <Button
+      variant="link"
       onClick={fetchPrice}
       disabled={loading}
       title={hasError ? 'Last verification failed — retry' : 'Verify against Frameworks'}
-      className="text-[0.6875rem] font-medium text-primary hover:text-primary-deep disabled:opacity-50 transition-colors duration-[120ms]"
+      className="h-auto p-0 text-[0.6875rem]"
     >
       {loading ? 'Verifying…' : hasError ? 'Retry' : 'Verify'}
-    </button>
+    </Button>
   );
 }

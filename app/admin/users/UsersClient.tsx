@@ -2,6 +2,9 @@
 import { useState } from 'react';
 import { useClientSort } from '@/components/table/useClientSort';
 import SortableTh from '@/components/table/SortableTh';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type User = { id: number; email: string; role: string; isActive: boolean; createdAt: string };
 
@@ -15,9 +18,6 @@ const COLUMNS = [
 ];
 
 const GETTERS = Object.fromEntries(COLUMNS.map(c => [c.key, c.getValue]));
-
-const inputClass =
-  'border-[1.5px] border-frame-input rounded-lg px-3 py-[9px] text-sm text-ink bg-white focus:outline-none focus:border-primary focus:shadow-focus-ring transition-[border-color,box-shadow] duration-[120ms]';
 
 export default function UsersClient({ initialUsers }: { initialUsers: User[] }) {
   const [users, setUsers] = useState<User[]>(initialUsers);
@@ -68,50 +68,49 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
         <h2 className="text-[0.9375rem] font-semibold text-ink tracking-tight mb-5">Add user</h2>
         <form onSubmit={createUser} className="flex gap-3 flex-wrap items-end">
           <div className="flex flex-col gap-[5px]">
-            <label className="text-xs font-medium text-ink">Email</label>
-            <input
+            <label htmlFor="new-user-email" className="text-xs font-medium text-ink">Email</label>
+            <Input
+              id="new-user-email"
               type="email"
               required
               value={form.email}
               placeholder="name@burdens.com.au"
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              className={`${inputClass} w-60`}
+              className="w-60"
             />
           </div>
 
           <div className="flex flex-col gap-[5px]">
-            <label className="text-xs font-medium text-ink">Password</label>
-            <input
+            <label htmlFor="new-user-password" className="text-xs font-medium text-ink">Password</label>
+            <Input
+              id="new-user-password"
               type="password"
               required
               minLength={8}
               value={form.password}
               placeholder="Min. 8 characters"
               onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-              className={`${inputClass} w-44`}
+              className="w-44"
             />
           </div>
 
           <div className="flex flex-col gap-[5px]">
-            <label className="text-xs font-medium text-ink">Role</label>
-            <select
-              value={form.role}
-              onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-              className={inputClass}
-            >
-              {ROLES.map(r => (
-                <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
-              ))}
-            </select>
+            <label htmlFor="new-user-role" className="text-xs font-medium text-ink">Role</label>
+            <Select value={form.role} onValueChange={v => setForm(f => ({ ...f, role: v }))}>
+              <SelectTrigger id="new-user-role" className="w-32">
+                <SelectValue>{form.role.charAt(0).toUpperCase() + form.role.slice(1)}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {ROLES.map(r => (
+                  <SelectItem key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <button
-            type="submit"
-            disabled={creating}
-            className="bg-primary text-white rounded-lg px-5 py-[9px] text-sm font-medium hover:bg-primary-deep disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
-          >
+          <Button type="submit" disabled={creating}>
             {creating ? 'Adding…' : 'Add user'}
-          </button>
+          </Button>
 
           {error && (
             <p className="text-sm text-failed w-full" role="alert">{error}</p>
@@ -122,7 +121,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
       {/* Users table */}
       <div className="bg-white rounded-xl shadow-card overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-surface border-b border-frame">
+          <thead className="bg-surface-strong border-b border-frame">
             <tr>
               {COLUMNS.map(col => (
                 <SortableTh
@@ -135,7 +134,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
               <th className="text-left px-4 py-[10px] text-xs font-medium text-muted" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-frame">
+          <tbody>
             {users.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-10 text-center text-sm text-muted">
@@ -146,19 +145,20 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
             {sorted.map((u, idx) => (
               <tr
                 key={u.id}
-                className={`${idx % 2 === 1 ? 'bg-surface/40' : 'bg-white'} transition-colors duration-100 hover:bg-surface-hover${u.isActive ? '' : ' opacity-50'}`}
+                className={`${idx % 2 === 1 ? 'bg-surface' : 'bg-white'} transition-colors duration-100 hover:bg-surface-hover${u.isActive ? '' : ' opacity-50'}`}
               >
                 <td className="px-4 py-3 text-sm text-ink">{u.email}</td>
                 <td className="px-4 py-3">
-                  <select
-                    value={u.role}
-                    onChange={e => updateUser(u.id, { role: e.target.value })}
-                    className="border border-frame-input rounded-md px-2 py-1 text-xs text-ink bg-white focus:outline-none focus:border-primary focus:shadow-focus-ring transition-[border-color,box-shadow] duration-[120ms]"
-                  >
-                    {ROLES.map(r => (
-                      <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
-                    ))}
-                  </select>
+                  <Select value={u.role} onValueChange={v => updateUser(u.id, { role: v })}>
+                    <SelectTrigger aria-label={`Role for ${u.email}`} className="h-8 w-28 border text-xs">
+                      <SelectValue>{u.role.charAt(0).toUpperCase() + u.role.slice(1)}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ROLES.map(r => (
+                        <SelectItem key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </td>
                 <td className="px-4 py-3">
                   <span
@@ -170,15 +170,12 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
                   </span>
                 </td>
                 <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">
-                  {new Date(u.createdAt).toLocaleDateString()}
+                  {new Date(u.createdAt).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' })}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => updateUser(u.id, { isActive: !u.isActive })}
-                    className="text-xs font-medium text-primary hover:text-primary-deep transition-colors duration-[120ms] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded"
-                  >
+                  <Button variant="link" className="h-auto p-0 text-xs" onClick={() => updateUser(u.id, { isActive: !u.isActive })}>
                     {u.isActive ? 'Deactivate' : 'Activate'}
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}

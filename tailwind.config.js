@@ -12,6 +12,7 @@ module.exports = {
         'primary-wash':'var(--color-primary-wash)',
         surface:       'var(--color-surface)',
         'surface-hover':'var(--color-surface-hover)',
+        'surface-strong':'var(--color-surface-strong)',
         frame:         'var(--color-border)',
         'frame-input': 'var(--color-border-input)',
         muted:         'var(--color-muted)',
@@ -31,6 +32,16 @@ module.exports = {
         destructive: {
           DEFAULT:    'var(--color-failed)',
           foreground: 'oklch(1 0 0)',
+        },
+        sidebar: {
+          DEFAULT:            'var(--color-bg)',
+          foreground:         'var(--color-ink)',
+          primary:            'var(--color-primary)',
+          'primary-foreground':'oklch(1 0 0)',
+          accent:             'var(--color-surface-hover)',
+          'accent-foreground':'var(--color-ink)',
+          border:             'var(--color-border)',
+          ring:               'var(--color-primary)',
         },
       },
       fontFamily: {

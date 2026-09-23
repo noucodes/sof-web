@@ -1,4 +1,5 @@
 import AppShell from '@/components/AppShell';
+import PageHeader from '@/components/PageHeader';
 
 const FEATURES = [
   {
@@ -31,6 +32,7 @@ const FEATURES = [
 export default function InventoryPage() {
   return (
     <AppShell>
+      <PageHeader crumbs={['Inventory']} />
       <div className="p-6 space-y-8 max-w-2xl">
 
         {/* Header */}

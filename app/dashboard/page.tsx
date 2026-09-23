@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AppShell from '@/components/AppShell';
+import PageHeader from '@/components/PageHeader';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -31,14 +32,17 @@ export default async function DashboardPage() {
     { label: 'Pending orders', value: metrics.pendingOrders, sub: metrics.oldestPendingAge ? `Oldest: ${metrics.oldestPendingAge}` : null, color: 'text-pending' },
     { label: 'Failed orders', value: metrics.failedOrders, sub: null, color: 'text-failed' },
     { label: 'Bridge', value: metrics.bridge === 'healthy' ? 'Healthy' : 'Down', sub: null, color: metrics.bridge === 'healthy' ? 'text-success' : 'text-failed' },
-    { label: 'Last sync', value: metrics.lastSync ? new Date(metrics.lastSync).toLocaleTimeString() : '—', sub: metrics.lastSync ? new Date(metrics.lastSync).toLocaleDateString() : null, color: 'text-ink' },
+    { label: 'Last sync', value: metrics.lastSync ? new Date(metrics.lastSync).toLocaleTimeString('en-AU', { timeZone: 'Australia/Sydney' }) : '—', sub: metrics.lastSync ? new Date(metrics.lastSync).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }) : null, color: 'text-ink' },
   ];
 
   return (
     <AppShell>
+      <PageHeader crumbs={['Dashboard']} />
       <div className="p-6 space-y-6">
         <div className="space-y-0.5">
-          <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Dashboard</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Dashboard</h1>
+          </div>
           <p className="text-sm text-muted">Live overview of order processing, bridge health, and recent activity.</p>
         </div>
 
@@ -58,18 +62,18 @@ export default async function DashboardPage() {
           <div className="px-5 py-4 border-b border-frame">
             <h2 className="text-sm font-semibold text-ink">Recent activity</h2>
           </div>
-          <ul className="divide-y divide-frame">
+          <ul>
             {activity.length === 0 && (
               <li className="px-5 py-8 text-center text-sm text-muted">No recent activity</li>
             )}
             {activity.map((a: any) => (
-              <li key={a.id} className="flex items-start gap-3 px-5 py-3">
+              <li key={a.id} className="flex items-start gap-3 px-5 py-3 even:bg-surface">
                 <span className={`mt-0.5 text-xs font-medium uppercase tracking-wide ${ACTIVITY_COLORS[a.type] ?? 'text-muted'}`}>
                   {a.type}
                 </span>
                 <span className="text-sm text-ink flex-1">{a.message}</span>
                 <span className="text-xs text-muted whitespace-nowrap">
-                  {new Date(a.createdAt).toLocaleTimeString()}
+                  {new Date(a.createdAt).toLocaleTimeString('en-AU', { timeZone: 'Australia/Sydney' })}
                 </span>
               </li>
             ))}
