@@ -30,7 +30,7 @@ function money(n: number | string | null) {
   return n != null ? `$${parseFloat(String(n)).toFixed(2)}` : '—';
 }
 
-// GP% = ((net sales − COGS) / net sales) * 100. Sell price is net sales (ex GST, ex freight).
+// GP% = ((net sales − COGS) / net sales) * 100. Sell price is net sales (ex GST, incl. shipping charged).
 const GP_ALERT_THRESHOLD = 10;
 function gpPct(netSales: number | string | null, cogs: number | string | null): number | null {
   const s = netSales != null ? parseFloat(String(netSales)) : NaN;
@@ -66,7 +66,7 @@ export default async function ContributionPage({
               Contribution <span className="text-sm font-normal text-muted">({total})</span>
             </h1>
             <p className="text-sm text-muted">
-              Net sales (ex GST) − COGS − freight − payment fees (1.8%), per order from Frameworks.
+              Net sales (ex GST, incl. shipping charged) − COGS − freight (ShipStation label cost) − payment fees (1.8%).
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
