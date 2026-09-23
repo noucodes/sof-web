@@ -26,7 +26,7 @@ const COLUMNS = [
   { key: 'created', label: 'Created' },
 ];
 
-function JsonView({ data }: { data: any }) {
+export function JsonView({ data }: { data: any }) {
   const [copied, setCopied] = useState(false);
   if (data == null) return <p className="text-sm text-muted italic">No data</p>;
 
