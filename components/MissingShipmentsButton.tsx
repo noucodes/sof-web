@@ -179,7 +179,7 @@ function MissingShipmentsDialog({ onClose }: { onClose: () => void }) {
                   {fixed.queued} shipment{fixed.queued === 1 ? '' : 's'} queued for release
                 </p>
                 <p className="text-xs text-muted">
-                  sof-main picks them up within about a minute and releases each order in Frameworks. Follow them on the ShipStation page.
+                  sof-main picks them up within about a minute and releases each order in Frameworks. They appear in this list as they’re picked up.
                   {fixed.unmatched > 0 && ` ${fixed.unmatched} could not be matched to a synced order here and may fail; the job will show why.`}
                   {fixed.skippedVoided > 0 && ` ${fixed.skippedVoided} voided label${fixed.skippedVoided === 1 ? ' was' : 's were'} skipped.`}
                 </p>

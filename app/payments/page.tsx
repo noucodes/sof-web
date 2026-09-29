@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -5,18 +6,19 @@ import { Button } from '@/components/ui/button';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import FetchPriceButton from '@/components/FetchPriceButton';
-import MissingShipmentsButton from '@/components/MissingShipmentsButton';
 import Pagination from '@/components/Pagination';
 import SortLinkIcon from '@/components/table/SortLinkIcon';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
+import { TableSkeleton } from '@/components/PageLoading';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const PAGE_SIZE = 50;
 
 // Columns backed by base order fields sof-api can sort across the whole
 // dataset (see ORDER_SORT_GETTERS in orders.service.ts). Payment
-// method/amount live in the per-order detail fetch below, not the list
-// endpoint, so they stay display-only for now.
+// method/amount come from payment_payload, which sof-api doesn't sort on,
+// so they stay display-only.
 const SORTABLE_COLUMNS: Record<string, string> = {
   'Shopify Order': 'order',
   'Shopify Price': 'total',
@@ -45,9 +47,52 @@ export default async function PaymentsPage({
 }: {
   searchParams: Promise<Record<string, string>>;
 }) {
+  const params = await searchParams;
+  const mismatchOnly = params.mismatch === '1';
+  const toggleHrefParams = new URLSearchParams(params);
+  toggleHrefParams.set('page', '1');
+  if (mismatchOnly) toggleHrefParams.delete('mismatch');
+  else toggleHrefParams.set('mismatch', '1');
+  const toggleHref = `/payments?${toggleHrefParams.toString()}`;
+
+  // Filter/sort/page changes stay on this route, so loading.tsx doesn't show for
+  // them. Keying the Suspense boundary on the query gives each change a fresh
+  // boundary: header and toggle update at once, the table shows a skeleton.
+  return (
+    <AppShell>
+      <PageHeader crumbs={['Payments']}>
+        <Button asChild size="sm" variant={mismatchOnly ? 'default' : 'outline'}>
+          <Link href={toggleHref} aria-pressed={mismatchOnly}>
+            {mismatchOnly ? 'Showing mismatches only' : 'Show mismatches only'}
+          </Link>
+        </Button>
+      </PageHeader>
+      <div className="p-6 space-y-4">
+        <Suspense key={new URLSearchParams(params).toString()} fallback={<PaymentsSkeleton />}>
+          <PaymentsContent params={params} />
+        </Suspense>
+      </div>
+    </AppShell>
+  );
+}
+
+function PaymentsSkeleton() {
+  return (
+    <>
+      <div className="space-y-0.5">
+        <h1 className="flex items-center gap-2 text-[0.9375rem] font-semibold text-ink tracking-tight">
+          Payments <Skeleton className="h-3.5 w-10" />
+        </h1>
+        <p className="text-sm text-muted">Loading payments…</p>
+      </div>
+      <TableSkeleton columns={7} />
+    </>
+  );
+}
+
+async function PaymentsContent({ params }: { params: Record<string, string> }) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
-  const params = await searchParams;
   const page = Number(params.page ?? 1);
   const mismatchOnly = params.mismatch === '1';
   const { orders, total } = await getOrders(cookieHeader, params);
@@ -117,23 +162,9 @@ export default async function PaymentsPage({
   // is the real count, not just what's on this page.
   const mismatchCount = mismatchOnly ? total : rows.filter((r: any) => r.priceMismatch).length;
   const visibleRows = rows;
-  const toggleHrefParams = new URLSearchParams(params);
-  toggleHrefParams.set('page', '1');
-  if (mismatchOnly) toggleHrefParams.delete('mismatch');
-  else toggleHrefParams.set('mismatch', '1');
-  const toggleHref = `/payments?${toggleHrefParams.toString()}`;
 
   return (
-    <AppShell>
-      <PageHeader crumbs={['Payments']}>
-        <MissingShipmentsButton />
-        <Button asChild size="sm" variant={mismatchOnly ? 'default' : 'outline'}>
-          <Link href={toggleHref} aria-pressed={mismatchOnly}>
-            {mismatchOnly ? 'Showing mismatches only' : 'Show mismatches only'}
-          </Link>
-        </Button>
-      </PageHeader>
-      <div className="p-6 space-y-4">
+    <>
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
@@ -244,7 +275,6 @@ export default async function PaymentsPage({
             <Pagination page={page} totalPages={totalPages} params={params} basePath="/payments" />
           </div>
         )}
-      </div>
-    </AppShell>
+    </>
   );
 }

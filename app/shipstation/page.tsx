@@ -6,6 +6,7 @@ import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/Pagination';
 import RetryFailedReleasesButton from '@/components/RetryFailedReleasesButton';
+import MissingShipmentsButton from '@/components/MissingShipmentsButton';
 import ShipStationTable from '@/components/ShipStationTable';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -38,6 +39,7 @@ export default async function ShipStationPage({
   return (
     <AppShell>
       <PageHeader crumbs={['ShipStation']}>
+        <MissingShipmentsButton />
         <RetryFailedReleasesButton />
         {STATUSES.map(s => {
           const active = (params.status ?? 'all') === s;
