@@ -24,7 +24,9 @@ const STATUS_LABELS: Record<string, string> = {
   failed: 'Failed',
 };
 
-export default function ContributionFilters() {
+// Store + order-date filters in the URL. Also used by the Payments page
+// (basePath="/payments", no status filter).
+export default function ContributionFilters({ basePath = '/contribution', showStatus = true }: { basePath?: string; showStatus?: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -35,12 +37,12 @@ export default function ContributionFilters() {
       else next.delete(key);
     }
     next.set('page', '1');
-    router.push(`/contribution?${next.toString()}`);
-  }, [params, router]);
+    router.push(`${basePath}?${next.toString()}`);
+  }, [params, router, basePath]);
 
   return (
     <div className="flex gap-3 flex-wrap items-center">
-      <Select defaultValue={params.get('status') ?? 'success'} onValueChange={v => update({ status: v })}>
+      {showStatus && <Select defaultValue={params.get('status') ?? 'success'} onValueChange={v => update({ status: v })}>
         <SelectTrigger aria-label="Status" className="w-40">
           <SelectValue>{STATUS_LABELS[params.get('status') ?? 'success']}</SelectValue>
         </SelectTrigger>
@@ -49,7 +51,7 @@ export default function ContributionFilters() {
             <SelectItem key={value} value={value}>{label}</SelectItem>
           ))}
         </SelectContent>
-      </Select>
+      </Select>}
 
       <Select defaultValue={params.get('store') ?? 'all'} onValueChange={v => update({ store: v })}>
         <SelectTrigger aria-label="Store" className="w-40">

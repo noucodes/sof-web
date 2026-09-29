@@ -11,6 +11,9 @@ import SortLinkIcon from '@/components/table/SortLinkIcon';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TableSkeleton } from '@/components/PageLoading';
+import AsyncCount from '@/components/AsyncCount';
+import ContributionFilters from '@/components/ContributionFilters';
+import { Download } from 'lucide-react';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const PAGE_SIZE = 50;
@@ -31,6 +34,7 @@ async function getOrders(cookieHeader: string, params: Record<string, string>) {
   if (params.mismatch === '1') qs.set('mismatch', '1');
   if (params.sortBy) qs.set('sortBy', params.sortBy);
   if (params.sortDir) qs.set('sortDir', params.sortDir);
+  for (const key of ['store', 'from', 'to']) if (params[key] && params[key] !== 'all') qs.set(key, params[key]);
   const res = await fetch(`${API}/orders?${qs}`, { headers: { cookie: cookieHeader }, cache: 'no-store' });
   if (res.status === 401) redirect('/login');
   if (!res.ok) throw new Error('Failed to load orders');
@@ -55,12 +59,29 @@ export default async function PaymentsPage({
   else toggleHrefParams.set('mismatch', '1');
   const toggleHref = `/payments?${toggleHrefParams.toString()}`;
 
-  // Filter/sort/page changes stay on this route, so loading.tsx doesn't show for
-  // them. Keying the Suspense boundary on the query gives each change a fresh
-  // boundary: header and toggle update at once, the table shows a skeleton.
+  // CSV of everything matching the current filters (not just this page).
+  const exportParams = new URLSearchParams();
+  for (const key of ['store', 'from', 'to']) if (params[key] && params[key] !== 'all') exportParams.set(key, params[key]);
+  if (mismatchOnly) exportParams.set('mismatch', '1');
+
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
+  // Started here, awaited inside the keyed Suspense boundaries below: filter/sort/page
+  // changes stay on this route (loading.tsx doesn't show), so the title and filters
+  // stay put while the count and table show skeletons.
+  const data = getOrders(cookieHeader, params);
+  const key = new URLSearchParams(params).toString();
+
   return (
     <AppShell>
       <PageHeader crumbs={['Payments']}>
+        <Button asChild size="sm" variant="outline">
+          {/* Plain <a>, not <Link>: a download endpoint must not be prefetched. */}
+          <a href={`/api/orders/payments/export?${exportParams.toString()}`}>
+            <Download />
+            Download CSV
+          </a>
+        </Button>
         <Button asChild size="sm" variant={mismatchOnly ? 'default' : 'outline'}>
           <Link href={toggleHref} aria-pressed={mismatchOnly}>
             {mismatchOnly ? 'Showing mismatches only' : 'Show mismatches only'}
@@ -68,34 +89,32 @@ export default async function PaymentsPage({
         </Button>
       </PageHeader>
       <div className="p-6 space-y-4">
-        <Suspense key={new URLSearchParams(params).toString()} fallback={<PaymentsSkeleton />}>
-          <PaymentsContent params={params} />
+        <div className="space-y-0.5">
+          <h1 className="flex items-center gap-1 text-[0.9375rem] font-semibold text-ink tracking-tight">
+            Payments
+            <Suspense key={key} fallback={<Skeleton className="h-3.5 w-10" />}>
+              <AsyncCount data={data} />
+            </Suspense>
+          </h1>
+          <p className="text-sm text-muted">Payment records for accounts reconciliation. Dates filter on the order date.</p>
+        </div>
+
+        <Suspense>
+          <ContributionFilters basePath="/payments" showStatus={false} />
+        </Suspense>
+
+        <Suspense key={key} fallback={<TableSkeleton columns={8} />}>
+          <PaymentsContent data={data} params={params} />
         </Suspense>
       </div>
     </AppShell>
   );
 }
 
-function PaymentsSkeleton() {
-  return (
-    <>
-      <div className="space-y-0.5">
-        <h1 className="flex items-center gap-2 text-[0.9375rem] font-semibold text-ink tracking-tight">
-          Payments <Skeleton className="h-3.5 w-10" />
-        </h1>
-        <p className="text-sm text-muted">Loading payments…</p>
-      </div>
-      <TableSkeleton columns={7} />
-    </>
-  );
-}
-
-async function PaymentsContent({ params }: { params: Record<string, string> }) {
-  const cookieStore = await cookies();
-  const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
+async function PaymentsContent({ data, params }: { data: Promise<{ orders: any[]; total: number }>; params: Record<string, string> }) {
   const page = Number(params.page ?? 1);
   const mismatchOnly = params.mismatch === '1';
-  const { orders, total } = await getOrders(cookieHeader, params);
+  const { orders, total } = await data;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   function sortHref(key: string) {
@@ -141,6 +160,7 @@ async function PaymentsContent({ params }: { params: Record<string, string> }) {
       shopifyOrderNo: o.orderName,
       paymentMethod: titleCase(o.paymentMethod),
       paymentAmount,
+      paymentFee: o.paymentFee,
       shopifyPrice,
       frameworksPrice,
       frameworksPriceError: o.frameworksPriceError,
@@ -165,15 +185,6 @@ async function PaymentsContent({ params }: { params: Record<string, string> }) {
 
   return (
     <>
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
-            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
-              Payments <span className="text-sm font-normal text-muted">({total})</span>
-            </h1>
-          </div>
-          <p className="text-sm text-muted">Payment records for accounts reconciliation.</p>
-        </div>
-
         {mismatchCount > 0 && (
           <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-pending-bg text-pending text-sm">
             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -189,7 +200,7 @@ async function PaymentsContent({ params }: { params: Record<string, string> }) {
           <table className="w-full text-sm">
             <thead className="bg-surface-strong border-b border-frame">
               <tr>
-                {['Shopify Order', 'Payment Method', 'Shopify Price', 'Payment Amount', 'Date', 'Customer', 'Framework Order No.'].map(h => {
+                {['Shopify Order', 'Payment Method', 'Shopify Price', 'Payment Amount', 'Payment Fee', 'Date', 'Customer', 'Framework Order No.'].map(h => {
                   const sortKey = SORTABLE_COLUMNS[h];
                   const direction = sortKey && params.sortBy === sortKey ? (params.sortDir as 'asc' | 'desc') ?? 'asc' : null;
                   return (
@@ -208,7 +219,7 @@ async function PaymentsContent({ params }: { params: Record<string, string> }) {
             <tbody>
               {visibleRows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted">
+                  <td colSpan={8} className="px-4 py-10 text-center text-sm text-muted">
                     {mismatchOnly ? 'No mismatches on this page' : 'No payments found'}
                   </td>
                 </tr>
@@ -259,6 +270,16 @@ async function PaymentsContent({ params }: { params: Record<string, string> }) {
                         <FetchPriceButton orderId={r.id} hasError={!!r.frameworksPriceError || r.paymentMismatch} />
                       )}
                     </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm tabular-nums text-ink">
+                    {r.paymentFee != null ? (
+                      `$${parseFloat(r.paymentFee).toFixed(2)}`
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild><span className="text-muted">—</span></TooltipTrigger>
+                        <TooltipContent>Not worked out yet. It&apos;s calculated with contribution once Frameworks has the order&apos;s costs.</TooltipContent>
+                      </Tooltip>
+                    )}
                   </td>
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.date ? new Date(r.date).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }) : '—'}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.customerName}</td>
