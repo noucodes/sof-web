@@ -8,6 +8,10 @@ import Pagination from '@/components/Pagination';
 import RetryFailedReleasesButton from '@/components/RetryFailedReleasesButton';
 import MissingShipmentsButton from '@/components/MissingShipmentsButton';
 import ShipStationTable from '@/components/ShipStationTable';
+import AsyncCount from '@/components/AsyncCount';
+import { TableSkeleton } from '@/components/PageLoading';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Suspense } from 'react';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -32,9 +36,10 @@ export default async function ShipStationPage({
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
   const params = await searchParams;
-  const page = Number(params.page ?? 1);
-  const { jobs, total } = await getJobs(cookieHeader, params);
-  const totalPages = Math.ceil(total / 50);
+  // Started here, awaited inside the keyed Suspense boundaries below so status/page
+  // changes show skeletons (loading.tsx doesn't show for same-route navigations).
+  const data = getJobs(cookieHeader, params);
+  const key = new URLSearchParams(params).toString();
 
   return (
     <AppShell>
@@ -61,24 +66,47 @@ export default async function ShipStationPage({
       <div className="p-6 space-y-4">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
-            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
-              ShipStation Jobs <span className="text-sm font-normal text-muted">({total})</span>
+            <h1 className="flex items-center gap-1 text-[0.9375rem] font-semibold text-ink tracking-tight">
+              ShipStation Jobs
+              <Suspense key={key} fallback={<Skeleton className="h-3.5 w-10" />}>
+                <AsyncCount data={data} />
+              </Suspense>
             </h1>
           </div>
           <p className="text-sm text-muted">Label print jobs received from ShipStation and linked to Frameworks orders.</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-card overflow-hidden">
-          <ShipStationTable jobs={jobs} />
-        </div>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between text-sm text-muted">
-            <span>Page {page} of {totalPages}</span>
-            <Pagination page={page} totalPages={totalPages} params={params} basePath="/shipstation" />
-          </div>
-        )}
+        <Suspense key={key} fallback={<TableSkeleton columns={9} />}>
+          <ShipStationContent data={data} params={params} />
+        </Suspense>
       </div>
     </AppShell>
+  );
+}
+
+async function ShipStationContent({
+  data,
+  params,
+}: {
+  data: Promise<{ jobs: any[]; total: number }>;
+  params: Record<string, string>;
+}) {
+  const { jobs, total } = await data;
+  const page = Number(params.page ?? 1);
+  const totalPages = Math.ceil(total / 50);
+
+  return (
+    <>
+      <div className="bg-white rounded-xl shadow-card overflow-hidden">
+        <ShipStationTable jobs={jobs} />
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-sm text-muted">
+          <span>Page {page} of {totalPages}</span>
+          <Pagination page={page} totalPages={totalPages} params={params} basePath="/shipstation" />
+        </div>
+      )}
+    </>
   );
 }

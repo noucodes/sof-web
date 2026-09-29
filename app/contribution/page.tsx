@@ -8,6 +8,9 @@ import ContributionTable from '@/components/ContributionTable';
 import Pagination from '@/components/Pagination';
 import VerifyAllButton from '@/components/VerifyAllButton';
 import ExportMenu from '@/components/ExportMenu';
+import AsyncCount from '@/components/AsyncCount';
+import { TableSkeleton } from '@/components/PageLoading';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const PAGE_SIZE = 50;
@@ -49,9 +52,10 @@ export default async function ContributionPage({
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
   const params = await searchParams;
-  const page = Number(params.page ?? 1);
-  const { rows, total, totals } = await getContribution(cookieHeader, params);
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  // Started here, awaited inside the keyed Suspense boundaries below so filter/page
+  // changes show skeletons (loading.tsx doesn't show for same-route navigations).
+  const data = getContribution(cookieHeader, params);
+  const key = new URLSearchParams(params).toString();
 
   const exportQs = new URLSearchParams();
   exportQs.set('status', params.status ?? 'success');
@@ -68,8 +72,11 @@ export default async function ContributionPage({
       <div className="p-6 space-y-4">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
-            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">
-              Contribution <span className="text-sm font-normal text-muted">({total})</span>
+            <h1 className="flex items-center gap-1 text-[0.9375rem] font-semibold text-ink tracking-tight">
+              Contribution
+              <Suspense key={key} fallback={<Skeleton className="h-3.5 w-10" />}>
+                <AsyncCount data={data} />
+              </Suspense>
             </h1>
           </div>
           <p className="text-sm text-muted">
@@ -81,6 +88,43 @@ export default async function ContributionPage({
           <ContributionFilters />
         </Suspense>
 
+        <Suspense key={key} fallback={<ContributionSkeleton />}>
+          <ContributionContent data={data} params={params} />
+        </Suspense>
+      </div>
+    </AppShell>
+  );
+}
+
+function ContributionSkeleton() {
+  return (
+    <>
+      <div className="grid grid-cols-6 gap-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="bg-white rounded-xl shadow-card p-4 space-y-2">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-5 w-24" />
+          </div>
+        ))}
+      </div>
+      <TableSkeleton columns={8} />
+    </>
+  );
+}
+
+async function ContributionContent({
+  data,
+  params,
+}: {
+  data: Promise<{ rows: any[]; total: number; totals: any }>;
+  params: Record<string, string>;
+}) {
+  const { rows, total, totals } = await data;
+  const page = Number(params.page ?? 1);
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  return (
+    <>
         <div className="grid grid-cols-6 gap-3">
           {[
             ['Net Sales', totals.netSales],
@@ -118,7 +162,6 @@ export default async function ContributionPage({
             <Pagination page={page} totalPages={totalPages} params={params} basePath="/contribution" />
           </div>
         )}
-      </div>
-    </AppShell>
+    </>
   );
 }
