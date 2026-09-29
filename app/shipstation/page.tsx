@@ -7,6 +7,7 @@ import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/Pagination';
 import RetryFailedReleasesButton from '@/components/RetryFailedReleasesButton';
 import MissingShipmentsButton from '@/components/MissingShipmentsButton';
+import InvoicedOutsideShipStation from '@/components/InvoicedOutsideShipStation';
 import ShipStationTable from '@/components/ShipStationTable';
 import AsyncCount from '@/components/AsyncCount';
 import { TableSkeleton } from '@/components/PageLoading';
@@ -36,6 +37,47 @@ export default async function ShipStationPage({
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
   const params = await searchParams;
+  const invoicedView = params.view === 'invoiced-outside';
+
+  const tabs = (
+    <nav aria-label="ShipStation views" className="inline-flex h-9 items-center rounded-lg bg-surface-strong p-1 text-muted">
+      {[
+        ['Label jobs', '/shipstation', !invoicedView],
+        ['Invoiced outside ShipStation', '/shipstation?view=invoiced-outside', invoicedView],
+      ].map(([label, href, active]) => (
+        <Link
+          key={label as string}
+          href={href as string}
+          aria-current={active ? 'page' : undefined}
+          className={`inline-flex items-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-colors focus-visible:shadow-focus-ring focus-visible:outline-none ${active ? 'bg-white text-ink shadow-card' : 'hover:text-ink'}`}
+        >
+          {label as string}
+        </Link>
+      ))}
+    </nav>
+  );
+
+  if (invoicedView) {
+    return (
+      <AppShell>
+        <PageHeader crumbs={['ShipStation']}>
+          <MissingShipmentsButton />
+          <RetryFailedReleasesButton />
+        </PageHeader>
+        <div className="p-6 space-y-4">
+          <div className="space-y-0.5">
+            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Invoiced outside ShipStation</h1>
+            <p className="text-sm text-muted">
+              Orders invoiced directly in Frameworks that ShipStation still shows as open. Mark them shipped so they aren&apos;t picked twice.
+            </p>
+          </div>
+          {tabs}
+          <InvoicedOutsideShipStation />
+        </div>
+      </AppShell>
+    );
+  }
+
   // Started here, awaited inside the keyed Suspense boundaries below so status/page
   // changes show skeletons (loading.tsx doesn't show for same-route navigations).
   const data = getJobs(cookieHeader, params);
@@ -75,6 +117,8 @@ export default async function ShipStationPage({
           </div>
           <p className="text-sm text-muted">Label print jobs received from ShipStation and linked to Frameworks orders.</p>
         </div>
+
+        {tabs}
 
         <Suspense key={key} fallback={<TableSkeleton columns={9} />}>
           <ShipStationContent data={data} params={params} />
