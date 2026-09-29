@@ -35,12 +35,6 @@ async function getOrders(cookieHeader: string, params: Record<string, string>) {
   return res.json();
 }
 
-async function getOrderDetail(cookieHeader: string, id: string) {
-  const res = await fetch(`${API}/orders/${id}`, { headers: { cookie: cookieHeader }, cache: 'no-store' });
-  if (!res.ok) return null;
-  return res.json();
-}
-
 function titleCase(s?: string) {
   if (!s) return '—';
   return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -76,15 +70,10 @@ export default async function PaymentsPage({
     return `/payments?${next.toString()}`;
   }
 
-  // ponytail: N+1 detail fetch per row — the /orders list endpoint doesn't carry payment
-  // amount/date/method, only the per-order detail endpoint does. Fine at 50 rows/page;
-  // push these fields onto the list endpoint if this page needs to scale further.
-  const details = await Promise.all(orders.map((o: any) => getOrderDetail(cookieHeader, o.id)));
-
-  const rows = orders.map((o: any, i: number) => {
-    const d = details[i];
-    const payment = d?.paymentPayload?.dsCustomerPayment?.customerPayment?.[0];
-    const paymentAmount = payment?.paymentAmount ?? o.total;
+  // The list endpoint carries payment amount/date/method (see OrdersService.withPayment),
+  // so this page is one request, not one per row.
+  const rows = orders.map((o: any) => {
+    const paymentAmount = o.paymentAmount ?? o.total;
     const shopifyPrice = o.total;
     const frameworksPrice = o.frameworksPrice;
     // Same cross-check as sof-main's transform.service.js: Shopify's total vs.
@@ -105,7 +94,7 @@ export default async function PaymentsPage({
     return {
       id: o.id,
       shopifyOrderNo: o.orderName,
-      paymentMethod: titleCase(d?.payload?.payment_gateway_names?.[0]),
+      paymentMethod: titleCase(o.paymentMethod),
       paymentAmount,
       shopifyPrice,
       frameworksPrice,
@@ -115,10 +104,10 @@ export default async function PaymentsPage({
       paymentVerified,
       paymentMismatch,
       frameworksOrderNoRaw: o.frameworksOrderNo,
-      date: payment?.paymentDate ?? o.createdAt,
+      date: o.paymentDate ?? o.createdAt,
       customerName: o.customer?.name ?? '—',
       frameworksOrderNo: o.frameworksOrderNo
-        ? `${o.frameworksOrderNo}${d?.frameworksOrderSuffix ? `-${d.frameworksOrderSuffix}` : ''}`
+        ? `${o.frameworksOrderNo}${o.frameworksOrderSuffix ? `-${o.frameworksOrderSuffix}` : ''}`
         : '—',
     };
   });
