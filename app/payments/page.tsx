@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import FetchPriceButton from '@/components/FetchPriceButton';
-import RecheckPricesButton from '@/components/RecheckPricesButton';
+import MissingShipmentsButton from '@/components/MissingShipmentsButton';
 import Pagination from '@/components/Pagination';
 import SortLinkIcon from '@/components/table/SortLinkIcon';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
@@ -137,7 +137,7 @@ export default async function PaymentsPage({
   return (
     <AppShell>
       <PageHeader crumbs={['Payments']}>
-        <RecheckPricesButton />
+        <MissingShipmentsButton />
         <Button asChild size="sm" variant={mismatchOnly ? 'default' : 'outline'}>
           <Link href={toggleHref} aria-pressed={mismatchOnly}>
             {mismatchOnly ? 'Showing mismatches only' : 'Show mismatches only'}
