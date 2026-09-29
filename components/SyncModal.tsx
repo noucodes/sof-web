@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-const STORES = [
+export const STORES = [
   { id: 'burdens', label: 'Burdens' },
   { id: 'bathroomhq', label: 'Bathroom HQ' },
   { id: 'plumbershq', label: 'Plumbers HQ' },
