@@ -8,6 +8,7 @@ import Pagination from '@/components/Pagination';
 import RetryFailedReleasesButton from '@/components/RetryFailedReleasesButton';
 import MissingShipmentsButton from '@/components/MissingShipmentsButton';
 import InvoicedOutsideShipStation from '@/components/InvoicedOutsideShipStation';
+import HeldToChanges from '@/components/HeldToChanges';
 import ShipStationTable from '@/components/ShipStationTable';
 import AsyncCount from '@/components/AsyncCount';
 import { TableSkeleton } from '@/components/PageLoading';
@@ -38,12 +39,14 @@ export default async function ShipStationPage({
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
   const params = await searchParams;
   const invoicedView = params.view === 'invoiced-outside';
+  const heldToView = params.view === 'held-to';
 
   const tabs = (
     <nav aria-label="ShipStation views" className="inline-flex h-9 items-center rounded-lg bg-surface-strong p-1 text-muted">
       {[
-        ['Label jobs', '/shipstation', !invoicedView],
+        ['Label jobs', '/shipstation', !invoicedView && !heldToView],
         ['Invoiced outside ShipStation', '/shipstation?view=invoiced-outside', invoicedView],
+        ['Held-to dates', '/shipstation?view=held-to', heldToView],
       ].map(([label, href, active]) => (
         <Link
           key={label as string}
@@ -56,6 +59,27 @@ export default async function ShipStationPage({
       ))}
     </nav>
   );
+
+  if (heldToView) {
+    return (
+      <AppShell>
+        <PageHeader crumbs={['ShipStation']}>
+          <MissingShipmentsButton />
+          <RetryFailedReleasesButton />
+        </PageHeader>
+        <div className="p-6 space-y-4">
+          <div className="space-y-0.5">
+            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Held-to dates</h1>
+            <p className="text-sm text-muted">
+              When Date Required changes on a sales order in Frameworks, the ShipStation order is held until that date. Each change and its result is listed here.
+            </p>
+          </div>
+          {tabs}
+          <HeldToChanges />
+        </div>
+      </AppShell>
+    );
+  }
 
   if (invoicedView) {
     return (
