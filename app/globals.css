@@ -14,6 +14,7 @@
   --color-surface-hover:oklch(0.952 0.012 252);
   --color-surface-strong:oklch(0.925 0.014 252);
   --color-border:       oklch(0.860 0.008 252);
+  --color-hair:         oklch(0.910 0.008 252); /* row dividers inside tables */
   --color-border-input: oklch(0.620 0.018 252);
   --color-muted:        oklch(0.440 0.018 252);
   --color-ink:          oklch(0.165 0.020 252);

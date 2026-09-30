@@ -1,11 +1,8 @@
 'use client';
 import { useClientSort } from '@/components/table/useClientSort';
 import SortableTh from '@/components/table/SortableTh';
+import StatusPill, { humanize } from '@/components/StatusPill';
 
-const STATUS_COLORS: Record<string, string> = {
-  success: 'bg-success-bg text-success',
-  failed: 'bg-failed-bg text-failed',
-};
 
 type Entry = {
   status: 'success' | 'failed';
@@ -57,11 +54,9 @@ export default function B2BSyncTable({ history }: { history: Entry[] }) {
           </tr>
         )}
         {sorted.map((h, i) => (
-          <tr key={i} className={`${i % 2 === 1 ? 'bg-surface' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}>
+          <tr key={i} className={`border-t border-hair first:border-t-0 hover:bg-surface-hover transition-colors duration-100`}>
             <td className="px-4 py-3">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.6875rem] font-medium uppercase tracking-[0.05em] ${STATUS_COLORS[h.status] ?? 'bg-surface text-muted'}`}>
-                {h.status}
-              </span>
+              <StatusPill tone={h.status === 'success' ? 'success' : h.status === 'failed' ? 'failed' : 'neutral'}>{humanize(h.status)}</StatusPill>
             </td>
             <td className="px-4 py-3 text-sm text-muted">{h.source ?? '—'}</td>
             <td className="px-4 py-3 text-sm text-ink">{h.itemsSynced ?? '—'}</td>

@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TableSkeleton } from '@/components/PageLoading';
+import Pill, { type Tone } from '@/components/StatusPill';
 
 type Row = {
   id: number;
@@ -27,12 +28,11 @@ type ListResponse = { days: number; checkedAt: string; orders: Row[]; notOpenInS
 type Carrier = { code: string; name: string };
 
 const STORE_LABELS: Record<string, string> = { burdens: 'Burdens', bathroomhq: 'Bathroom HQ', plumbershq: 'Plumbers HQ', aspire: 'Aspire' };
-const SS_STATUS: Record<string, [string, string]> = {
-  awaiting_shipment: ['bg-pending-bg text-pending', 'Awaiting shipment'],
-  on_hold: ['bg-pending-bg text-pending', 'On hold'],
-  cancelled: ['bg-surface-strong text-muted', 'Cancelled'],
+const SS_STATUS: Record<string, [Tone, string]> = {
+  awaiting_shipment: ['pending', 'Awaiting shipment'],
+  on_hold: ['pending', 'On hold'],
+  cancelled: ['neutral', 'Cancelled'],
 };
-const PILL = 'inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-[0.6875rem] font-medium uppercase tracking-[0.05em]';
 const TH = 'text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap';
 const WINDOWS = [7, 30, 90];
 
@@ -48,8 +48,8 @@ const agoLabel = (iso: string) => {
 };
 
 function StatusPill({ status }: { status: string }) {
-  const [cls, label] = SS_STATUS[status] ?? ['bg-surface-strong text-muted', status.replace(/_/g, ' ')];
-  return <span className={`${PILL} ${cls}`}>{label}</span>;
+  const [tone, label] = SS_STATUS[status] ?? ['neutral', status.replace(/_/g, ' ')];
+  return <Pill tone={tone}>{label}</Pill>;
 }
 
 export default function InvoicedOutsideShipStation() {
@@ -256,7 +256,8 @@ export default function InvoicedOutsideShipStation() {
                       onKeyDown={e => { if (e.key === 'Enter') setOpenRow(r); }}
                       className={cn(
                         'cursor-pointer transition-colors duration-100 hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none',
-                        picked.has(r.id) ? 'bg-primary-wash' : i % 2 === 1 ? 'bg-surface' : 'bg-white',
+                        'border-t border-hair first:border-t-0',
+                        picked.has(r.id) && 'bg-primary-wash',
                       )}
                     >
                       <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
@@ -379,7 +380,7 @@ function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Car
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
           <div className="grid items-center gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-            {side('Frameworks', <span className={`${PILL} bg-success-bg text-success`}>Invoiced</span>, [
+            {side('Frameworks', <Pill tone="success">Invoiced</Pill>, [
               ['Order no.', <span key="n" className="font-mono">{row.frameworksOrderNo ?? '—'}</span>],
               ['Invoiced', auDate(row.invoicedAt)],
               ['Total inc. GST', money(row.total)],
@@ -472,7 +473,7 @@ function BulkDialog({ rows, carriers, onClose, onMark }: { rows: Row[]; carriers
             <table className="w-full text-sm">
               <tbody>
                 {rows.map((r, i) => (
-                  <tr key={r.id} className={i % 2 ? 'bg-surface' : 'bg-white'}>
+                  <tr key={r.id} className="border-t border-hair first:border-t-0">
                     <td className="px-4 py-2 font-mono text-[0.8125rem]">{r.orderName}</td>
                     <td className="px-4 py-2">{r.customer ?? '—'}</td>
                     <td className="px-4 py-2 text-muted">{r.shipstation.carrierCode ?? 'Needs a carrier'}</td>

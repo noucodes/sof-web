@@ -14,6 +14,7 @@ module.exports = {
         'surface-hover':'var(--color-surface-hover)',
         'surface-strong':'var(--color-surface-strong)',
         frame:         'var(--color-border)',
+        hair:          'var(--color-hair)',
         'frame-input': 'var(--color-border-input)',
         muted:         'var(--color-muted)',
         ink:           'var(--color-ink)',

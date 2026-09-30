@@ -46,6 +46,9 @@ function titleCase(s?: string) {
   return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+// Refined layout: amounts right-aligned so the cents line up.
+const MONEY_HEADERS = new Set(['Shopify Price', 'Payment Amount', 'Payment Fee']);
+
 export default async function PaymentsPage({
   searchParams,
 }: {
@@ -204,7 +207,7 @@ async function PaymentsContent({ data, params }: { data: Promise<{ orders: any[]
                   const sortKey = SORTABLE_COLUMNS[h];
                   const direction = sortKey && params.sortBy === sortKey ? (params.sortDir as 'asc' | 'desc') ?? 'asc' : null;
                   return (
-                    <th key={h} className="text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap">
+                    <th key={h} className={`${MONEY_HEADERS.has(h) ? 'text-right' : 'text-left'} px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap`}>
                       {sortKey ? (
                         <Link href={sortHref(sortKey)} className="inline-flex items-center gap-1 hover:text-ink transition-colors duration-100">
                           {h}
@@ -225,12 +228,12 @@ async function PaymentsContent({ data, params }: { data: Promise<{ orders: any[]
                 </tr>
               )}
               {visibleRows.map((r: any, idx: number) => (
-                <tr key={r.id} className={`${idx % 2 === 1 ? 'bg-surface' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}>
+                <tr key={r.id} className={`border-t border-hair first:border-t-0 hover:bg-surface-hover transition-colors duration-100`}>
                   <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.shopifyOrderNo}</td>
                   <td className="px-4 py-3 text-sm text-ink">{r.paymentMethod}</td>
-                  <td className="px-4 py-3 text-sm text-ink">{r.shopifyPrice ? `$${parseFloat(r.shopifyPrice).toFixed(2)}` : '—'}</td>
-                  <td className="px-4 py-3 text-sm text-ink">
-                    <div className="flex items-center gap-1.5">
+                  <td className="px-4 py-3 text-right text-sm tabular-nums text-ink">{r.shopifyPrice ? `$${parseFloat(r.shopifyPrice).toFixed(2)}` : '—'}</td>
+                  <td className="px-4 py-3 text-sm tabular-nums text-ink">
+                    <div className="flex items-center justify-end gap-1.5">
                       <span className={r.frameworksPriceError ? 'text-failed' : ''}>
                         {r.paymentAmount ? `$${parseFloat(r.paymentAmount).toFixed(2)}` : '—'}
                       </span>
@@ -271,7 +274,7 @@ async function PaymentsContent({ data, params }: { data: Promise<{ orders: any[]
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm tabular-nums text-ink">
+                  <td className="px-4 py-3 text-right text-sm tabular-nums text-ink">
                     {r.paymentFee != null ? (
                       `$${parseFloat(r.paymentFee).toFixed(2)}`
                     ) : (
