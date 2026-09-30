@@ -5,6 +5,7 @@ import SortableTh from '@/components/table/SortableTh';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import StatusPill from '@/components/StatusPill';
 
 type User = { id: number; email: string; role: string; isActive: boolean; createdAt: string };
 
@@ -145,7 +146,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
             {sorted.map((u, idx) => (
               <tr
                 key={u.id}
-                className={`${idx % 2 === 1 ? 'bg-surface' : 'bg-white'} transition-colors duration-100 hover:bg-surface-hover${u.isActive ? '' : ' opacity-50'}`}
+                className={`border-t border-hair first:border-t-0 transition-colors duration-100 hover:bg-surface-hover${u.isActive ? '' : ' opacity-50'}`}
               >
                 <td className="px-4 py-3 text-sm text-ink">{u.email}</td>
                 <td className="px-4 py-3">
@@ -161,13 +162,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
                   </Select>
                 </td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.6875rem] font-medium uppercase tracking-[0.05em] ${
-                      u.isActive ? 'bg-success-bg text-success' : 'bg-surface text-muted'
-                    }`}
-                  >
-                    {u.isActive ? 'Active' : 'Inactive'}
-                  </span>
+                  <StatusPill tone={u.isActive ? 'success' : 'neutral'}>{u.isActive ? 'Active' : 'Inactive'}</StatusPill>
                 </td>
                 <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">
                   {new Date(u.createdAt).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' })}

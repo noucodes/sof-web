@@ -1,5 +1,6 @@
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
+import StatusPill from '@/components/StatusPill';
 
 const FEATURES = [
   {
@@ -39,9 +40,7 @@ export default function InventoryPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Inventory Sync</h1>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[0.6875rem] font-medium bg-pending-bg text-pending uppercase tracking-[0.05em]">
-              In progress
-            </span>
+            <StatusPill tone="pending">In progress</StatusPill>
           </div>
           <p className="text-sm text-muted">
             Automated stock-level sync from Frameworks ERP to ShipStation, running hourly.

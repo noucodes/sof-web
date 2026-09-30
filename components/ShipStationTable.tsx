@@ -11,13 +11,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { JsonView } from '@/components/OrdersTable';
+import { JsonView, STATUS_TONE } from '@/components/OrdersTable';
+import StatusPill from '@/components/StatusPill';
 
-const STATUS_COLORS: Record<string, string> = {
-  success: 'bg-success-bg text-success',
-  failed: 'bg-failed-bg text-failed',
-  pending: 'bg-pending-bg text-pending',
-};
 
 const COLUMNS = [
   { key: 'shipmentId', label: 'Shipment ID', getValue: (j: any) => j.shipmentId ?? '' },
@@ -71,7 +67,7 @@ export default function ShipStationTable({ jobs }: { jobs: any[] }) {
             </tr>
           )}
           {sorted.map((j: any, idx: number) => (
-            <tr key={j.id} className={`${idx % 2 === 1 ? 'bg-surface' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100`}>
+            <tr key={j.id} className={`border-t border-hair first:border-t-0 hover:bg-surface-hover transition-colors duration-100`}>
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{j.shipmentId}</td>
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">
                 {j.orderNumber ?? '—'}
@@ -81,9 +77,7 @@ export default function ShipStationTable({ jobs }: { jobs: any[] }) {
               <td className="px-4 py-3 text-sm text-muted">{j.carrier ?? '—'}</td>
               <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{j.trackingNumber ?? '—'}</td>
               <td className="px-4 py-3">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.6875rem] font-medium uppercase tracking-[0.05em] ${STATUS_COLORS[j.status] ?? 'bg-surface text-muted'}`}>
-                  {j.statusLabel}
-                </span>
+                <StatusPill tone={STATUS_TONE[j.status] ?? 'neutral'}>{j.statusLabel}</StatusPill>
                 {j.error && <p className="text-[0.7rem] text-failed mt-0.5 max-w-[200px] truncate">{j.error}</p>}
               </td>
               <td className="px-4 py-3 text-sm text-muted text-center">{j.attempts}</td>

@@ -3,6 +3,7 @@ import { useClientSort } from '@/components/table/useClientSort';
 import SortableTh from '@/components/table/SortableTh';
 import FetchPriceButton from '@/components/FetchPriceButton';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import StatusPill from '@/components/StatusPill';
 
 const GP_ALERT_THRESHOLD = 10;
 
@@ -34,6 +35,8 @@ const COLUMNS = [
   { key: 'contribution', label: 'Contribution', getValue: (r: any) => (r.contribution != null ? parseFloat(r.contribution) : 0) },
 ];
 
+// Refined layout: amounts right-aligned so the cents line up.
+const MONEY_KEYS = new Set(['netSales', 'cogs', 'gp', 'freight', 'paymentFees', 'contribution']);
 const GETTERS = Object.fromEntries(COLUMNS.map(c => [c.key, c.getValue]));
 
 export default function ContributionTable({ rows }: { rows: any[] }) {
@@ -49,6 +52,7 @@ export default function ContributionTable({ rows }: { rows: any[] }) {
               label={col.label}
               direction={sort?.key === col.key ? sort.dir : null}
               onClick={() => toggleSort(col.key)}
+              className={MONEY_KEYS.has(col.key) ? 'text-right' : undefined}
             />
           ))}
         </tr>
@@ -62,15 +66,15 @@ export default function ContributionTable({ rows }: { rows: any[] }) {
         {sorted.map((r: any, idx: number) => (
           <tr
             key={r.orderId}
-            className={`${idx % 2 === 1 ? 'bg-surface' : 'bg-white'} hover:bg-surface-hover transition-colors duration-100 ${r.error ? 'opacity-60' : ''}`}
+            className={`border-t border-hair first:border-t-0 hover:bg-surface-hover transition-colors duration-100 ${r.error ? 'opacity-60' : ''}`}
           >
             <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.orderName}</td>
             <td className="px-4 py-3 text-sm text-muted whitespace-nowrap">{shortDate(r.orderDate)}</td>
             <td className="px-4 py-3 text-sm text-muted">{r.storeLabel}</td>
             <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.frameworksOrderNo ?? '—'}</td>
-            <td className="px-4 py-3 text-sm text-ink">{money(r.netSales)}</td>
-            <td className="px-4 py-3 text-sm text-ink">{money(r.cogs)}</td>
-            <td className="px-4 py-3 text-sm font-medium whitespace-nowrap">
+            <td className="px-4 py-3 text-right text-sm tabular-nums text-ink">{money(r.netSales)}</td>
+            <td className="px-4 py-3 text-right text-sm tabular-nums text-ink">{money(r.cogs)}</td>
+            <td className="px-4 py-3 text-right text-sm font-medium tabular-nums whitespace-nowrap">
               {(() => {
                 const p = gpPct(r.netSales, r.cogs);
                 if (p == null) return <span className="text-muted font-normal">—</span>;
@@ -92,19 +96,17 @@ export default function ContributionTable({ rows }: { rows: any[] }) {
                 );
               })()}
             </td>
-            <td className="px-4 py-3 text-sm text-ink whitespace-nowrap">
+            <td className="px-4 py-3 text-right text-sm tabular-nums text-ink whitespace-nowrap">
               {/* Freight is the ShipStation label cost — 0 until a label prints. */}
               {r.freight != null && parseFloat(r.freight) === 0 ? (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[0.6875rem] font-medium uppercase tracking-[0.05em] bg-pending-bg text-pending">
-                  Not shipped
-                </span>
+                <StatusPill tone="pending">Not shipped</StatusPill>
               ) : (
                 money(r.freight)
               )}
             </td>
-            <td className="px-4 py-3 text-sm text-ink">{money(r.paymentFees)}</td>
-            <td className="px-4 py-3 text-sm text-ink font-medium">
-              <div className="flex items-center gap-1.5">
+            <td className="px-4 py-3 text-right text-sm tabular-nums text-ink">{money(r.paymentFees)}</td>
+            <td className="px-4 py-3 text-sm tabular-nums text-ink font-medium">
+              <div className="flex items-center justify-end gap-1.5">
                 {r.contribution == null ? (
                   <span className="text-muted font-normal">Not calculated</span>
                 ) : (

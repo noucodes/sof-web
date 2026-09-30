@@ -5,6 +5,7 @@ import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import OrderFilters from '@/components/OrderFilters';
 import OrdersTable from '@/components/OrdersTable';
+import OrdersToolbar, { OrdersToolbarProvider } from '@/components/OrdersToolbar';
 import Pagination from '@/components/Pagination';
 import RetryFailedButton from '@/components/RetryFailedButton';
 import SyncTrigger from '@/components/SyncTrigger';
@@ -79,13 +80,18 @@ export default async function OrdersPage({
           <p className="text-sm text-muted">Shopify orders received and processed into Frameworks ERP.</p>
         </div>
 
-        <Suspense>
-          <OrderFilters />
-        </Suspense>
+        <OrdersToolbarProvider>
+          <div className="flex flex-wrap items-center gap-3">
+            <Suspense>
+              <OrderFilters />
+            </Suspense>
+            <OrdersToolbar />
+          </div>
 
-        <Suspense key={key} fallback={<TableSkeleton columns={8} />}>
-          <OrdersContent data={data} gaps={gaps} params={params} />
-        </Suspense>
+          <Suspense key={key} fallback={<TableSkeleton columns={8} />}>
+            <OrdersContent data={data} gaps={gaps} params={params} />
+          </Suspense>
+        </OrdersToolbarProvider>
       </div>
     </AppShell>
   );
