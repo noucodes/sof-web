@@ -22,7 +22,8 @@ type Row = {
   total: string | null;
   delivery: string | null;
   lineCount: number | null;
-  shipstation: { orderId: number; orderNumber: string; status: string; service: string | null; carrierCode: string | null };
+  // null: not open in ShipStation (already shipped there, or never sent to it)
+  shipstation: { orderId: number; orderNumber: string; status: string; service: string | null; carrierCode: string | null } | null;
 };
 type ListResponse = { days: number; checkedAt: string; orders: Row[]; notOpenInShipStation: number };
 type Carrier = { code: string; name: string };
@@ -35,8 +36,16 @@ const SS_STATUS: Record<string, [Tone, string]> = {
 };
 const TH = 'text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap';
 const WINDOWS = [7, 30, 90];
+const VIEWS = {
+  open: 'Still open in ShipStation',
+  cancelled: 'Cancelled in ShipStation',
+  gone: 'Already shipped or not in ShipStation',
+  all: 'All statuses',
+} as const;
+type View = keyof typeof VIEWS;
+const viewOf = (r: Row): Exclude<View, 'all'> => (!r.shipstation ? 'gone' : r.shipstation.status === 'cancelled' ? 'cancelled' : 'open');
 
-const markable = (r: Row) => r.shipstation.status !== 'cancelled';
+const markable = (r: Row) => viewOf(r) === 'open';
 // invoiced_at is a DATE column; read it as a calendar date, not a local-time instant.
 const ymd = (iso: string) => iso.slice(0, 10);
 const auDate = (iso: string) => new Date(ymd(iso) + 'T00:00:00Z').toLocaleDateString('en-AU', { timeZone: 'UTC' });
@@ -47,7 +56,8 @@ const agoLabel = (iso: string) => {
   return min < 1 ? 'just now' : min === 1 ? '1 min ago' : `${min} min ago`;
 };
 
-function StatusPill({ status }: { status: string }) {
+function StatusPill({ status }: { status: string | null }) {
+  if (!status) return <Pill tone="neutral">Not open</Pill>;
   const [tone, label] = SS_STATUS[status] ?? ['neutral', status.replace(/_/g, ' ')];
   return <Pill tone={tone}>{label}</Pill>;
 }
@@ -55,6 +65,7 @@ function StatusPill({ status }: { status: string }) {
 export default function InvoicedOutsideShipStation() {
   const [days, setDays] = useState(30);
   const [store, setStore] = useState('all');
+  const [view, setView] = useState<View>('open');
   const [data, setData] = useState<ListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,7 +129,7 @@ export default function InvoicedOutsideShipStation() {
       body: JSON.stringify({
         notifyCustomer,
         orders: items.map(i => ({
-          shipstationOrderId: i.row.shipstation.orderId,
+          shipstationOrderId: i.row.shipstation!.orderId,
           carrierCode: i.carrierCode,
           shipDate: i.shipDate,
           ...(i.trackingNumber ? { trackingNumber: i.trackingNumber } : {}),
@@ -129,17 +140,18 @@ export default function InvoicedOutsideShipStation() {
     if (!res.ok) throw new Error(json.message ?? 'ShipStation did not accept the request');
     const failed = json.results.filter((r: any) => !r.ok);
     const done = new Set<number>(json.results.filter((r: any) => r.ok).map((r: any) => r.shipstationOrderId));
-    setData(d => (d ? { ...d, orders: d.orders.filter(o => !done.has(o.shipstation.orderId)) } : d));
-    setPicked(p => new Set([...p].filter(id => !items.some(i => i.row.id === id && done.has(i.row.shipstation.orderId)))));
+    setData(d => (d ? { ...d, orders: d.orders.filter(o => !o.shipstation || !done.has(o.shipstation.orderId)) } : d));
+    setPicked(p => new Set([...p].filter(id => !items.some(i => i.row.id === id && done.has(i.row.shipstation!.orderId)))));
     if (json.marked) toast.success(`Marked ${json.marked} order${json.marked === 1 ? '' : 's'} shipped in ShipStation`);
     if (failed.length) toast.error(`${failed.length} not marked: ${failed[0].error}`);
     return failed.length === 0;
   }
 
-  const rows = useMemo(() => (data?.orders ?? []).filter(o => store === 'all' || o.store === store), [data, store]);
+  const storeRows = useMemo(() => (data?.orders ?? []).filter(o => store === 'all' || o.store === store), [data, store]);
+  const rows = view === 'all' ? storeRows : storeRows.filter(r => viewOf(r) === view);
+  const count = (v: View) => storeRows.filter(r => viewOf(r) === v).length;
   const open = rows.filter(markable);
-  const stale = open.filter(r => daysSince(r.invoicedAt) >= 3);
-  const cancelled = rows.filter(r => !markable(r));
+  const stale = storeRows.filter(r => markable(r) && daysSince(r.invoicedAt) >= 3);
   const selected = open.filter(r => picked.has(r.id));
   const allOn = open.length > 0 && open.every(r => picked.has(r.id));
   const toggle = (id: number) => setPicked(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -148,10 +160,10 @@ export default function InvoicedOutsideShipStation() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
-          ['Still open in ShipStation', open.length, open.length ? 'text-pending' : 'text-ink'],
+          [VIEWS.open, count('open'), count('open') ? 'text-pending' : 'text-ink'],
           ['Open 3+ days', stale.length, stale.length ? 'text-failed' : 'text-ink'],
-          ['Cancelled in ShipStation', cancelled.length, 'text-ink'],
-          ['Already shipped or not in ShipStation', data?.notOpenInShipStation ?? 0, 'text-muted'],
+          [VIEWS.cancelled, count('cancelled'), 'text-ink'],
+          [VIEWS.gone, count('gone'), 'text-muted'],
         ].map(([k, v, c]) => (
           <div key={k as string} className="rounded-xl bg-white p-4 shadow-card">
             <p className="text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">{k}</p>
@@ -184,6 +196,14 @@ export default function InvoicedOutsideShipStation() {
               <SelectTrigger aria-label="Invoiced within" className="w-44"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {WINDOWS.map(d => <SelectItem key={d} value={String(d)}>Last {d} days</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={view} onValueChange={v => { setView(v as View); setPicked(new Set()); }}>
+              <SelectTrigger aria-label="ShipStation status" className="w-72"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {(Object.keys(VIEWS) as View[]).map(v => (
+                  <SelectItem key={v} value={v}>{VIEWS[v]} ({v === 'all' ? storeRows.length : count(v)})</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </>
@@ -241,7 +261,7 @@ export default function InvoicedOutsideShipStation() {
                 {rows.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted">
-                      Nothing invoiced outside ShipStation in the last {days} days{store !== 'all' ? ` for ${STORE_LABELS[store]}` : ''}.
+                      {view === 'all' ? 'Nothing invoiced in Frameworks without a ShipStation label' : `No orders ${VIEWS[view].toLowerCase()}`} in the last {days} days{store !== 'all' ? ` for ${STORE_LABELS[store]}` : ''}.
                     </td>
                   </tr>
                 )}
@@ -272,7 +292,7 @@ export default function InvoicedOutsideShipStation() {
                         <span className="block font-mono text-xs text-muted">{r.frameworksOrderNo ?? '—'}</span>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
-                        <StatusPill status={r.shipstation.status} />
+                        <StatusPill status={r.shipstation?.status ?? null} />
                         {can && (
                           <span className={cn('mt-1 block text-xs', age >= 3 ? 'font-medium text-failed' : 'text-muted')}>
                             {age === 0 ? 'Invoiced today' : `${age} day${age === 1 ? '' : 's'} open`}
@@ -280,7 +300,7 @@ export default function InvoicedOutsideShipStation() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-ink">
-                        {r.delivery ?? r.shipstation.service ?? '—'}
+                        {r.delivery ?? r.shipstation?.service ?? '—'}
                         {r.lineCount != null && <span className="block text-xs text-muted">{r.lineCount} item{r.lineCount === 1 ? '' : 's'}</span>}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums text-ink">{money(r.total)}</td>
@@ -333,11 +353,11 @@ function NotifyToggle({ checked, onChange, pickups }: { checked: boolean; onChan
   );
 }
 
-const looksLikePickup = (r: Row) => /pick ?up|collect/i.test(`${r.delivery ?? ''} ${r.shipstation.service ?? ''}`);
+const looksLikePickup = (r: Row) => /pick ?up|collect/i.test(`${r.delivery ?? ''} ${r.shipstation?.service ?? ''}`);
 
 function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Carrier[]; onClose: () => void; onMark: MarkFn }) {
   const can = markable(row);
-  const [carrier, setCarrier] = useState(row.shipstation.carrierCode ?? '');
+  const [carrier, setCarrier] = useState(row.shipstation?.carrierCode ?? '');
   const [shipDate, setShipDate] = useState(ymd(row.invoicedAt));
   const [tracking, setTracking] = useState('');
   const [notify, setNotify] = useState(false);
@@ -371,7 +391,7 @@ function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Car
         <DialogHeader>
           <DialogTitle><span className="font-mono">{row.orderName}</span>{row.customer ? ` · ${row.customer}` : ''}</DialogTitle>
           <DialogDescription className="flex flex-wrap items-center gap-2">
-            <StatusPill status={row.shipstation.status} />
+            <StatusPill status={row.shipstation?.status ?? null} />
             <span>{STORE_LABELS[row.store ?? ''] ?? row.store}</span>
             <span>·</span>
             <span className="tabular-nums">{money(row.total)}</span>
@@ -387,9 +407,9 @@ function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Car
               ['Lines', row.lineCount ?? '—'],
             ])}
             <ArrowRight className="hidden size-4 justify-self-center text-muted sm:block" />
-            {side('ShipStation', <StatusPill status={row.shipstation.status} />, [
-              ['Order no.', <span key="s" className="font-mono">{row.shipstation.orderNumber}</span>],
-              ['Service', row.shipstation.service ?? '—'],
+            {side('ShipStation', <StatusPill status={row.shipstation?.status ?? null} />, [
+              ['Order no.', <span key="s" className="font-mono">{row.shipstation?.orderNumber ?? '—'}</span>],
+              ['Service', row.shipstation?.service ?? '—'],
               ['Label printed', 'No'],
               ['Days open', can ? daysSince(row.invoicedAt) : '—'],
             ])}
@@ -415,6 +435,10 @@ function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Car
               </div>
               <div className="sm:col-span-2"><NotifyToggle checked={notify} onChange={setNotify} /></div>
             </div>
+          ) : !row.shipstation ? (
+            <p className="rounded-lg border border-frame bg-surface px-4 py-3 text-sm text-muted">
+              Not open in ShipStation. It was already shipped there without a label job here, or never sent to ShipStation (pickup, counter sale). Nothing to do.
+            </p>
           ) : (
             <div className="flex items-start gap-2 rounded-lg bg-pending-bg px-4 py-3 text-sm text-pending">
               <TriangleAlert className="mt-0.5 size-4 shrink-0" />
@@ -443,14 +467,14 @@ function BulkDialog({ rows, carriers, onClose, onMark }: { rows: Row[]; carriers
   const [carrier, setCarrier] = useState('');
   const [notify, setNotify] = useState(false);
   const [busy, setBusy] = useState(false);
-  const withoutCarrier = rows.filter(r => !r.shipstation.carrierCode).length;
+  const withoutCarrier = rows.filter(r => !r.shipstation!.carrierCode).length;
   const pickups = rows.filter(looksLikePickup).length;
 
   async function submit() {
     setBusy(true);
     try {
       const ok = await onMark(
-        rows.map(row => ({ row, carrierCode: row.shipstation.carrierCode ?? carrier, shipDate: ymd(row.invoicedAt) })),
+        rows.map(row => ({ row, carrierCode: row.shipstation!.carrierCode ?? carrier, shipDate: ymd(row.invoicedAt) })),
         notify,
       );
       if (ok) onClose();
@@ -476,7 +500,7 @@ function BulkDialog({ rows, carriers, onClose, onMark }: { rows: Row[]; carriers
                   <tr key={r.id} className="border-t border-hair first:border-t-0">
                     <td className="px-4 py-2 font-mono text-[0.8125rem]">{r.orderName}</td>
                     <td className="px-4 py-2">{r.customer ?? '—'}</td>
-                    <td className="px-4 py-2 text-muted">{r.shipstation.carrierCode ?? 'Needs a carrier'}</td>
+                    <td className="px-4 py-2 text-muted">{r.shipstation!.carrierCode ?? 'Needs a carrier'}</td>
                     <td className="px-4 py-2 text-right font-mono text-[0.8125rem] text-muted">{auDate(r.invoicedAt)}</td>
                   </tr>
                 ))}
