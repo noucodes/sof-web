@@ -9,6 +9,7 @@ import {
   Boxes,
   Ship,
   ArrowLeftRight,
+  ListChecks,
   Users,
 } from 'lucide-react';
 import NavUser from '@/components/NavUser';
@@ -33,6 +34,7 @@ const NAV = [
   { href: '/inventory', label: 'Inventory', icon: Boxes },
   { href: '/shipstation', label: 'ShipStation', icon: Ship },
   { href: '/b2b-sync', label: 'B2B Price Sync', icon: ArrowLeftRight },
+  { href: '/sku-audit', label: 'SKU Audit', icon: ListChecks },
   { href: '/admin/users', label: 'Users', icon: Users },
 ];
 
