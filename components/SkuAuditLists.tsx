@@ -13,7 +13,8 @@ type Store = 'burdens' | 'bathroomhq' | 'plumbershq';
 type StoreCell = { enabled: boolean | null; shopify: ShopifyStatus | null };
 type SkuRow = {
   sku: string;
-  desc: string;
+  title?: string; // Catsy current_title
+  desc: string; // Frameworks description
   frameworks: FrameworksStatus;
   branches?: Record<string, string>;
   stores?: Record<Store, StoreCell>;
@@ -166,8 +167,8 @@ export default function SkuAuditLists({
           <Input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Search SKU or description"
-            aria-label="Search SKU or description"
+            placeholder="Search SKU, title or description"
+            aria-label="Search SKU, title or description"
             className="h-8 w-60 text-[0.8125rem]"
           />
           <Button variant="outline" size="sm" asChild>
@@ -232,7 +233,7 @@ export default function SkuAuditLists({
             <thead className="bg-surface-strong border-b border-frame">
               <tr>
                 <th className="px-4 py-2.5 text-left font-medium text-muted w-48">SKU</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted">Frameworks description</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted">Title</th>
                 <th className="px-4 py-2.5 text-left font-medium text-muted w-40">Frameworks</th>
                 {STORES.map(s => (
                   <th key={s.key} className={`px-4 py-1.5 text-left font-medium w-36 ${store === s.key ? 'text-ink' : 'text-muted'}`}>
@@ -254,7 +255,13 @@ export default function SkuAuditLists({
               {(rows as SkuRow[]).map(r => (
                 <tr key={r.sku} className="border-t border-hair first:border-t-0 hover:bg-surface-hover">
                   <td className="px-4 py-2 font-mono text-xs">{r.sku}</td>
-                  <td className="px-4 py-2 text-ink">{r.desc || '—'}</td>
+                  <td className="px-4 py-2 text-ink">
+                    {/* Catsy's current_title; Frameworks' description underneath when it says something different. */}
+                    {r.title || r.desc || '—'}
+                    {r.title && r.desc && r.desc.toLowerCase() !== r.title.toLowerCase() && (
+                      <span className="block text-[0.6875rem] text-muted mt-0.5">Frameworks: {r.desc}</span>
+                    )}
+                  </td>
                   <td className="px-4 py-2">
                     <StatusPill tone={FW_TONE[r.frameworks]}>{FW_LABEL[r.frameworks]}</StatusPill>
                     {r.branches && (

@@ -56,7 +56,10 @@ export default function SkuAuditHelp() {
           <Section title="Columns">
             <dl className="space-y-2">
               <Term name="SKU">The product code as it appears in Catsy (the Burdens SKU).</Term>
-              <Term name="Frameworks description">The product name from Frameworks. Blank when the SKU isn&apos;t in Frameworks.</Term>
+              <Term name="Title">
+                The product&apos;s Current Title in Catsy. When it&apos;s empty, the Frameworks description is shown instead; when
+                the two differ, the Frameworks description is shown underneath in grey.
+              </Term>
               <Term name="Frameworks">
                 <span className="font-medium text-ink">Stocked</span>: Stocked in at least one branch (kept on the shelf).{' '}
                 <span className="font-medium text-ink">Non-stocked</span>: in Frameworks but not Stocked in any branch, usually
@@ -108,7 +111,7 @@ export default function SkuAuditHelp() {
 
           <Section title="Searching and downloading">
             <p className="text-sm text-muted">
-              Search matches the SKU or description. The table shows 500 rows at a time; use{' '}
+              Search matches the SKU, the Catsy title or the Frameworks description. The table shows 500 rows at a time; use{' '}
               <span className="font-medium text-ink">Previous</span> / <span className="font-medium text-ink">Next</span> to page
               through. <span className="font-medium text-ink">Download CSV</span> exports everything for the current store, tab and
               search, including each SKU&apos;s Vendor Catalog No.
