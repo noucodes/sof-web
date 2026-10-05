@@ -4,6 +4,7 @@ import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import SkuAuditLists, { type ShopifyByStore, type SkuRow } from '@/components/SkuAuditLists';
 import RunSkuAuditButton from '@/components/RunSkuAuditButton';
+import SkuAuditHelp from '@/components/SkuAuditHelp';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -43,10 +44,10 @@ export default async function SkuAuditPage() {
   const rows = latest?.catsySkus ?? [];
   const count = (s: SkuRow['frameworks']) => (latest ? rows.filter(r => r.frameworks === s).length.toLocaleString() : '—');
   const cards = [
-    { label: 'Catsy SKUs', value: latest?.catsyCount?.toLocaleString() ?? '—', sub: null },
-    { label: 'Active', value: count('active'), sub: 'Stocked in a Frameworks branch' },
-    { label: 'Inactive', value: count('inactive'), sub: 'In Frameworks, not stocked' },
-    { label: 'Not in Frameworks', value: count('missing'), sub: 'SKU not found in Frameworks' },
+    { label: 'Catsy SKUs', value: latest?.catsyCount?.toLocaleString() ?? '—', sub: 'Every product in Catsy' },
+    { label: 'Active in Frameworks', value: count('active'), sub: 'Stocked in at least one branch' },
+    { label: 'Inactive in Frameworks', value: count('inactive'), sub: 'In Frameworks, not stocked anywhere' },
+    { label: 'Not in Frameworks', value: count('missing'), sub: 'SKU not found, likely a typo or deleted' },
   ];
 
   return (
@@ -55,9 +56,13 @@ export default async function SkuAuditPage() {
       <div className="p-6 space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-0.5">
-            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">SKU Audit</h1>
+            <div className="flex items-center gap-1">
+              <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">SKU Audit</h1>
+              <SkuAuditHelp />
+            </div>
             <p className="text-sm text-muted">
-              Every Catsy SKU checked against Frameworks and each Shopify store, daily at 5am. Last run {formatDate(latest?.finishedAt)}.
+              Is every Catsy product stocked in Frameworks and live on the right Shopify stores? Runs daily at 5am.
+              Last run {formatDate(latest?.finishedAt)}.
             </p>
           </div>
           <RunSkuAuditButton running={running} />

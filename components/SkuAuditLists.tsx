@@ -1,6 +1,10 @@
 'use client';
 import { useMemo, useState } from 'react';
+import { Download } from 'lucide-react';
 import StatusPill from '@/components/StatusPill';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export type FrameworksStatus = 'active' | 'inactive' | 'missing';
 type ShopifyStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
@@ -21,6 +25,17 @@ const STORES: { key: Store; label: string }[] = [
   { key: 'bathroomhq', label: 'BHQ' },
   { key: 'plumbershq', label: 'PHQ' },
 ];
+
+// One-line explanation under the tabs, so the current view reads on its own.
+const HINTS: Record<Filter, (store: string) => string> = {
+  all: s => (s ? `Every Catsy SKU, with its ${s} Shopify status highlighted.` : 'Every SKU in Catsy, with its Frameworks status and its status on each Shopify store.'),
+  active: () => 'In Catsy and stocked in at least one Frameworks branch.',
+  inactive: () => 'In Catsy and in Frameworks, but not stocked in any branch. Candidates to retire.',
+  missing: () => 'In Catsy, but the SKU does not exist in Frameworks. Usually a typo or a deleted product.',
+  notLive: s => `Switched on for ${s} in Catsy, but not live on the ${s} Shopify site (missing, draft or archived).`,
+  notEnabled: s => `Live on the ${s} Shopify site, but switched off for ${s} in Catsy.`,
+  shopifyOnly: s => `On the ${s} Shopify site, but not in Catsy at all, so Catsy can't update them.`,
+};
 
 // Enabled for the store in Catsy but not live on its Shopify, or the reverse.
 const notLive = (c?: StoreCell) => c?.enabled === true && c.shopify !== 'ACTIVE';
@@ -44,6 +59,7 @@ function downloadCsv(name: string, header: string[], lines: string[][]) {
 
 export default function SkuAuditLists({ rows, shopify }: { rows: SkuRow[]; shopify: ShopifyByStore }) {
   const [store, setStore] = useState<Store | ''>('');
+  const storeLabel = STORES.find(s => s.key === store)?.label ?? '';
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
   const needle = q.trim().toLowerCase();
@@ -120,39 +136,45 @@ export default function SkuAuditLists({ rows, shopify }: { rows: SkuRow[]; shopi
   return (
     <div className="bg-white rounded-xl shadow-card overflow-hidden">
       <div className="px-5 py-3 border-b border-frame flex flex-wrap items-center gap-2">
-        <select
-          value={store}
-          onChange={e => pickStore(e.target.value as Store | '')}
-          aria-label="Store"
-          className="text-sm border border-frame rounded-lg px-3 py-1.5 bg-white"
-        >
-          <option value="">All stores</option>
-          {STORES.map(s => (
-            <option key={s.key} value={s.key}>{s.label}</option>
-          ))}
-        </select>
+        {/* Radix Select can't hold an empty value, so 'all' stands for no store. */}
+        <Select value={store || 'all'} onValueChange={v => pickStore(v === 'all' ? '' : (v as Store))}>
+          <SelectTrigger aria-label="Store" className="h-8 w-40 text-[0.8125rem]">
+            <SelectValue>{store ? `Store: ${storeLabel}` : 'All stores'}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All stores</SelectItem>
+            {STORES.map(s => (
+              <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {tabs.map(t => (
-          <button
+          <Button
             key={t.key}
+            size="sm"
+            variant={filter === t.key ? 'secondary' : 'ghost'}
             onClick={() => setFilter(t.key)}
-            className={`text-sm px-3 py-1.5 rounded-lg ${filter === t.key ? 'bg-surface-strong font-semibold text-ink' : 'text-muted hover:text-ink'}`}
+            className={filter === t.key ? 'font-semibold' : 'text-muted'}
           >
-            {t.label} <span className="text-muted">({t.count.toLocaleString()})</span>
-          </button>
+            {t.label} <span className="text-muted font-normal">({t.count.toLocaleString()})</span>
+          </Button>
         ))}
         <div className="ml-auto flex items-center gap-2">
-          <input
+          <Input
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder="Search SKU or description"
             aria-label="Search SKU or description"
-            className="text-sm border border-frame rounded-lg px-3 py-1.5 w-60"
+            className="h-8 w-60 text-[0.8125rem]"
           />
-          <button onClick={download} className="text-sm border border-frame rounded-lg px-3 py-1.5 hover:bg-surface-hover">
+          <Button variant="outline" size="sm" onClick={download}>
+            <Download />
             Download CSV
-          </button>
+          </Button>
         </div>
       </div>
+
+      <p className="px-5 py-2 text-xs text-muted border-b border-hair">{HINTS[filter](storeLabel)}</p>
 
       {storeError && (
         <p className="px-5 py-2 text-xs bg-failed-bg text-failed border-b border-hair">

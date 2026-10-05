@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 export default function RunSkuAuditButton({ running }: { running: boolean }) {
   const [busy, setBusy] = useState(running);
@@ -17,12 +19,9 @@ export default function RunSkuAuditButton({ running }: { running: boolean }) {
   }
 
   return (
-    <button
-      onClick={run}
-      disabled={busy}
-      className="shrink-0 rounded-lg bg-ink text-white text-sm font-medium px-3.5 py-2 disabled:opacity-50"
-    >
+    <Button onClick={run} disabled={busy} className="shrink-0">
+      <RefreshCw className={busy ? 'animate-spin' : undefined} />
       {busy ? 'Running…' : 'Run now'}
-    </button>
+    </Button>
   );
 }
