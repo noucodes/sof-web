@@ -98,8 +98,10 @@ export default function SkuAuditHelp() {
 
           <Section title="Searching and downloading">
             <p className="text-sm text-muted">
-              Search matches the SKU or description. The table shows up to 500 rows; <span className="font-medium text-ink">Download
-              CSV</span> exports everything for the current store, tab and search.
+              Search matches the SKU or description. The table shows 500 rows at a time; use{' '}
+              <span className="font-medium text-ink">Previous</span> / <span className="font-medium text-ink">Next</span> to page
+              through. <span className="font-medium text-ink">Download CSV</span> exports everything for the current store, tab and
+              search, including each SKU&apos;s Vendor Catalog No.
             </p>
           </Section>
 
