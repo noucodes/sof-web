@@ -1,9 +1,17 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
+import { toast } from 'sonner';
 import SkuAuditColumnFilter, { type ColumnFilter } from '@/components/SkuAuditColumnFilter';
 import StatusPill from '@/components/StatusPill';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -62,6 +70,31 @@ const shopText = (c?: StoreCell) => (c?.shopify ? SHOP_LABEL[c.shopify] : 'Not l
 const catsyText = (c?: StoreCell) => (c?.enabled === true ? 'on' : c?.enabled === false ? 'off' : '?');
 
 const PAGE = 500;
+
+// Parses sof-api's export CSV (RFC 4180 quoting) back into rows, so Excel and copy
+// reuse the same filtered rows as the CSV download.
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = '';
+  let quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"' && text[i + 1] === '"') cell += text[++i];
+      else if (ch === '"') quoted = false;
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ',') (row.push(cell), (cell = ''));
+    else if (ch === '\n') (row.push(cell), rows.push(row), (row = []), (cell = ''));
+    else if (ch !== '\r') cell += ch;
+  }
+  if (cell || row.length) (row.push(cell), rows.push(row));
+  return rows;
+}
+
+// Tabs/newlines inside a cell would break the pasted grid.
+const toTsv = (rows: string[][]) => rows.map(r => r.map(c => c.replace(/[\t\r\n]+/g, ' ')).join('\t')).join('\n');
 
 // Rows come from sof-api a page at a time (80k+ SKUs is too much for the browser);
 // the counts for every tab arrive with the page summary.
@@ -137,6 +170,33 @@ export default function SkuAuditLists({
   const total = data?.total ?? 0;
   const rows = data?.rows ?? [];
 
+  const [exporting, setExporting] = useState(false);
+
+  async function exportAs(kind: 'xlsx' | 'table' | 'skus') {
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/sku-audit/export?${params}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const rows = parseCsv(await res.text());
+      const n = rows.length - 1;
+      if (kind === 'xlsx') {
+        const name = res.headers.get('content-disposition')?.match(/filename="(.+)\.csv"/)?.[1] ?? 'sku-audit';
+        const { default: writeExcelFile } = await import('write-excel-file/browser');
+        await writeExcelFile(rows).toFile(`${name}.xlsx`);
+      } else if (kind === 'table') {
+        await navigator.clipboard.writeText(toTsv(rows));
+        toast.success(`Copied ${n.toLocaleString()} rows. Paste into Excel or Sheets.`);
+      } else {
+        await navigator.clipboard.writeText(rows.slice(1).map(r => r[0]).join('\n'));
+        toast.success(`Copied ${n.toLocaleString()} SKUs`);
+      }
+    } catch {
+      toast.error(kind === 'xlsx' ? "Couldn't build the Excel file" : "Couldn't copy to the clipboard");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   function pickStore(s: Store | '') {
     setStore(s);
     if (!s && ['notLive', 'notEnabled', 'shopifyOnly'].includes(filter)) setFilter('all');
@@ -171,12 +231,27 @@ export default function SkuAuditLists({
             aria-label="Search SKU, title or description"
             className="h-8 w-60 text-[0.8125rem]"
           />
-          <Button variant="outline" size="sm" asChild>
-            <a href={`/api/sku-audit/export?${params}`} download>
-              <Download />
-              Download CSV
-            </a>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={exporting}>
+                <Download />
+                {exporting ? 'Exporting…' : 'Export'}
+                <ChevronDown className="text-muted" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-48">
+              <DropdownMenuItem asChild>
+                {/* Plain <a>: the server streams the CSV straight to disk. */}
+                <a href={`/api/sku-audit/export?${params}`} download>
+                  Download CSV
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => exportAs('xlsx')}>Download Excel</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => exportAs('table')}>Copy table</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => exportAs('skus')}>Copy SKUs only</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       <div className="px-4 pb-2 border-b border-frame flex flex-wrap items-center gap-1">

@@ -113,8 +113,9 @@ export default function SkuAuditHelp() {
             <p className="text-sm text-muted">
               Search matches the SKU, the Catsy title or the Frameworks description. The table shows 500 rows at a time; use{' '}
               <span className="font-medium text-ink">Previous</span> / <span className="font-medium text-ink">Next</span> to page
-              through. <span className="font-medium text-ink">Download CSV</span> exports everything for the current store, tab and
-              search, including each SKU&apos;s Vendor Catalog No.
+              through. <span className="font-medium text-ink">Export</span> downloads everything for the current store, tab, column
+              filters and search as CSV or Excel, including each SKU&apos;s Vendor Catalog No. It can also copy the whole table (to
+              paste into a spreadsheet) or just the SKUs, one per line.
             </p>
           </Section>
 
