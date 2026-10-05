@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
-import SkuAuditLists, { type SkuRow } from '@/components/SkuAuditLists';
+import SkuAuditLists, { type ShopifyByStore, type SkuRow } from '@/components/SkuAuditLists';
 import RunSkuAuditButton from '@/components/RunSkuAuditButton';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -13,12 +13,13 @@ type Run = {
   frameworksStocked?: number;
   catsyCount?: number;
   catsySkus?: SkuRow[];
+  shopify?: ShopifyByStore;
   error?: string;
   finishedAt?: string;
 };
 
-// sof-api checks every Catsy SKU against Frameworks daily at 5am (sku-audit
-// module) and stores each run; this page reads the latest one back.
+// sof-api checks every Catsy SKU against Frameworks and each store's Shopify
+// daily at 5am (sku-audit module); this page reads the latest run back.
 async function getAudit(cookieHeader: string): Promise<{ latest: Run | null; history: Run[]; running: boolean }> {
   const res = await fetch(`${API}/api/sku-audit`, { headers: { cookie: cookieHeader }, cache: 'no-store' });
   if (res.status === 401) redirect('/login');
@@ -56,7 +57,7 @@ export default async function SkuAuditPage() {
           <div className="space-y-0.5">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">SKU Audit</h1>
             <p className="text-sm text-muted">
-              Every Catsy SKU checked against Frameworks, daily at 5am. Last run {formatDate(latest?.finishedAt)}.
+              Every Catsy SKU checked against Frameworks and each Shopify store, daily at 5am. Last run {formatDate(latest?.finishedAt)}.
             </p>
           </div>
           <RunSkuAuditButton running={running} />
@@ -79,7 +80,7 @@ export default async function SkuAuditPage() {
         )}
 
         {latest && (
-          <SkuAuditLists rows={rows} />
+          <SkuAuditLists rows={rows} shopify={latest.shopify ?? {}} />
         )}
       </div>
     </AppShell>
