@@ -105,6 +105,14 @@ export default function SkuAuditHelp() {
             <ul className="list-disc pl-5 text-sm text-muted space-y-1">
               <li>SKUs are matched ignoring upper/lower case and spaces.</li>
               <li>
+                BathroomHQ&apos;s Shopify uses the supplier&apos;s catalogue number as the SKU, so it&apos;s matched against
+                Catsy&apos;s Vendor Catalog No. Burdens and PHQ use the Burdens SKU.
+              </li>
+              <li>
+                &quot;Catsy ?&quot; means the Enabled switch couldn&apos;t be read for that store. Those SKUs are never counted as
+                mismatches.
+              </li>
+              <li>
                 A small number of Frameworks products with broken cost values can&apos;t be read, so they may show as &quot;Not in
                 Frameworks&quot; even though they exist.
               </li>

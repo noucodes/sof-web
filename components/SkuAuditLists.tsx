@@ -39,7 +39,8 @@ const HINTS: Record<Filter, (store: string) => string> = {
 
 // Enabled for the store in Catsy but not live on its Shopify, or the reverse.
 const notLive = (c?: StoreCell) => c?.enabled === true && c.shopify !== 'ACTIVE';
-const notEnabled = (c?: StoreCell) => c?.enabled !== true && c?.shopify === 'ACTIVE';
+// An unknown flag (?) isn't a mismatch: the saved Catsy query just doesn't return it.
+const notEnabled = (c?: StoreCell) => c?.enabled === false && c.shopify === 'ACTIVE';
 
 const shopText = (c?: StoreCell) => (c?.shopify ? SHOP_LABEL[c.shopify] : 'Not listed');
 const catsyText = (c?: StoreCell) => (c?.enabled === true ? 'on' : c?.enabled === false ? 'off' : '?');
@@ -135,7 +136,7 @@ export default function SkuAuditLists({ rows, shopify }: { rows: SkuRow[]; shopi
 
   return (
     <div className="bg-white rounded-xl shadow-card overflow-hidden">
-      <div className="px-5 py-3 border-b border-frame flex flex-wrap items-center gap-2">
+      <div className="px-5 pt-3 pb-2 flex flex-wrap items-center gap-2">
         {/* Radix Select can't hold an empty value, so 'all' stands for no store. */}
         <Select value={store || 'all'} onValueChange={v => pickStore(v === 'all' ? '' : (v as Store))}>
           <SelectTrigger aria-label="Store" className="h-8 w-40 text-[0.8125rem]">
@@ -148,17 +149,6 @@ export default function SkuAuditLists({ rows, shopify }: { rows: SkuRow[]; shopi
             ))}
           </SelectContent>
         </Select>
-        {tabs.map(t => (
-          <Button
-            key={t.key}
-            size="sm"
-            variant={filter === t.key ? 'secondary' : 'ghost'}
-            onClick={() => setFilter(t.key)}
-            className={filter === t.key ? 'font-semibold' : 'text-muted'}
-          >
-            {t.label} <span className="text-muted font-normal">({t.count.toLocaleString()})</span>
-          </Button>
-        ))}
         <div className="ml-auto flex items-center gap-2">
           <Input
             value={q}
@@ -172,6 +162,19 @@ export default function SkuAuditLists({ rows, shopify }: { rows: SkuRow[]; shopi
             Download CSV
           </Button>
         </div>
+      </div>
+      <div className="px-4 pb-2 border-b border-frame flex flex-wrap items-center gap-1">
+        {tabs.map(t => (
+          <Button
+            key={t.key}
+            size="sm"
+            variant={filter === t.key ? 'secondary' : 'ghost'}
+            onClick={() => setFilter(t.key)}
+            className={filter === t.key ? 'font-semibold' : 'text-muted'}
+          >
+            {t.label} <span className="text-muted font-normal">({t.count.toLocaleString()})</span>
+          </Button>
+        ))}
       </div>
 
       <p className="px-5 py-2 text-xs text-muted border-b border-hair">{HINTS[filter](storeLabel)}</p>
