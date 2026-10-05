@@ -45,8 +45,8 @@ export default async function SkuAuditPage() {
   const count = (s: SkuRow['frameworks']) => (latest ? rows.filter(r => r.frameworks === s).length.toLocaleString() : '—');
   const cards = [
     { label: 'Catsy SKUs', value: latest?.catsyCount?.toLocaleString() ?? '—', sub: 'Every product in Catsy' },
-    { label: 'Active in Frameworks', value: count('active'), sub: 'Stocked in at least one branch' },
-    { label: 'Inactive in Frameworks', value: count('inactive'), sub: 'In Frameworks, not stocked anywhere' },
+    { label: 'Stocked', value: count('active'), sub: 'Stocked in at least one Frameworks branch' },
+    { label: 'Non-stocked', value: count('inactive'), sub: 'In Frameworks, ordered in when sold' },
     { label: 'Not in Frameworks', value: count('missing'), sub: 'SKU not found, likely a typo or deleted' },
   ];
 

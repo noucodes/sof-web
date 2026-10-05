@@ -10,13 +10,20 @@ export type FrameworksStatus = 'active' | 'inactive' | 'missing';
 type ShopifyStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
 type Store = 'burdens' | 'bathroomhq' | 'plumbershq';
 type StoreCell = { enabled: boolean | null; shopify: ShopifyStatus | null };
-export type SkuRow = { sku: string; desc: string; frameworks: FrameworksStatus; stores?: Record<Store, StoreCell> };
+export type SkuRow = {
+  sku: string;
+  desc: string;
+  frameworks: FrameworksStatus;
+  branches?: Record<string, string>;
+  stores?: Record<Store, StoreCell>;
+};
 type ShopifyOnly = { sku: string; title: string; status: ShopifyStatus };
 export type ShopifyByStore = Partial<Record<Store, { error?: string; notInCatsy: ShopifyOnly[] }>>;
 
 type Filter = 'all' | FrameworksStatus | 'notLive' | 'notEnabled' | 'shopifyOnly';
 
-const FW_LABEL: Record<FrameworksStatus, string> = { active: 'Active', inactive: 'Inactive', missing: 'Not in Frameworks' };
+// Keys are what sof-api stores; labels follow Frameworks' own branch types.
+const FW_LABEL: Record<FrameworksStatus, string> = { active: 'Stocked', inactive: 'Non-stocked', missing: 'Not in Frameworks' };
 const FW_TONE = { active: 'success', inactive: 'neutral', missing: 'failed' } as const;
 const SHOP_LABEL: Record<ShopifyStatus, string> = { ACTIVE: 'Live', DRAFT: 'Draft', ARCHIVED: 'Archived' };
 
@@ -29,8 +36,8 @@ const STORES: { key: Store; label: string }[] = [
 // One-line explanation under the tabs, so the current view reads on its own.
 const HINTS: Record<Filter, (store: string) => string> = {
   all: s => (s ? `Every Catsy SKU, with its ${s} Shopify status highlighted.` : 'Every SKU in Catsy, with its Frameworks status and its status on each Shopify store.'),
-  active: () => 'In Catsy and stocked in at least one Frameworks branch.',
-  inactive: () => 'In Catsy and in Frameworks, but not stocked in any branch. Candidates to retire.',
+  active: () => 'In Catsy and Stocked in at least one Frameworks branch (kept on the shelf).',
+  inactive: () => 'In Catsy and in Frameworks, but not Stocked in any branch. Usually ordered in from the supplier when sold.',
   missing: () => 'In Catsy, but the SKU does not exist in Frameworks. Usually a typo or a deleted product.',
   notLive: s => `Switched on for ${s} in Catsy, but not live on the ${s} Shopify site (missing, draft or archived).`,
   notEnabled: s => `Live on the ${s} Shopify site, but switched off for ${s} in Catsy.`,
@@ -41,6 +48,10 @@ const HINTS: Record<Filter, (store: string) => string> = {
 const notLive = (c?: StoreCell) => c?.enabled === true && c.shopify !== 'ACTIVE';
 // An unknown flag (?) isn't a mismatch: the saved Catsy query just doesn't return it.
 const notEnabled = (c?: StoreCell) => c?.enabled === false && c.shopify === 'ACTIVE';
+
+// e.g. "8: Stocked · 20: Non-Stocked"
+const branchText = (b?: Record<string, string>) =>
+  b ? Object.entries(b).map(([id, type]) => `${id}: ${type || '?'}`).join(' · ') : '';
 
 const shopText = (c?: StoreCell) => (c?.shopify ? SHOP_LABEL[c.shopify] : 'Not listed');
 const catsyText = (c?: StoreCell) => (c?.enabled === true ? 'on' : c?.enabled === false ? 'off' : '?');
@@ -122,11 +133,12 @@ export default function SkuAuditLists({ rows, shopify }: { rows: SkuRow[]; shopi
     }
     downloadCsv(
       name,
-      ['sku', 'description', 'frameworks_status', ...STORES.flatMap(s => [`${s.key}_catsy_enabled`, `${s.key}_shopify`])],
+      ['sku', 'description', 'frameworks_status', 'frameworks_branches', ...STORES.flatMap(s => [`${s.key}_catsy_enabled`, `${s.key}_shopify`])],
       filtered.map(r => [
         r.sku,
         r.desc,
         FW_LABEL[r.frameworks],
+        branchText(r.branches),
         ...STORES.flatMap(s => [catsyText(r.stores?.[s.key]), shopText(r.stores?.[s.key])]),
       ]),
     );
@@ -237,6 +249,9 @@ export default function SkuAuditLists({ rows, shopify }: { rows: SkuRow[]; shopi
                 <td className="px-4 py-2 text-ink">{r.desc || '—'}</td>
                 <td className="px-4 py-2">
                   <StatusPill tone={FW_TONE[r.frameworks]}>{FW_LABEL[r.frameworks]}</StatusPill>
+                  {r.branches && (
+                    <span className="block text-[0.6875rem] text-muted mt-0.5">Branch {branchText(r.branches)}</span>
+                  )}
                 </td>
                 {STORES.map(s => {
                   const c = r.stores?.[s.key];

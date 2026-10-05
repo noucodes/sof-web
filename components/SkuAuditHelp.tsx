@@ -58,10 +58,12 @@ export default function SkuAuditHelp() {
               <Term name="SKU">The product code as it appears in Catsy (the Burdens SKU).</Term>
               <Term name="Frameworks description">The product name from Frameworks. Blank when the SKU isn&apos;t in Frameworks.</Term>
               <Term name="Frameworks">
-                <span className="font-medium text-ink">Active</span>: stocked in at least one branch.{' '}
-                <span className="font-medium text-ink">Inactive</span>: exists in Frameworks but isn&apos;t stocked in any branch.{' '}
+                <span className="font-medium text-ink">Stocked</span>: Stocked in at least one branch (kept on the shelf).{' '}
+                <span className="font-medium text-ink">Non-stocked</span>: in Frameworks but not Stocked in any branch, usually
+                ordered in from the supplier when sold.{' '}
                 <span className="font-medium text-ink">Not in Frameworks</span>: the SKU doesn&apos;t exist there, usually a typo or
-                a deleted product.
+                a deleted product. The small line underneath shows each branch&apos;s own stock type, e.g. &quot;8: Stocked · 20:
+                Non-Stocked&quot;.
               </Term>
               <Term name="Burdens / BHQ / PHQ">
                 One column per Shopify store. The pill is the product&apos;s status on that store:{' '}
@@ -76,7 +78,7 @@ export default function SkuAuditHelp() {
           <Section title="Tabs">
             <dl className="space-y-2">
               <Term name="All">Every Catsy SKU.</Term>
-              <Term name="Active / Inactive / Not in Frameworks">Only SKUs with that Frameworks status.</Term>
+              <Term name="Stocked / Non-stocked / Not in Frameworks">Only SKUs with that Frameworks status.</Term>
             </dl>
             <p className="text-sm text-muted">Pick a store from the dropdown to see three more tabs for that store:</p>
             <dl className="space-y-2">
