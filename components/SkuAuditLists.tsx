@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
+import SkuAuditColumnFilter, { type ColumnFilter } from '@/components/SkuAuditColumnFilter';
 import StatusPill from '@/components/StatusPill';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,6 +79,8 @@ export default function SkuAuditLists({
   const [q, setQ] = useState('');
   const [search, setSearch] = useState('');
   const [offset, setOffset] = useState(0);
+  const [cols, setCols] = useState<Partial<Record<Store, ColumnFilter>>>({});
+  const colFilterCount = Object.values(cols).filter(f => f?.shopify || f?.catsy).length;
   const [data, setData] = useState<{ total: number; rows: (SkuRow | ShopifyOnly)[] } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -90,8 +93,12 @@ export default function SkuAuditLists({
   const params = useMemo(() => {
     const p = new URLSearchParams({ filter, q: search });
     if (store) p.set('store', store);
+    for (const [s, f] of Object.entries(cols)) {
+      if (f?.shopify) p.set(`${s}_shopify`, f.shopify);
+      if (f?.catsy) p.set(`${s}_catsy`, f.catsy);
+    }
     return p.toString();
-  }, [store, filter, search]);
+  }, [store, filter, search, cols]);
 
   useEffect(() => setOffset(0), [params]);
 
@@ -150,6 +157,12 @@ export default function SkuAuditLists({
           </SelectContent>
         </Select>
         <div className="ml-auto flex items-center gap-2">
+          {colFilterCount > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => setCols({})} className="text-primary">
+              <X />
+              Clear column filters ({colFilterCount})
+            </Button>
+          )}
           <Input
             value={q}
             onChange={e => setQ(e.target.value)}
@@ -222,8 +235,12 @@ export default function SkuAuditLists({
                 <th className="px-4 py-2.5 text-left font-medium text-muted">Frameworks description</th>
                 <th className="px-4 py-2.5 text-left font-medium text-muted w-40">Frameworks</th>
                 {STORES.map(s => (
-                  <th key={s.key} className={`px-4 py-2.5 text-left font-medium w-32 ${store === s.key ? 'text-ink' : 'text-muted'}`}>
-                    {s.label}
+                  <th key={s.key} className={`px-4 py-1.5 text-left font-medium w-36 ${store === s.key ? 'text-ink' : 'text-muted'}`}>
+                    <SkuAuditColumnFilter
+                      label={s.label}
+                      value={cols[s.key] ?? {}}
+                      onChange={v => setCols(c => ({ ...c, [s.key]: v }))}
+                    />
                   </th>
                 ))}
               </tr>

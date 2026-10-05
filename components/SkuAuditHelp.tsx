@@ -96,6 +96,16 @@ export default function SkuAuditHelp() {
             </dl>
           </Section>
 
+          <Section title="Column filters">
+            <p className="text-sm text-muted">
+              Click a store column heading (Burdens, BHQ, PHQ) to filter by its Shopify status (Live, Draft, Archived, Not
+              listed) and/or its Catsy Enabled switch (On, Off, Unknown). A highlighted heading has a filter on. Filters on
+              several columns combine, and they stack with the tab, store and search, e.g. &quot;Live on Burdens but switched
+              off for BHQ&quot;. <span className="font-medium text-ink">Clear column filters</span> removes them all. The tab
+              counts don&apos;t change with column filters; the total under the table does.
+            </p>
+          </Section>
+
           <Section title="Searching and downloading">
             <p className="text-sm text-muted">
               Search matches the SKU or description. The table shows 500 rows at a time; use{' '}
