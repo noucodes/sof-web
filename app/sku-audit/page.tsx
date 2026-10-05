@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
-import SkuAuditLists, { type ShopifyByStore, type SkuRow } from '@/components/SkuAuditLists';
+import SkuAuditLists, { type Counts } from '@/components/SkuAuditLists';
 import RunSkuAuditButton from '@/components/RunSkuAuditButton';
 import SkuAuditRunLog from '@/components/SkuAuditRunLog';
 import SkuAuditHelp from '@/components/SkuAuditHelp';
@@ -10,20 +10,22 @@ import SkuAuditHelp from '@/components/SkuAuditHelp';
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 type Run = {
+  id: number;
   status: 'success' | 'failed';
   frameworksCount?: number;
   frameworksStocked?: number;
   catsyCount?: number;
-  catsySkus?: SkuRow[];
-  shopify?: ShopifyByStore;
   error?: string;
   log?: string[];
   finishedAt?: string;
 };
 
+type Latest = Run & { counts: Counts; shopifyErrors: Record<string, string | null> };
+
 // sof-api checks every Catsy SKU against Frameworks and each store's Shopify
-// daily at 5am (sku-audit module); this page reads the latest run back.
-async function getAudit(cookieHeader: string): Promise<{ latest: Run | null; history: Run[]; running: boolean }> {
+// daily at 5am (sku-audit module). This loads the summary; the table fetches
+// its rows a page at a time.
+async function getAudit(cookieHeader: string): Promise<{ latest: Latest | null; history: Run[]; running: boolean }> {
   const res = await fetch(`${API}/api/sku-audit`, { headers: { cookie: cookieHeader }, cache: 'no-store' });
   if (res.status === 401) redirect('/login');
   if (!res.ok) throw new Error(`Failed to load SKU audit: ${res.status} ${await res.text()}`);
@@ -43,8 +45,7 @@ export default async function SkuAuditPage() {
   const { latest, history, running } = await getAudit(cookieHeader);
   const lastFailed = history[0]?.status === 'failed' ? history[0] : null;
 
-  const rows = latest?.catsySkus ?? [];
-  const count = (s: SkuRow['frameworks']) => (latest ? rows.filter(r => r.frameworks === s).length.toLocaleString() : '—');
+  const count = (s: 'active' | 'inactive' | 'missing') => latest?.counts.frameworks[s].toLocaleString() ?? '—';
   const cards = [
     { label: 'Catsy SKUs', value: latest?.catsyCount?.toLocaleString() ?? '—', sub: 'Every product in Catsy' },
     { label: 'Stocked', value: count('active'), sub: 'Stocked in at least one Frameworks branch' },
@@ -90,7 +91,7 @@ export default async function SkuAuditPage() {
         )}
 
         {latest && (
-          <SkuAuditLists rows={rows} shopify={latest.shopify ?? {}} />
+          <SkuAuditLists runId={latest.id} counts={latest.counts} shopifyErrors={latest.shopifyErrors} />
         )}
       </div>
     </AppShell>
