@@ -12,15 +12,13 @@ type Run = {
   frameworksCount?: number;
   frameworksStocked?: number;
   catsyCount?: number;
-  missingFromCatsy?: SkuRow[];
-  inactiveInCatsy?: SkuRow[];
-  notInFrameworks?: SkuRow[];
+  catsySkus?: SkuRow[];
   error?: string;
   finishedAt?: string;
 };
 
-// sof-api runs the Frameworks vs Catsy diff daily at 5am (sku-audit module)
-// and stores each run; this page reads the latest one back.
+// sof-api checks every Catsy SKU against Frameworks daily at 5am (sku-audit
+// module) and stores each run; this page reads the latest one back.
 async function getAudit(cookieHeader: string): Promise<{ latest: Run | null; history: Run[]; running: boolean }> {
   const res = await fetch(`${API}/api/sku-audit`, { headers: { cookie: cookieHeader }, cache: 'no-store' });
   if (res.status === 401) redirect('/login');
@@ -41,11 +39,13 @@ export default async function SkuAuditPage() {
   const { latest, history, running } = await getAudit(cookieHeader);
   const lastFailed = history[0]?.status === 'failed' ? history[0] : null;
 
+  const rows = latest?.catsySkus ?? [];
+  const count = (s: SkuRow['frameworks']) => (latest ? rows.filter(r => r.frameworks === s).length.toLocaleString() : '—');
   const cards = [
-    { label: 'Frameworks SKUs', value: latest?.frameworksCount?.toLocaleString() ?? '—', sub: latest ? `${latest.frameworksStocked?.toLocaleString()} stocked` : null },
     { label: 'Catsy SKUs', value: latest?.catsyCount?.toLocaleString() ?? '—', sub: null },
-    { label: 'Missing from Catsy', value: latest?.missingFromCatsy?.length.toLocaleString() ?? '—', sub: 'Stocked in Frameworks' },
-    { label: 'Inactive in Catsy', value: latest?.inactiveInCatsy?.length.toLocaleString() ?? '—', sub: 'Not stocked in Frameworks' },
+    { label: 'Active', value: count('active'), sub: 'Stocked in a Frameworks branch' },
+    { label: 'Inactive', value: count('inactive'), sub: 'In Frameworks, not stocked' },
+    { label: 'Not in Frameworks', value: count('missing'), sub: 'SKU not found in Frameworks' },
   ];
 
   return (
@@ -56,7 +56,7 @@ export default async function SkuAuditPage() {
           <div className="space-y-0.5">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">SKU Audit</h1>
             <p className="text-sm text-muted">
-              Frameworks products compared with Catsy, daily at 5am. Last run {formatDate(latest?.finishedAt)}.
+              Every Catsy SKU checked against Frameworks, daily at 5am. Last run {formatDate(latest?.finishedAt)}.
             </p>
           </div>
           <RunSkuAuditButton running={running} />
@@ -79,13 +79,7 @@ export default async function SkuAuditPage() {
         )}
 
         {latest && (
-          <SkuAuditLists
-            lists={{
-              missingFromCatsy: latest.missingFromCatsy ?? [],
-              inactiveInCatsy: latest.inactiveInCatsy ?? [],
-              notInFrameworks: latest.notInFrameworks ?? [],
-            }}
-          />
+          <SkuAuditLists rows={rows} />
         )}
       </div>
     </AppShell>
