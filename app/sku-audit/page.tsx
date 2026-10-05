@@ -4,6 +4,7 @@ import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import SkuAuditLists, { type ShopifyByStore, type SkuRow } from '@/components/SkuAuditLists';
 import RunSkuAuditButton from '@/components/RunSkuAuditButton';
+import SkuAuditRunLog from '@/components/SkuAuditRunLog';
 import SkuAuditHelp from '@/components/SkuAuditHelp';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -16,6 +17,7 @@ type Run = {
   catsySkus?: SkuRow[];
   shopify?: ShopifyByStore;
   error?: string;
+  log?: string[];
   finishedAt?: string;
 };
 
@@ -65,7 +67,10 @@ export default async function SkuAuditPage() {
               Last run {formatDate(latest?.finishedAt)}.
             </p>
           </div>
-          <RunSkuAuditButton running={running} />
+          <div className="flex items-center gap-2">
+            <SkuAuditRunLog log={history[0]?.log} status={history[0]?.status} finished={formatDate(history[0]?.finishedAt)} />
+            <RunSkuAuditButton running={running} />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
