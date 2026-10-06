@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.16.1',
+    date: '2026-10-06',
+    title: 'Search SKU audit by vendor',
+    improved: ['The SKU audit search box also finds SKUs by vendor name.'],
+  },
+  {
     version: '1.16.0',
     date: '2026-10-06',
     title: 'Vendor on the SKU audit',

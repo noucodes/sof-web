@@ -232,9 +232,9 @@ export default function SkuAuditLists({
           <Input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Search SKU, title or description"
-            aria-label="Search SKU, title or description"
-            className="h-8 w-60 text-[0.8125rem]"
+            placeholder="Search SKU, title, description or vendor"
+            aria-label="Search SKU, title, description or vendor"
+            className="h-8 w-72 text-[0.8125rem]"
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
