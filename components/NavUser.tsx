@@ -90,15 +90,18 @@ export default function NavUser() {
                 <DropdownMenuSeparator />
               </>
             )}
-            {/* Real form POST: /api/logout clears the cookies and redirects to /login. */}
-            <form action="/api/logout" method="POST">
-              <DropdownMenuItem asChild>
-                <button type="submit" className="w-full">
-                  <LogOut />
-                  Log out
-                </button>
-              </DropdownMenuItem>
-            </form>
+            {/* Not a <form>: choosing the item closes the menu, which unmounts a form
+                inside it before the browser submits, so the logout never fired.
+                Full page load after, so no signed-in page stays cached in the router. */}
+            <DropdownMenuItem
+              onSelect={async () => {
+                await fetch('/api/logout', { method: 'POST' }).catch(() => {});
+                window.location.assign('/login');
+              }}
+            >
+              <LogOut />
+              Log out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.14.1',
+    date: '2026-10-06',
+    title: 'Log out works again',
+    fixed: ['Log out in the account menu did nothing; it now signs you out and goes to the login page.'],
+  },
+  {
     version: '1.14.0',
     date: '2026-10-06',
     title: 'Contribution on the dashboard',
