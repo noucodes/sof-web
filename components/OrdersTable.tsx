@@ -32,6 +32,7 @@ const COLUMNS = [
   { key: 'items', label: 'Items' },
   { key: 'delivery', label: 'Delivery' },
   { key: 'frameworks', label: 'Frameworks no.' },
+  { key: 'released', label: 'Released', sortable: false },
   { key: 'created', label: 'Created' },
 ];
 
@@ -40,6 +41,14 @@ const money = (v: string | number | null | undefined) =>
 const signed = (d: number) => `${d > 0 ? '+' : '−'}$${Math.abs(d).toFixed(2)}`;
 const sydney = (iso: string, withTime = false) =>
   new Date(iso).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'short', ...(withTime ? { timeStyle: 'short' as const } : {}) });
+// From the ShipStation label job that releases the order in Frameworks (see
+// OrdersService.withPayment). An invoiced order counts as released even with no
+// job: someone released it straight in Frameworks.
+const RELEASE: Record<string, [Tone, string]> = {
+  released: ['success', 'Released'], queued: ['pending', 'Queued'], failed: ['failed', 'Release failed'],
+};
+const releaseOf = (o: any): [Tone, string] =>
+  RELEASE[o.release] ?? (o.invoicedAt ? ['success', 'Released'] : ['neutral', 'Not released']);
 const fwNo = (o: any) => (o.frameworksOrderNo ? `${o.frameworksOrderNo}-${o.frameworksOrderSuffix ?? '0'}` : null);
 
 export function JsonView({ data }: { data: any }) {
@@ -130,6 +139,7 @@ function Summary({ order }: { order: any }) {
         ]} />
         <Facts title="Frameworks" rows={[
           ['Order no.', fwNo(order) && <span className="font-mono">{fwNo(order)}</span>],
+          ['Released', releaseOf(order)[1]],
           ['Attempts', order.attempts],
           ['Invoiced', order.invoicedAt ? sydney(order.invoicedAt) : null],
         ]} />
@@ -408,7 +418,9 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
                   onCheckedChange={() => setPicked(allOn ? new Set() : new Set(orders.map(o => o.id)))}
                 />
               </th>
-              {COLUMNS.map(col => (
+              {COLUMNS.map(col => col.sortable === false ? (
+                <th key={col.key} className="px-4 py-[10px] text-left text-[0.6875rem] font-medium uppercase tracking-[0.07em] whitespace-nowrap text-muted">{col.label}</th>
+              ) : (
                 <SortableTh
                   key={col.key}
                   label={col.label}

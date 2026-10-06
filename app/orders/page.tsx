@@ -18,6 +18,7 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 async function getOrders(cookieHeader: string, params: Record<string, string>) {
   const qs = new URLSearchParams();
   if (params.search) qs.set('search', params.search);
+  if (params.skus) qs.set('skus', params.skus);
   if (params.status && params.status !== 'all') qs.set('status', params.status);
   if (params.store && params.store !== 'all') qs.set('store', params.store);
   if (params.sortBy) qs.set('sortBy', params.sortBy);
@@ -88,7 +89,7 @@ export default async function OrdersPage({
             <OrdersToolbar />
           </div>
 
-          <Suspense key={key} fallback={<TableSkeleton columns={8} />}>
+          <Suspense key={key} fallback={<TableSkeleton columns={9} />}>
             <OrdersContent data={data} gaps={gaps} params={params} />
           </Suspense>
         </OrdersToolbarProvider>

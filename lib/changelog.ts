@@ -12,6 +12,15 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.18.0',
+    date: '2026-10-07',
+    title: 'Released column and SKU search on Orders',
+    added: [
+      'Orders shows whether each order has been released in Frameworks: Released, Queued, Release failed or Not released.',
+      'Search SKUs on Orders: paste a list of SKUs to see every order that has any of them.',
+    ],
+  },
+  {
     version: '1.16.1',
     date: '2026-10-06',
     title: 'Search SKU audit by vendor',
