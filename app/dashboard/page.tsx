@@ -22,10 +22,34 @@ type SkuSummary = {
   latest: { status: string; finishedAt: string; counts?: { stores: Record<string, { notLive: number; notEnabled: number }> }; shopifyErrors?: Record<string, string | null> } | null;
 };
 
+type ContribPeriod = { orders: number; netSales: number; cogs: number; contribution: number; lowGp: number; missing: number };
+type Contribution = {
+  days: number;
+  gpThreshold: number;
+  current: ContribPeriod;
+  previous: ContribPeriod;
+  stores: { store: string; current: ContribPeriod; previous: ContribPeriod }[];
+  worst: { id: number; name: string | null; orderNo: string | null; store: string | null; netSales: number; contribution: number | null; gp: number }[];
+};
+
+const money = (n: number) => n.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 });
+const pct = (part: number, whole: number) => (whole ? `${((part / whole) * 100).toFixed(1)}%` : '—');
+// ▲/▼ % against the previous period; nothing to show when there's no earlier figure.
+function Delta({ now, before, range, short }: { now: number; before: number; range: number; short?: boolean }) {
+  if (!before) return short ? null : <p className="text-xs text-muted mt-0.5">No previous {range} days to compare</p>;
+  const d = ((now - before) / Math.abs(before)) * 100;
+  return (
+    <span className={`block ${short ? 'text-[0.6875rem]' : 'text-xs mt-0.5'} ${d >= 0 ? 'text-success' : 'text-failed'}`}>
+      {d >= 0 ? '▲' : '▼'} {Math.abs(d).toFixed(0)}%{short ? '' : ` vs previous ${range} days (${money(before)})`}
+    </span>
+  );
+}
+
 const ago = (d?: string | null) => (d ? `${formatDistanceToNowStrict(new Date(d))} ago` : 'Never');
 const hoursSince = (d?: string | null) => (d ? (Date.now() - new Date(d).getTime()) / 36e5 : Infinity);
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
+  const range = (await searchParams).range === '30' ? 30 : 7;
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
 
@@ -37,7 +61,7 @@ export default async function DashboardPage() {
     return res?.ok ? res.json().catch(() => null) : null;
   };
 
-  const [metrics, daily, feed, team, failedJobs, b2b, sku] = await Promise.all([
+  const [metrics, daily, feed, team, failedJobs, b2b, sku, contribution] = await Promise.all([
     get<any>('/metrics'),
     get<Daily>('/metrics/daily?days=7'),
     get<{ activity: Feed }>('/metrics/activity?limit=8'),
@@ -45,7 +69,13 @@ export default async function DashboardPage() {
     get<{ total: number }>('/jobs?status=failed&limit=1'),
     get<B2b>('/api/b2b-sync/status'),
     get<SkuSummary>('/api/sku-audit'),
+    get<Contribution>(`/metrics/contribution?days=${range}`),
   ]);
+
+  // ---- Contribution ---------------------------------------------------------
+  const cur = contribution?.current;
+  const prev = contribution?.previous;
+  const rangeFrom = new Date(Date.now() - (range - 1) * 864e5).toLocaleDateString('en-CA', { timeZone: TZ });
 
   // ---- Needs attention ------------------------------------------------------
   const skuMismatch = Object.entries(sku?.latest?.counts?.stores ?? {})
@@ -225,25 +255,110 @@ export default async function DashboardPage() {
           </section>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-2">
-          {/* Team activity */}
-          <section className="bg-white rounded-xl shadow-card overflow-hidden">
-            <h2 className="px-5 py-4 border-b border-frame text-sm font-semibold text-ink">Team activity</h2>
-            <ul>
-              {(!team || team.length === 0) && <li className="px-5 py-8 text-center text-sm text-muted">No one has done anything yet</li>}
-              {team?.map(t => (
-                <li key={t.id} className="flex items-start gap-3 px-5 py-3 border-t border-hair first:border-t-0">
-                  <span className="flex-1 min-w-0 text-sm">
-                    <span className="text-ink">{actionLabel(t.params)}</span>
-                    <span className="block text-xs text-muted truncate">{t.userEmail}</span>
-                  </span>
-                  {t.result?.ok === false && <StatusPill tone="failed">Failed</StatusPill>}
-                  <span className="text-xs text-muted whitespace-nowrap">{time(t.createdAt)}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
+        {/* Contribution, last 7 or 30 days vs the period before */}
+        <section className="bg-white rounded-xl shadow-card overflow-hidden">
+          <div className="px-5 py-3 border-b border-frame flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-ink">Contribution</h2>
+            <div className="flex items-center gap-3">
+              <nav aria-label="Contribution period" className="flex rounded-md bg-surface-strong p-0.5">
+                {[7, 30].map(n => (
+                  <Link
+                    key={n}
+                    href={n === 7 ? '/dashboard' : `/dashboard?range=${n}`}
+                    scroll={false}
+                    aria-current={n === range ? 'page' : undefined}
+                    className={`rounded px-2.5 py-0.5 text-xs ${n === range ? 'bg-white shadow-card font-semibold text-ink' : 'text-muted hover:text-ink'}`}
+                  >
+                    {n} days
+                  </Link>
+                ))}
+              </nav>
+              <Link href={`/contribution?from=${rangeFrom}`} className="text-xs text-primary hover:underline">Open report</Link>
+            </div>
+          </div>
+          {!contribution ? (
+            <p className="px-5 py-10 text-center text-sm text-muted">Contribution unavailable</p>
+          ) : (
+            <div className="grid lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)_minmax(0,4fr)] lg:divide-x divide-hair">
+              {/* Totals */}
+              <div className="p-5 space-y-4">
+                <div>
+                  <p className="text-xs font-medium text-muted uppercase tracking-[0.07em]">Last {range} days</p>
+                  <p className="text-2xl font-semibold text-ink tabular-nums mt-1">{money(cur!.contribution)}</p>
+                  <Delta now={cur!.contribution} before={prev!.contribution} range={range} />
+                </div>
+                <dl className="grid grid-cols-2 gap-4">
+                  {[
+                    ['Net sales', money(cur!.netSales), `${cur!.orders.toLocaleString()} orders`],
+                    ['Margin', pct(cur!.contribution, cur!.netSales), 'Contribution ÷ net sales'],
+                    ['GP %', pct(cur!.netSales - cur!.cogs, cur!.netSales), 'Before freight and fees'],
+                    ['Low GP', cur!.lowGp.toLocaleString(), `Orders under ${contribution.gpThreshold}% GP`],
+                  ].map(([label, value, sub]) => (
+                    <div key={label}>
+                      <dt className="text-xs font-medium text-muted uppercase tracking-[0.07em]">{label}</dt>
+                      <dd className={`text-lg font-semibold tabular-nums mt-0.5 ${label === 'Low GP' && cur!.lowGp > 0 ? 'text-failed' : 'text-ink'}`}>{value}</dd>
+                      <dd className="text-[0.6875rem] text-muted">{sub}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="text-[0.6875rem] text-muted">
+                  {cur!.missing > 0 && <>{cur!.missing.toLocaleString()} processed order{cur!.missing === 1 ? '' : 's'} not calculated yet. </>}
+                  Freight is added when the label prints, so the latest days read a little high.
+                </p>
+              </div>
 
+              {/* By store */}
+              <div className="p-5 border-t border-hair lg:border-t-0">
+                <h3 className="text-xs font-medium text-muted uppercase tracking-[0.07em]">By store</h3>
+                <ul className="mt-2">
+                  {contribution.stores.length === 0 && <li className="py-4 text-sm text-muted">No orders yet</li>}
+                  {contribution.stores.map(s => (
+                    <li key={s.store} className="border-t border-hair first:border-t-0">
+                      <Link href={`/contribution?store=${s.store}&from=${rangeFrom}`} className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded hover:bg-surface-hover">
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-sm text-ink">{STORE_LABEL[s.store] ?? s.store}</span>
+                          <span className="block text-[0.6875rem] text-muted">
+                            {s.current.orders.toLocaleString()} orders · {pct(s.current.contribution, s.current.netSales)} margin
+                          </span>
+                        </span>
+                        <span className="text-right">
+                          <span className="block text-sm font-semibold text-ink tabular-nums">{money(s.current.contribution)}</span>
+                          <Delta now={s.current.contribution} before={s.previous.contribution} range={range} short />
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Worst margin orders */}
+              <div className="p-5 border-t border-hair lg:border-t-0">
+                <h3 className="text-xs font-medium text-muted uppercase tracking-[0.07em]">Lowest GP orders</h3>
+                <ul className="mt-2">
+                  {contribution.worst.length === 0 && <li className="py-4 text-sm text-muted">No calculated orders yet</li>}
+                  {contribution.worst.map(w => (
+                    <li key={w.id} className="border-t border-hair first:border-t-0">
+                      <Link
+                        href={w.orderNo ? `/orders?search=${encodeURIComponent(w.orderNo)}` : '/orders'}
+                        className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded hover:bg-surface-hover"
+                      >
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-sm text-ink truncate">{w.name ?? `Order ${w.id}`}</span>
+                          <span className="block text-[0.6875rem] text-muted">
+                            {STORE_LABEL[w.store ?? ''] ?? w.store} · {money(w.netSales)} sales
+                          </span>
+                        </span>
+                        <StatusPill tone={w.gp < contribution.gpThreshold ? 'failed' : 'neutral'}>{w.gp.toFixed(1)}% GP</StatusPill>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <div className="grid gap-6 xl:grid-cols-2">
           {/* System feed (orders + syncs) */}
           <section className="bg-white rounded-xl shadow-card overflow-hidden">
             <h2 className="px-5 py-4 border-b border-frame text-sm font-semibold text-ink">Orders &amp; syncs</h2>
@@ -256,6 +371,24 @@ export default async function DashboardPage() {
                   </StatusPill>
                   <span className="flex-1 min-w-0 text-sm text-ink truncate">{a.message}</span>
                   <span className="text-xs text-muted whitespace-nowrap">{time(a.createdAt)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* Recent actions: what people did (sign-ins left out) */}
+          <section className="bg-white rounded-xl shadow-card overflow-hidden">
+            <h2 className="px-5 py-4 border-b border-frame text-sm font-semibold text-ink">Recent actions</h2>
+            <ul>
+              {(!team || team.length === 0) && <li className="px-5 py-8 text-center text-sm text-muted">No one has done anything yet</li>}
+              {team?.map(t => (
+                <li key={t.id} className="flex items-start gap-3 px-5 py-3 border-t border-hair first:border-t-0">
+                  <span className="flex-1 min-w-0 text-sm">
+                    <span className="text-ink">{actionLabel(t.params)}</span>
+                    <span className="block text-xs text-muted truncate">{t.userEmail}</span>
+                  </span>
+                  {t.result?.ok === false && <StatusPill tone="failed">Failed</StatusPill>}
+                  <span className="text-xs text-muted whitespace-nowrap">{time(t.createdAt)}</span>
                 </li>
               ))}
             </ul>

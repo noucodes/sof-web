@@ -12,6 +12,18 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.14.0',
+    date: '2026-10-06',
+    title: 'Contribution on the dashboard',
+    added: [
+      'Dashboard contribution card: contribution against the period before, with net sales, margin, GP % and low-GP orders.',
+      'Switch the contribution card between the last 7 and 30 days.',
+      'Contribution split by store, each linking to that store’s report.',
+      'The five lowest-GP orders for the period, each linking to the order.',
+    ],
+    improved: ['Team activity is now "Recent actions" at the bottom of the dashboard, without sign-ins and sign-outs.'],
+  },
+  {
     version: '1.13.1',
     date: '2026-10-06',
     title: 'Dashboard fixes',
