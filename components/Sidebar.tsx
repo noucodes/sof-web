@@ -11,7 +11,9 @@ import {
   ArrowLeftRight,
   ListChecks,
   Users,
+  Activity,
 } from 'lucide-react';
+import { VERSION } from '@/lib/changelog';
 import NavUser from '@/components/NavUser';
 import {
   Sidebar as SidebarPrimitive,
@@ -36,6 +38,7 @@ const NAV = [
   { href: '/b2b-sync', label: 'B2B Price Sync', icon: ArrowLeftRight },
   { href: '/sku-audit', label: 'SKU Audit', icon: ListChecks },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/activity', label: 'User activity', icon: Activity },
 ];
 
 export default function Sidebar() {
@@ -80,6 +83,12 @@ export default function Sidebar() {
 
       <SidebarFooter className="border-t border-frame">
         <NavUser />
+        <Link
+          href="/changelog"
+          className="px-2 text-[0.6875rem] text-muted hover:text-primary group-data-[collapsible=icon]:hidden"
+        >
+          v{VERSION} · What’s new
+        </Link>
       </SidebarFooter>
 
       <SidebarRail />
