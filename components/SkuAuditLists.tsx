@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
 import { toast } from 'sonner';
 import SkuAuditColumnFilter, { type ColumnFilter } from '@/components/SkuAuditColumnFilter';
+import SkuAuditVendorFilter from '@/components/SkuAuditVendorFilter';
 import StatusPill from '@/components/StatusPill';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +23,7 @@ type StoreCell = { enabled: boolean | null; shopify: ShopifyStatus | null };
 type SkuRow = {
   sku: string;
   title?: string; // Catsy current_title
+  vendor?: string; // Catsy frameworks_supplier_name ("Frameworks Vendor")
   desc: string; // Frameworks description
   frameworks: FrameworksStatus;
   branches?: Record<string, string>;
@@ -34,6 +36,7 @@ type Filter = 'all' | FrameworksStatus | 'notLive' | 'notEnabled' | 'shopifyOnly
 export type Counts = {
   frameworks: Record<'all' | FrameworksStatus, number>;
   stores: Record<Store, { notLive: number; notEnabled: number; shopifyOnly: number }>;
+  vendors?: [string, number][]; // [vendor, SKU count]; missing on runs from before the Vendor column
 };
 
 // Keys are what sof-api stores; labels follow Frameworks' own branch types.
@@ -114,7 +117,8 @@ export default function SkuAuditLists({
   const [search, setSearch] = useState('');
   const [offset, setOffset] = useState(0);
   const [cols, setCols] = useState<Partial<Record<Store, ColumnFilter>>>({});
-  const colFilterCount = Object.values(cols).filter(f => f?.shopify || f?.catsy).length;
+  const [vendors, setVendors] = useState<string[]>([]);
+  const colFilterCount = Object.values(cols).filter(f => f?.shopify || f?.catsy).length + (vendors.length ? 1 : 0);
   const [data, setData] = useState<{ total: number; rows: (SkuRow | ShopifyOnly)[] } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -131,8 +135,9 @@ export default function SkuAuditLists({
       if (f?.shopify) p.set(`${s}_shopify`, f.shopify);
       if (f?.catsy) p.set(`${s}_catsy`, f.catsy);
     }
+    for (const v of vendors) p.append('vendor', v);
     return p.toString();
-  }, [store, filter, search, cols]);
+  }, [store, filter, search, cols, vendors]);
 
   useEffect(() => setOffset(0), [params]);
 
@@ -219,7 +224,7 @@ export default function SkuAuditLists({
         </Select>
         <div className="ml-auto flex items-center gap-2">
           {colFilterCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => setCols({})} className="text-primary">
+            <Button variant="ghost" size="sm" onClick={() => { setCols({}); setVendors([]); }} className="text-primary">
               <X />
               Clear column filters ({colFilterCount})
             </Button>
@@ -309,6 +314,9 @@ export default function SkuAuditLists({
               <tr>
                 <th className="px-4 py-2.5 text-left font-medium text-muted w-48">SKU</th>
                 <th className="px-4 py-2.5 text-left font-medium text-muted">Title</th>
+                <th className="px-4 py-1.5 text-left font-medium text-muted w-44">
+                  <SkuAuditVendorFilter vendors={counts.vendors ?? []} value={vendors} onChange={setVendors} />
+                </th>
                 <th className="px-4 py-2.5 text-left font-medium text-muted w-40">Frameworks</th>
                 {STORES.map(s => (
                   <th key={s.key} className={`px-4 py-1.5 text-left font-medium w-36 ${store === s.key ? 'text-ink' : 'text-muted'}`}>
@@ -324,7 +332,7 @@ export default function SkuAuditLists({
             <tbody>
               {!loading && rows.length === 0 && (
                 <tr>
-                  <td colSpan={3 + STORES.length} className="px-4 py-10 text-center text-sm text-muted">Nothing here</td>
+                  <td colSpan={4 + STORES.length} className="px-4 py-10 text-center text-sm text-muted">Nothing here</td>
                 </tr>
               )}
               {(rows as SkuRow[]).map(r => (
@@ -337,6 +345,7 @@ export default function SkuAuditLists({
                       <span className="block text-[0.6875rem] text-muted mt-0.5">Frameworks: {r.desc}</span>
                     )}
                   </td>
+                  <td className="px-4 py-2 text-ink">{r.vendor ?? <span className="text-muted">—</span>}</td>
                   <td className="px-4 py-2">
                     <StatusPill tone={FW_TONE[r.frameworks]}>{FW_LABEL[r.frameworks]}</StatusPill>
                     {r.branches && (

@@ -12,6 +12,21 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.16.0',
+    date: '2026-10-06',
+    title: 'Vendor on the SKU audit',
+    added: [
+      'SKU audit Vendor column, from Catsy’s Frameworks Vendor field. Also in the CSV, Excel and copied table.',
+      'Vendor filter: search vendors and tick one or more (or "No vendor set"), with how many SKUs each has.',
+    ],
+  },
+  {
+    version: '1.15.1',
+    date: '2026-10-06',
+    title: 'Add user pop-up spacing',
+    fixed: ['The Add user pop-up’s fields ran to its edges; they now line up with the title and buttons.'],
+  },
+  {
     version: '1.15.0',
     date: '2026-10-06',
     title: 'Roles, profiles and a detailed activity log',

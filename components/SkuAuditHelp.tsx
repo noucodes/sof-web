@@ -104,7 +104,9 @@ export default function SkuAuditHelp() {
               Click a store column heading (Burdens, BHQ, PHQ) to filter by its Shopify status (Live, Draft, Archived, Not
               listed) and/or its Catsy Enabled switch (On, Off, Unknown). A highlighted heading has a filter on. Filters on
               several columns combine, and they stack with the tab, store and search, e.g. &quot;Live on Burdens but switched
-              off for BHQ&quot;. <span className="font-medium text-ink">Clear column filters</span> removes them all. The tab
+              off for BHQ&quot;. Click <span className="font-medium text-ink">Vendor</span> to show only some Frameworks
+              Vendors (Catsy&apos;s &quot;Frameworks Vendor&quot; field): search, then tick one or more, or tick &quot;No vendor
+              set&quot;. <span className="font-medium text-ink">Clear column filters</span> removes them all. The tab
               counts don&apos;t change with column filters; the total under the table does.
             </p>
           </Section>

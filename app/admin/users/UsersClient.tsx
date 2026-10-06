@@ -192,24 +192,27 @@ function AddUserDialog({ open, onClose, onAdded }: { open: boolean; onClose: () 
   return (
     <Dialog open={open} onOpenChange={o => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className="flex min-h-0 flex-col">
           <DialogHeader>
             <DialogTitle>Add user</DialogTitle>
             <DialogDescription>They sign in with this email and password. Ask them to change the password from My profile.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-1.5">
-            <label htmlFor="add-email" className="text-xs font-medium text-ink">Email</label>
-            <Input id="add-email" type="email" required value={email} placeholder="name@burdens.com.au" onChange={e => setEmail(e.target.value)} />
+          {/* DialogContent has no padding of its own; the body brings it, like the header and footer. */}
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
+            <div className="space-y-1.5">
+              <label htmlFor="add-email" className="text-xs font-medium text-ink">Email</label>
+              <Input id="add-email" type="email" required value={email} placeholder="name@burdens.com.au" onChange={e => setEmail(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="add-password" className="text-xs font-medium text-ink">Temporary password</label>
+              <Input id="add-password" type="password" required minLength={8} autoComplete="new-password" value={password} placeholder="At least 8 characters" onChange={e => setPassword(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <span className="text-xs font-medium text-ink">Role</span>
+              <RolePicker name="add-role" value={role} onChange={setRole} />
+            </div>
+            {error && <p className="text-sm text-failed" role="alert">{error}</p>}
           </div>
-          <div className="space-y-1.5">
-            <label htmlFor="add-password" className="text-xs font-medium text-ink">Temporary password</label>
-            <Input id="add-password" type="password" required minLength={8} autoComplete="new-password" value={password} placeholder="At least 8 characters" onChange={e => setPassword(e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <span className="text-xs font-medium text-ink">Role</span>
-            <RolePicker name="add-role" value={role} onChange={setRole} />
-          </div>
-          {error && <p className="text-sm text-failed" role="alert">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             <Button type="submit" disabled={busy}>{busy ? 'Adding…' : 'Add user'}</Button>
