@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { refreshAccessToken } from './auth';
 
@@ -9,6 +9,19 @@ function withAccessToken(cookieHeader: string, accessToken: string): string {
   return [...kept, `access_token=${accessToken}`].join('; ');
 }
 
+// The portal page the browser was on when it called this route (its Referer),
+// passed to sof-api as x-sof-page so the activity log can say where a button was pressed.
+async function sourcePage(): Promise<Record<string, string>> {
+  const referer = (await headers()).get('referer');
+  if (!referer) return {};
+  try {
+    const { pathname, search } = new URL(referer);
+    return { 'x-sof-page': `${pathname}${search}`.slice(0, 300) };
+  } catch {
+    return {};
+  }
+}
+
 // Every /api/* route forwards the session cookie to the backend and mirrors
 // its JSON + status back. Centralized here so a 401 (naturally-expired access
 // token) gets one retry via /auth/refresh instead of failing the action —
@@ -16,8 +29,9 @@ function withAccessToken(cookieHeader: string, accessToken: string): string {
 // happened to expire mid-session.
 export async function proxyJson(path: string, init?: RequestInit) {
   const store = await cookies();
+  const page = await sourcePage();
   let cookieHeader = store.getAll().map(c => `${c.name}=${c.value}`).join('; ');
-  let res = await fetch(`${API}${path}`, { ...init, headers: { ...init?.headers, cookie: cookieHeader } });
+  let res = await fetch(`${API}${path}`, { ...init, headers: { ...init?.headers, cookie: cookieHeader, ...page } });
 
   let refreshedSetCookies: string[] | null = null;
   if (res.status === 401) {
@@ -27,7 +41,7 @@ export async function proxyJson(path: string, init?: RequestInit) {
       if (refreshed) {
         refreshedSetCookies = refreshed.setCookieHeaders;
         cookieHeader = withAccessToken(cookieHeader, refreshed.accessToken);
-        res = await fetch(`${API}${path}`, { ...init, headers: { ...init?.headers, cookie: cookieHeader } });
+        res = await fetch(`${API}${path}`, { ...init, headers: { ...init?.headers, cookie: cookieHeader, ...page } });
       }
     }
   }
@@ -42,8 +56,9 @@ export async function proxyJson(path: string, init?: RequestInit) {
 // (non-JSON) response body — e.g. the contribution CSV export.
 export async function proxyFile(path: string, init?: RequestInit) {
   const store = await cookies();
+  const page = await sourcePage();
   let cookieHeader = store.getAll().map(c => `${c.name}=${c.value}`).join('; ');
-  let res = await fetch(`${API}${path}`, { ...init, headers: { ...init?.headers, cookie: cookieHeader } });
+  let res = await fetch(`${API}${path}`, { ...init, headers: { ...init?.headers, cookie: cookieHeader, ...page } });
 
   let refreshedSetCookies: string[] | null = null;
   if (res.status === 401) {
@@ -53,7 +68,7 @@ export async function proxyFile(path: string, init?: RequestInit) {
       if (refreshed) {
         refreshedSetCookies = refreshed.setCookieHeaders;
         cookieHeader = withAccessToken(cookieHeader, refreshed.accessToken);
-        res = await fetch(`${API}${path}`, { ...init, headers: { ...init?.headers, cookie: cookieHeader } });
+        res = await fetch(`${API}${path}`, { ...init, headers: { ...init?.headers, cookie: cookieHeader, ...page } });
       }
     }
   }

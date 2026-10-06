@@ -5,8 +5,9 @@ import { ArrowRight, RefreshCw, TriangleAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TableSkeleton } from '@/components/PageLoading';
+import { TableSkeleton } from '@/components/TableSkeleton';
 import StatusPill, { type Tone } from '@/components/StatusPill';
+import { useCanAct } from '@/components/RoleProvider';
 
 type Change = {
   id: number;
@@ -32,6 +33,7 @@ const auDate = (ymd: string) => new Date(ymd + 'T00:00:00Z').toLocaleDateString(
 const auDateTime = (iso: string) => new Date(iso).toLocaleString('en-AU', { dateStyle: 'short', timeStyle: 'short' });
 
 export default function HeldToChanges() {
+  const canAct = useCanAct();
   const [days, setDays] = useState(30);
   const [rows, setRows] = useState<Change[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -129,7 +131,7 @@ export default function HeldToChanges() {
                 )}
                 {rows?.map(r => {
                   const [tone, label] = OUTCOME[r.result.outcome] ?? OUTCOME.failed;
-                  const canRetry = !r.result.ok && latest.has(r.id);
+                  const canRetry = canAct && !r.result.ok && latest.has(r.id);
                   return (
                     <tr key={r.id} className="border-t border-hair transition-colors duration-100 first:border-t-0 hover:bg-surface-hover">
                       <td className="px-4 py-3">

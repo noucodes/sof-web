@@ -12,6 +12,7 @@ import SortableTh from '@/components/table/SortableTh';
 import StatusPill, { humanize, type Tone } from '@/components/StatusPill';
 import { useOrdersToolbar } from '@/components/OrdersToolbar';
 import { createPortal } from 'react-dom';
+import { useCanAct } from '@/components/RoleProvider';
 
 export const STATUS_TONE: Record<string, Tone> = { success: 'success', failed: 'failed', pending: 'pending' };
 const PAYMENT_TONE: Record<string, Tone> = {
@@ -273,6 +274,7 @@ function WarningIcon({ message }: { message: string }) {
 }
 
 export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps?: NumberGap[] }) {
+  const canAct = useCanAct();
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderWarnings = useMemo(() => findOrderWarnings(orders, gaps), [orders, gaps]);
@@ -292,7 +294,7 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
 
   const allOn = orders.length > 0 && orders.every(o => picked.has(o.id));
   const someOn = !allOn && orders.some(o => picked.has(o.id));
-  const pickedFailed = orders.filter(o => picked.has(o.id) && o.status === 'failed');
+  const pickedFailed = canAct ? orders.filter(o => picked.has(o.id) && o.status === 'failed') : [];
   const toggle = (id: string) => setPicked(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   // One request per order, in sequence, so the bridge isn't hit in parallel.
@@ -464,7 +466,7 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
                 {/* Shown on hover/focus with a mouse; always shown on touch screens, which have no hover. */}
                 <td className={cn(cell, 'whitespace-nowrap text-right')}>
                   <span className="opacity-0 transition-opacity duration-100 group-hover:opacity-100 group-focus-within:opacity-100 group-focus-visible:opacity-100 [@media(hover:none)]:opacity-100">
-                    {o.status === 'failed' ? (
+                    {o.status === 'failed' && canAct ? (
                       <Button
                         size="sm"
                         variant="outline"
@@ -547,7 +549,7 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
                 </Button>
               </div>
               <div className="flex gap-2">
-                {order.status === 'failed' && (
+                {order.status === 'failed' && canAct && (
                   <Button size="sm" onClick={() => retry(order.id)} disabled={retrying === order.id}>
                     {retrying === order.id ? 'Retrying…' : 'Retry order'}
                   </Button>

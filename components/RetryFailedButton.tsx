@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCanAct } from '@/components/RoleProvider';
 
 // Recurring bridge-down symptom: every push in the wave fails with one of
 // these exact error strings. Two formats show up depending on which service
@@ -26,6 +27,7 @@ const BRIDGE_ERRORS = [
 ];
 
 export default function RetryFailedButton() {
+  const canAct = useCanAct();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -48,6 +50,7 @@ export default function RetryFailedButton() {
     }
   }
 
+  if (!canAct) return null; // viewers are read-only
   return (
     <Button
       variant="outline"

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCanAct } from '@/components/RoleProvider';
 
 // Recurring bridge-down symptom: the /release-order call 403s/404s/502s and
 // the job fails with the raw axios error string (unwrapped, unlike orders'
@@ -15,6 +16,7 @@ const BRIDGE_ERRORS = [
 ];
 
 export default function RetryFailedReleasesButton() {
+  const canAct = useCanAct();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -37,6 +39,7 @@ export default function RetryFailedReleasesButton() {
     }
   }
 
+  if (!canAct) return null; // viewers are read-only
   return (
     <Button
       variant="outline"

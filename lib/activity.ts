@@ -4,6 +4,7 @@ const ACTIONS: Record<string, string> = {
   'AuthController.login': 'Signed in',
   'AuthController.logout': 'Signed out',
   'AuthController.register': 'Registered a user',
+  'AuthController.changePassword': 'Changed their own password',
   'OrdersController.retry': 'Retried an order',
   'OrdersController.retryFailed': 'Retried all failed orders',
   'OrdersController.fetchPrice': 'Fetched a Frameworks price',
@@ -20,10 +21,34 @@ const ACTIONS: Record<string, string> = {
   'SkuAuditController.run': 'Ran the SKU audit',
 };
 
-export type ActivityParams = { handler?: string; method?: string; url?: string; path?: string };
+export type ActivityParams = {
+  handler?: string;
+  method?: string;
+  url?: string;
+  path?: string; // page_view rows
+  page?: string; // where the button was pressed
+  target?: string; // what it was pressed on, e.g. "#B12345 · Frameworks 98765"
+  body?: Record<string, unknown>; // what it sent, secrets hidden
+  changes?: Record<string, [unknown, unknown]>; // before → after, e.g. a user's role
+};
+
+export type ActivityEntry = {
+  id: number;
+  userEmail: string;
+  action: string;
+  params: ActivityParams;
+  result: { ok?: boolean; error?: string; response?: unknown } | null;
+  createdAt: string;
+};
 
 export function actionLabel(p: ActivityParams | null | undefined) {
   if (!p?.handler) return 'Did something';
+  // A user edit says which kind of edit it was.
+  if (p.handler === 'UsersController.update' && p.changes) {
+    if ('isActive' in p.changes) return p.changes.isActive[1] ? 'Reactivated a user' : 'Deactivated a user';
+    if ('role' in p.changes) return 'Changed a user’s role';
+    if ('password' in p.changes) return 'Reset a user’s password';
+  }
   return ACTIONS[p.handler] ?? p.handler.replace('Controller.', ': ');
 }
 
@@ -41,6 +66,7 @@ const PAGES: Record<string, string> = {
   users: 'Users',
   activity: 'User activity',
   changelog: 'Changelog',
+  profile: 'My profile',
 };
 
 export const pageLabel = (path: string) =>

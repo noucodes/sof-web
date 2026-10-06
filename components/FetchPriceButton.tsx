@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { useCanAct } from '@/components/RoleProvider';
 
 export default function FetchPriceButton({ orderId, hasError }: { orderId: string | number; hasError: boolean }) {
+  const canAct = useCanAct();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -31,6 +33,7 @@ export default function FetchPriceButton({ orderId, hasError }: { orderId: strin
     }
   }
 
+  if (!canAct) return null; // viewers are read-only
   return (
     <Button
       variant="link"

@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { TableSkeleton } from '@/components/PageLoading';
+import { TableSkeleton } from '@/components/TableSkeleton';
 import Pill, { type Tone } from '@/components/StatusPill';
+import { useCanAct } from '@/components/RoleProvider';
 
 type Row = {
   id: number;
@@ -63,6 +64,7 @@ function StatusPill({ status }: { status: string | null }) {
 }
 
 export default function InvoicedOutsideShipStation() {
+  const canAct = useCanAct();
   const [days, setDays] = useState(30);
   const [store, setStore] = useState('all');
   const [view, setView] = useState<View>('open');
@@ -212,7 +214,7 @@ export default function InvoicedOutsideShipStation() {
           <Clock className="size-3.5" />
           {checking ? 'Checking Frameworks and ShipStation…' : data ? `Last checked ${agoLabel(data.checkedAt)}` : error ? 'Not loaded' : 'Loading…'}
         </span>
-        <Button
+        {canAct && <Button
           size="sm"
           variant="outline"
           onClick={checkNow}
@@ -221,7 +223,7 @@ export default function InvoicedOutsideShipStation() {
         >
           <RefreshCw className={checking ? 'animate-spin' : undefined} />
           {checking ? 'Checking…' : 'Check now'}
-        </Button>
+        </Button>}
       </div>
 
       {error ? (
@@ -245,7 +247,7 @@ export default function InvoicedOutsideShipStation() {
                     <Checkbox
                       aria-label="Select all open orders"
                       checked={allOn}
-                      disabled={!open.length}
+                      disabled={!open.length || !canAct}
                       onCheckedChange={() => setPicked(allOn ? new Set() : new Set(open.map(r => r.id)))}
                     />
                   </th>
@@ -267,7 +269,7 @@ export default function InvoicedOutsideShipStation() {
                 )}
                 {rows.map((r, i) => {
                   const age = daysSince(r.invoicedAt);
-                  const can = markable(r);
+                  const can = canAct && markable(r);
                   return (
                     <tr
                       key={r.id}
@@ -356,7 +358,7 @@ function NotifyToggle({ checked, onChange, pickups }: { checked: boolean; onChan
 const looksLikePickup = (r: Row) => /pick ?up|collect/i.test(`${r.delivery ?? ''} ${r.shipstation?.service ?? ''}`);
 
 function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Carrier[]; onClose: () => void; onMark: MarkFn }) {
-  const can = markable(row);
+  const can = useCanAct() && markable(row);
   const [carrier, setCarrier] = useState(row.shipstation?.carrierCode ?? '');
   const [shipDate, setShipDate] = useState(ymd(row.invoicedAt));
   const [tracking, setTracking] = useState('');

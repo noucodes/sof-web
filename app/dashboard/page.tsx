@@ -6,7 +6,7 @@ import { ChevronRight, CircleCheck } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import StatusPill, { type Tone } from '@/components/StatusPill';
-import { actionLabel, type ActivityParams } from '@/lib/activity';
+import { actionLabel, pageLabel, type ActivityParams } from '@/lib/activity';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const TZ = 'Australia/Sydney';
@@ -385,7 +385,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 <li key={t.id} className="flex items-start gap-3 px-5 py-3 border-t border-hair first:border-t-0">
                   <span className="flex-1 min-w-0 text-sm">
                     <span className="text-ink">{actionLabel(t.params)}</span>
-                    <span className="block text-xs text-muted truncate">{t.userEmail}</span>
+                    <span className="block text-xs text-muted truncate">
+                        {[t.params?.target, t.userEmail, t.params?.page && `on ${pageLabel(t.params.page.split('?')[0])}`].filter(Boolean).join(' · ')}
+                      </span>
                   </span>
                   {t.result?.ok === false && <StatusPill tone="failed">Failed</StatusPill>}
                   <span className="text-xs text-muted whitespace-nowrap">{time(t.createdAt)}</span>

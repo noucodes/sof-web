@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { useCanAct } from '@/components/RoleProvider';
 
 export default function RunSkuAuditButton({ running }: { running: boolean }) {
+  const canAct = useCanAct();
   const [busy, setBusy] = useState(running);
 
   async function run() {
@@ -18,6 +20,7 @@ export default function RunSkuAuditButton({ running }: { running: boolean }) {
     toast.success('Audit started. It takes a few minutes, refresh to see results.');
   }
 
+  if (!canAct) return null; // viewers are read-only
   return (
     <Button onClick={run} disabled={busy} className="shrink-0">
       <RefreshCw className={busy ? 'animate-spin' : undefined} />

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { VERSION } from '@/lib/changelog';
 import NavUser from '@/components/NavUser';
+import { useRole } from '@/components/RoleProvider';
 import {
   Sidebar as SidebarPrimitive,
   SidebarContent,
@@ -37,12 +38,13 @@ const NAV = [
   { href: '/shipstation', label: 'ShipStation', icon: Ship },
   { href: '/b2b-sync', label: 'B2B Price Sync', icon: ArrowLeftRight },
   { href: '/sku-audit', label: 'SKU Audit', icon: ListChecks },
-  { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/activity', label: 'User activity', icon: Activity },
+  { href: '/admin/users', label: 'Users', icon: Users, admin: true },
+  { href: '/admin/activity', label: 'User activity', icon: Activity, admin: true },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const isAdmin = useRole() === 'admin';
 
   return (
     <SidebarPrimitive collapsible="icon" className="border-frame">
@@ -58,7 +60,7 @@ export default function Sidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV.map(({ href, label, icon: Icon }) => {
+              {NAV.filter(n => isAdmin || !('admin' in n)).map(({ href, label, icon: Icon }) => {
                 const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
                 return (
                   <SidebarMenuItem key={href}>

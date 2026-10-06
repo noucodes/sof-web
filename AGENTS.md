@@ -24,3 +24,9 @@ Skip the changelog for changes nobody using the site would notice: refactors, do
 # User activity log
 
 `components/PageViewTracker.tsx` (in `AppShell`) records every page a signed-in user opens, and sof-api's `LoggingInterceptor` records every non-GET call they make. Both write to `audit_log` (`page_view` / `request` rows), which shows up in Admin › User activity and on the dashboard. When you add a new page, add its path segment to `PAGES` in `lib/activity.ts`. When you add a sof-api action, add its `Controller.method` to `ACTIONS` there so the log reads in plain English.
+
+The interceptor also stores the page the button was pressed on (`x-sof-page`, added by `lib/serverFetch.ts` from the Referer), the request body with secrets hidden, a small response, and the order/job an `/:id` refers to. When an action changes something whose *before* matters (like a user's role), the handler sets `req.activity = { target, changes: { field: [from, to] } }` and the log shows it. Do that for any new edit-style endpoint.
+
+# Roles
+
+Three roles: **admin** (everything, plus Users and User activity), **operator** (every day-to-day action), **viewer** (read-only). sof-api enforces it: `ViewerReadOnlyGuard` refuses every non-GET from a viewer except their own session, page views and password, and admin-only endpoints use `@Roles('admin')`. In sof-web, any new button that changes something must hide itself for viewers with `useCanAct()` from `components/RoleProvider.tsx`; admin-only UI checks `useRole() === 'admin'`. Role descriptions shown to users live in `lib/roles.ts`; keep them in step with what the API allows.

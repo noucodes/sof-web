@@ -4,8 +4,8 @@ import { redirect } from 'next/navigation';
 import { formatDistanceToNowStrict } from 'date-fns';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
-import StatusPill from '@/components/StatusPill';
-import { actionLabel, pageLabel, type ActivityParams } from '@/lib/activity';
+import ActivityTimeline from '@/components/ActivityTimeline';
+import { pageLabel, type ActivityEntry } from '@/lib/activity';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const RANGES = [7, 30, 90];
@@ -13,7 +13,7 @@ const RANGES = [7, 30, 90];
 type Activity = {
   users: { userEmail: string; views: number; actions: number; lastSeen: string | null }[];
   pages: { userEmail: string; path: string; views: number; lastAt: string }[];
-  entries: { id: number; userEmail: string; action: string; params: ActivityParams; result: { ok?: boolean; error?: string } | null; createdAt: string }[];
+  entries: ActivityEntry[];
 };
 
 async function getActivity(cookieHeader: string, qs: string): Promise<Activity> {
@@ -25,7 +25,6 @@ async function getActivity(cookieHeader: string, qs: string): Promise<Activity> 
 }
 
 const ago = (d: string | null) => (d ? `${formatDistanceToNowStrict(new Date(d))} ago` : '—');
-const when = (d: string) => new Date(d).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'medium', timeStyle: 'short' });
 const TH = 'px-4 py-[10px] text-left text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap';
 
 export default async function ActivityPage({ searchParams }: { searchParams: Promise<{ user?: string; days?: string }> }) {
@@ -140,48 +139,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
 
         <section className="bg-white rounded-xl shadow-card overflow-hidden">
           <h2 className="px-5 py-4 border-b border-frame text-sm font-semibold text-ink">Timeline</h2>
-          <table className="w-full text-sm">
-            <thead className="bg-surface-strong border-b border-frame">
-              <tr>
-                <th className={`${TH} w-44`}>When</th>
-                {!user && <th className={TH}>User</th>}
-                <th className={TH}>What</th>
-                <th className={`${TH} w-28`}>Result</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-muted">Nothing yet</td>
-                </tr>
-              )}
-              {entries.map(e => {
-                const view = e.action === 'page_view';
-                return (
-                  <tr key={e.id} className="border-t border-hair first:border-t-0 hover:bg-surface-hover">
-                    <td className="px-4 py-2 text-muted whitespace-nowrap">{when(e.createdAt)}</td>
-                    {!user && <td className="px-4 py-2">{e.userEmail}</td>}
-                    <td className="px-4 py-2 text-ink">
-                      {view ? (
-                        <>
-                          <span className="text-muted">Opened </span>
-                          {pageLabel(e.params?.path ?? '/')}
-                        </>
-                      ) : (
-                        <>
-                          {actionLabel(e.params)}
-                          {e.params?.url && <span className="block text-[0.6875rem] text-muted font-mono">{e.params.method} {e.params.url}</span>}
-                        </>
-                      )}
-                    </td>
-                    <td className="px-4 py-2" title={e.result?.error}>
-                      {!view && <StatusPill tone={e.result?.ok ? 'success' : 'failed'}>{e.result?.ok ? 'Done' : 'Failed'}</StatusPill>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <ActivityTimeline entries={entries} showUser={!user} />
           {entries.length >= 300 && <p className="px-5 py-3 border-t border-hair text-xs text-muted">Showing the latest 300 entries.</p>}
         </section>
       </div>

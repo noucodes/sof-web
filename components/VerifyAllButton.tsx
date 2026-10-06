@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCanAct } from '@/components/RoleProvider';
 
 export default function VerifyAllButton() {
+  const canAct = useCanAct();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +27,7 @@ export default function VerifyAllButton() {
     }
   }
 
+  if (!canAct) return null; // viewers are read-only
   return (
     <Button
       variant="outline"

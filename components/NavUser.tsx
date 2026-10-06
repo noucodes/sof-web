@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { ChevronsUpDown, LogOut } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronsUpDown, LogOut, UserRound } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -90,6 +91,12 @@ export default function NavUser() {
                 <DropdownMenuSeparator />
               </>
             )}
+            <DropdownMenuItem asChild>
+              <Link href="/profile">
+                <UserRound />
+                My profile
+              </Link>
+            </DropdownMenuItem>
             {/* Not a <form>: choosing the item closes the menu, which unmounts a form
                 inside it before the browser submits, so the logout never fired.
                 Full page load after, so no signed-in page stays cached in the router. */}

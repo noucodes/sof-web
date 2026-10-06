@@ -12,6 +12,22 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.15.0',
+    date: '2026-10-06',
+    title: 'Roles, profiles and a detailed activity log',
+    added: [
+      'Roles now mean something: Viewers see every page but can’t change anything, Operators can press every day-to-day action, Admins also manage people.',
+      'A page for each person (from Users): change their role, reset their password, deactivate them, and see everything they did.',
+      'My profile in the account menu: your role, change your own password, and your own activity.',
+      'The activity log now shows the page each button was pressed on, the order or person it was pressed on, what was sent, what came back, and for user changes the before and after (e.g. Role: Viewer → Operator).',
+    ],
+    improved: [
+      'Redesigned Users page: role summary cards, search, last seen, and adding people in a pop-up with each role explained.',
+      'Buttons you can’t use are hidden, and the admin links only show for admins.',
+    ],
+    fixed: ['Admins can’t accidentally remove their own admin access or deactivate themselves.'],
+  },
+  {
     version: '1.14.1',
     date: '2026-10-06',
     title: 'Log out works again',

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { STORES } from './SyncModal';
+import { useCanAct } from '@/components/RoleProvider';
 
 type Readiness = 'ready' | 'no_frameworks' | 'no_order' | 'voided';
 type Missing = {
@@ -27,7 +28,9 @@ const READINESS: { id: Readiness; label: string; detail: string; dot: string; pi
 const storeLabel = (id: string | null) => (id ? STORES.find(s => s.id === id)?.label ?? id : '—');
 
 export default function MissingShipmentsButton() {
+  const canAct = useCanAct();
   const [open, setOpen] = useState(false);
+  if (!canAct) return null; // viewers are read-only
   return (
     <>
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
