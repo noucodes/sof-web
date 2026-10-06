@@ -12,6 +12,13 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.13.1',
+    date: '2026-10-06',
+    title: 'Dashboard fixes',
+    improved: ['Dashboard shows when the last order came in from Shopify, instead of the last manual sync.'],
+    fixed: ['Dashboard 7-day order chart showed as unavailable.'],
+  },
+  {
     version: '1.13.0',
     date: '2026-10-06',
     title: 'New dashboard, user activity and changelog',

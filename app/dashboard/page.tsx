@@ -88,7 +88,8 @@ export default async function DashboardPage() {
   const health: { label: string; tone: Tone; status: string; sub: string }[] = [
     { label: 'Bridge', tone: !metrics ? 'neutral' : metrics.bridge === 'healthy' ? 'success' : 'failed', status: !metrics ? 'Unknown' : metrics.bridge === 'healthy' ? 'Healthy' : 'Down', sub: 'sof-bridge to Frameworks' },
     // ponytail: freshness thresholds are guesses at each job's schedule; tune if they nag.
-    { label: 'Shopify pull', tone: hoursSince(metrics?.lastSync) < 2 ? 'success' : 'pending', status: metrics?.lastSync ? 'Ran' : 'Never', sub: ago(metrics?.lastSync) },
+    // Orders arrive by Shopify webhook (Sync is only a manual catch-up), so the newest order is the live signal.
+    { label: 'Last order in', tone: !metrics ? 'neutral' : hoursSince(metrics.lastOrderAt) < 12 ? 'success' : 'pending', status: !metrics ? 'Unknown' : hoursSince(metrics.lastOrderAt) < 12 ? 'Receiving' : 'Quiet', sub: `${ago(metrics?.lastOrderAt)}${metrics?.lastOrderStore ? ` · ${STORE_LABEL[metrics.lastOrderStore] ?? metrics.lastOrderStore}` : ''}` },
     { label: 'B2B price sync', tone: !b2b?.latest ? 'neutral' : b2b.latest.status === 'failed' ? 'failed' : hoursSince(b2bAt) < 26 ? 'success' : 'pending', status: b2b?.latest ? (b2b.latest.status === 'failed' ? 'Failed' : 'Synced') : 'Unknown', sub: b2b?.latest ? `${ago(b2bAt)}${b2b.latest.itemsSynced != null ? ` · ${b2b.latest.itemsSynced.toLocaleString()} items` : ''}` : 'No runs yet' },
     { label: 'SKU audit', tone: !sku?.latest ? 'neutral' : sku.latest.status !== 'success' ? 'failed' : hoursSince(sku.latest.finishedAt) < 26 ? 'success' : 'pending', status: sku?.latest ? (sku.latest.status === 'success' ? 'Ran' : 'Failed') : 'Unknown', sub: ago(sku?.latest?.finishedAt) },
   ];
