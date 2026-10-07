@@ -61,13 +61,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     return res?.ok ? res.json().catch(() => null) : null;
   };
 
-  const [metrics, daily, feed, team, failedJobs, b2b, sku, contribution] = await Promise.all([
+  const [metrics, daily, feed, team, failedJobs, b2b, inventory, sku, contribution] = await Promise.all([
     get<any>('/metrics'),
     get<Daily>('/metrics/daily?days=7'),
     get<{ activity: Feed }>('/metrics/activity?limit=8'),
     get<Team>('/audit/team?limit=8'),
     get<{ total: number }>('/jobs?status=failed&limit=1'),
     get<B2b>('/api/b2b-sync/status'),
+    get<B2b>('/api/inventory-sync/status'),
     get<SkuSummary>('/api/sku-audit'),
     get<Contribution>(`/metrics/contribution?days=${range}`),
   ]);
@@ -90,6 +91,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   if (metrics?.failedOrders > 0) attention.push({ tone: 'failed', title: `${metrics.failedOrders} failed order${metrics.failedOrders === 1 ? '' : 's'}`, detail: 'Didn’t make it into Frameworks. Retry or fix them.', href: '/orders?status=failed' });
   if (failedJobs && failedJobs.total > 0) attention.push({ tone: 'failed', title: `${failedJobs.total} failed ShipStation job${failedJobs.total === 1 ? '' : 's'}`, detail: 'Labels printed but not released in Frameworks.', href: '/shipstation?status=failed' });
   if (b2b?.latest?.status === 'failed') attention.push({ tone: 'failed', title: 'Last B2B price sync failed', detail: b2b.latest.error?.slice(0, 120) ?? ago(b2b.latest.finishedAt ?? b2b.latest.createdAt), href: '/b2b-sync' });
+  if (inventory?.latest?.status === 'failed') attention.push({ tone: 'failed', title: 'Last inventory sync failed', detail: inventory.latest.error?.slice(0, 120) ?? ago(inventory.latest.finishedAt ?? inventory.latest.createdAt), href: '/inventory' });
   if (stalePending) attention.push({ tone: 'pending', title: `${metrics.pendingOrders} pending order${metrics.pendingOrders === 1 ? '' : 's'}`, detail: `Oldest has waited ${metrics.oldestPendingAge}.`, href: '/orders?status=pending' });
   if (skuErrors.length) attention.push({ tone: 'pending', title: 'SKU audit couldn’t read Shopify', detail: `${skuErrors.join(', ')} on the last run.`, href: '/sku-audit' });
   if (skuMismatch.length) attention.push({ tone: 'pending', title: `${skuMismatch.reduce((s, x) => s + x.n, 0).toLocaleString()} Catsy/Shopify mismatches`, detail: skuMismatch.map(x => `${x.store} ${x.n.toLocaleString()}`).join(' · '), href: '/sku-audit' });
@@ -115,12 +117,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   // ---- System health --------------------------------------------------------
   const b2bAt = b2b?.latest?.finishedAt ?? b2b?.latest?.createdAt;
+  const invAt = inventory?.latest?.finishedAt ?? inventory?.latest?.createdAt;
   const health: { label: string; tone: Tone; status: string; sub: string }[] = [
     { label: 'Bridge', tone: !metrics ? 'neutral' : metrics.bridge === 'healthy' ? 'success' : 'failed', status: !metrics ? 'Unknown' : metrics.bridge === 'healthy' ? 'Healthy' : 'Down', sub: 'sof-bridge to Frameworks' },
     // ponytail: freshness thresholds are guesses at each job's schedule; tune if they nag.
     // Orders arrive by Shopify webhook (Sync is only a manual catch-up), so the newest order is the live signal.
     { label: 'Last order in', tone: !metrics ? 'neutral' : hoursSince(metrics.lastOrderAt) < 12 ? 'success' : 'pending', status: !metrics ? 'Unknown' : hoursSince(metrics.lastOrderAt) < 12 ? 'Receiving' : 'Quiet', sub: `${ago(metrics?.lastOrderAt)}${metrics?.lastOrderStore ? ` · ${STORE_LABEL[metrics.lastOrderStore] ?? metrics.lastOrderStore}` : ''}` },
     { label: 'B2B price sync', tone: !b2b?.latest ? 'neutral' : b2b.latest.status === 'failed' ? 'failed' : hoursSince(b2bAt) < 26 ? 'success' : 'pending', status: b2b?.latest ? (b2b.latest.status === 'failed' ? 'Failed' : 'Synced') : 'Unknown', sub: b2b?.latest ? `${ago(b2bAt)}${b2b.latest.itemsSynced != null ? ` · ${b2b.latest.itemsSynced.toLocaleString()} items` : ''}` : 'No runs yet' },
+    { label: 'Inventory sync', tone: !inventory?.latest ? 'neutral' : inventory.latest.status === 'failed' ? 'failed' : hoursSince(invAt) < 3 ? 'success' : 'pending', status: inventory?.latest ? (inventory.latest.status === 'failed' ? 'Failed' : 'Synced') : 'Unknown', sub: inventory?.latest ? `${ago(invAt)}${inventory.latest.itemsSynced != null ? ` · ${inventory.latest.itemsSynced.toLocaleString()} SKUs` : ''}` : 'No runs yet' },
     { label: 'SKU audit', tone: !sku?.latest ? 'neutral' : sku.latest.status !== 'success' ? 'failed' : hoursSince(sku.latest.finishedAt) < 26 ? 'success' : 'pending', status: sku?.latest ? (sku.latest.status === 'success' ? 'Ran' : 'Failed') : 'Unknown', sub: ago(sku?.latest?.finishedAt) },
   ];
 
@@ -136,7 +140,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         </div>
 
         {/* System health strip */}
-        <section aria-label="System health" className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <section aria-label="System health" className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
           {health.map(h => (
             <div key={h.label} className="bg-white rounded-xl shadow-card px-5 py-4">
               <div className="flex items-center justify-between gap-2">

@@ -12,6 +12,18 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.19.0',
+    date: '2026-10-07',
+    title: 'Inventory sync status and a tidier sidebar',
+    added: [
+      'Inventory Sync page now shows live status like B2B Price Sync: whether the last hourly Frameworks → ShipStation run worked, how many SKUs it updated or failed, and the run history.',
+    ],
+    improved: [
+      'The sidebar is grouped into Orders, Products & stock and Admin.',
+      'Dashboard shows Inventory sync in System health, and flags a failed run under Needs attention.',
+    ],
+  },
+  {
     version: '1.18.1',
     date: '2026-10-07',
     title: 'Search Orders by Frameworks no. as shown',
