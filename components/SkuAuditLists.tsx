@@ -4,6 +4,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, Download, X } from 'lucide-reac
 import { toast } from 'sonner';
 import SkuAuditColumnFilter, { type ColumnFilter } from '@/components/SkuAuditColumnFilter';
 import SkuAuditVendorFilter from '@/components/SkuAuditVendorFilter';
+import SkuSearch from '@/components/SkuSearch';
 import StatusPill from '@/components/StatusPill';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +23,7 @@ type Store = 'burdens' | 'bathroomhq' | 'plumbershq';
 type StoreCell = { enabled: boolean | null; shopify: ShopifyStatus | null };
 type SkuRow = {
   sku: string;
+  vendorSku?: string; // Catsy vendor_catalog_no
   title?: string; // Catsy current_title
   vendor?: string; // Catsy frameworks_supplier_name ("Frameworks Vendor")
   desc: string; // Frameworks description
@@ -118,6 +120,7 @@ export default function SkuAuditLists({
   const [offset, setOffset] = useState(0);
   const [cols, setCols] = useState<Partial<Record<Store, ColumnFilter>>>({});
   const [vendors, setVendors] = useState<string[]>([]);
+  const [skus, setSkus] = useState('');
   const colFilterCount = Object.values(cols).filter(f => f?.shopify || f?.catsy).length + (vendors.length ? 1 : 0);
   const [data, setData] = useState<{ total: number; rows: (SkuRow | ShopifyOnly)[] } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -136,8 +139,9 @@ export default function SkuAuditLists({
       if (f?.catsy) p.set(`${s}_catsy`, f.catsy);
     }
     for (const v of vendors) p.append('vendor', v);
+    if (skus) p.set('skus', skus);
     return p.toString();
-  }, [store, filter, search, cols, vendors]);
+  }, [store, filter, search, cols, vendors, skus]);
 
   useEffect(() => setOffset(0), [params]);
 
@@ -232,10 +236,11 @@ export default function SkuAuditLists({
           <Input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Search SKU, title, description or vendor"
-            aria-label="Search SKU, title, description or vendor"
+            placeholder="Search SKU, catalogue no., title or vendor"
+            aria-label="Search SKU, catalogue no., title, description or vendor"
             className="h-8 w-72 text-[0.8125rem]"
           />
+          <SkuSearch value={skus} onApply={setSkus} hint="Matches the SKU or the vendor catalogue no." className="h-8" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" disabled={exporting}>
@@ -337,7 +342,12 @@ export default function SkuAuditLists({
               )}
               {(rows as SkuRow[]).map(r => (
                 <tr key={r.sku} className="border-t border-hair first:border-t-0 hover:bg-surface-hover">
-                  <td className="px-4 py-2 font-mono text-xs">{r.sku}</td>
+                  <td className="px-4 py-2 font-mono text-xs">
+                    {r.sku}
+                    {r.vendorSku && r.vendorSku !== r.sku && (
+                      <span className="block text-[0.6875rem] text-muted mt-0.5" title="Vendor catalogue no.">Cat. {r.vendorSku}</span>
+                    )}
+                  </td>
                   <td className="px-4 py-2 text-ink">
                     {/* Catsy's current_title; Frameworks' description underneath when it says something different. */}
                     {r.title || r.desc || '—'}

@@ -12,6 +12,18 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.20.0',
+    date: '2026-10-07',
+    title: 'Bulk SKU search and catalogue numbers on the SKU audit',
+    added: [
+      'Search SKUs on the SKU audit: paste a list of SKUs or vendor catalogue numbers to see just those products.',
+      'The SKU audit shows each product’s vendor catalogue no. under its SKU, and the search box finds it.',
+    ],
+    improved: [
+      'On the SKU audit problem tabs, products that are live on Shopify are listed first.',
+    ],
+  },
+  {
     version: '1.19.1',
     date: '2026-10-07',
     title: 'SKU audit finds more Shopify listings',
