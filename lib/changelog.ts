@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.18.1',
+    date: '2026-10-07',
+    title: 'Search Orders by Frameworks no. as shown',
+    improved: ['Order search finds a Frameworks no. typed or pasted with its -0 on the end, like 98765-0.'],
+  },
+  {
     version: '1.18.0',
     date: '2026-10-07',
     title: 'Released column and SKU search on Orders',
