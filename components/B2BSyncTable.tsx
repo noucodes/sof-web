@@ -19,19 +19,18 @@ function formatDate(iso?: string) {
   return `${d.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' })} ${d.toLocaleTimeString('en-AU', { timeZone: 'Australia/Sydney' })}`;
 }
 
-const columns = (failedLabel: string) => [
+const COLUMNS = [
   { key: 'status', label: 'Status', getValue: (h: Entry) => h.status },
   { key: 'source', label: 'Source', getValue: (h: Entry) => h.source ?? '' },
   { key: 'synced', label: 'Synced', getValue: (h: Entry) => h.itemsSynced ?? 0 },
-  { key: 'unmatched', label: failedLabel, getValue: (h: Entry) => h.itemsFailed ?? 0 },
+  { key: 'unmatched', label: 'Unmatched', getValue: (h: Entry) => h.itemsFailed ?? 0 },
   { key: 'finished', label: 'Finished', getValue: (h: Entry) => (h.finishedAt ? new Date(h.finishedAt).getTime() : 0) },
   { key: 'error', label: 'Error', getValue: (h: Entry) => h.error ?? '' },
 ];
 
-const GETTERS = Object.fromEntries(columns('').map(c => [c.key, c.getValue]));
+const GETTERS = Object.fromEntries(COLUMNS.map(c => [c.key, c.getValue]));
 
-export default function B2BSyncTable({ history, failedLabel = 'Unmatched' }: { history: Entry[]; failedLabel?: string }) {
-  const COLUMNS = columns(failedLabel);
+export default function B2BSyncTable({ history }: { history: Entry[] }) {
   const { sorted, sort, toggleSort } = useClientSort(history, GETTERS);
 
   return (

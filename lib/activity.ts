@@ -58,7 +58,7 @@ const PAGES: Record<string, string> = {
   orders: 'Orders',
   payments: 'Payments',
   contribution: 'Contribution',
-  inventory: 'Inventory Sync',
+  inventory: 'Inventory',
   shipstation: 'ShipStation',
   'b2b-sync': 'B2B Price Sync',
   'sku-audit': 'SKU Audit',
