@@ -28,6 +28,12 @@ type Row = {
 };
 type ListResponse = { days: number; checkedAt: string; orders: Row[]; notOpenInShipStation: number };
 type Carrier = { code: string; name: string };
+type AutoLogRow = {
+  id: number;
+  createdAt: string;
+  params: { orderName: string | null; store: string | null; carrierCode: string; shipDate: string; ssStatus: string };
+  result: { ok: boolean; error?: string };
+};
 
 const STORE_LABELS: Record<string, string> = { burdens: 'Burdens', bathroomhq: 'Bathroom HQ', plumbershq: 'Plumbers HQ', aspire: 'Aspire' };
 const SS_STATUS: Record<string, [Tone, string]> = {
@@ -76,7 +82,12 @@ export default function InvoicedOutsideShipStation() {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [carriers, setCarriers] = useState<Carrier[]>([]);
+  const [autoLog, setAutoLog] = useState<AutoLogRow[] | null>(null);
   const [, tick] = useState(0);
+
+  const loadAutoLog = useCallback(() => {
+    fetch('/api/jobs/shipstation/invoiced-outside/auto-log').then(r => (r.ok ? r.json() : [])).then(setAutoLog).catch(() => setAutoLog([]));
+  }, []);
 
   const load = useCallback(async (d: number) => {
     setLoading(true);
@@ -98,9 +109,10 @@ export default function InvoicedOutsideShipStation() {
   useEffect(() => { load(days); }, [days, load]);
   useEffect(() => {
     fetch('/api/jobs/shipstation/carriers').then(r => (r.ok ? r.json() : [])).then(setCarriers).catch(() => {});
+    loadAutoLog();
     const t = setInterval(() => tick(n => n + 1), 30000); // keeps "Last checked N min ago" current
     return () => clearInterval(t);
-  }, []);
+  }, [loadAutoLog]);
 
   async function checkNow() {
     setChecking(true);
@@ -121,6 +133,7 @@ export default function InvoicedOutsideShipStation() {
       toast.error(err.message);
     } finally {
       setChecking(false);
+      loadAutoLog();
     }
   }
 
@@ -318,6 +331,8 @@ export default function InvoicedOutsideShipStation() {
         </div>
       )}
 
+      <AutoLog rows={autoLog} />
+
       {openRow && (
         <RowDialog row={openRow} carriers={carriers} onClose={() => setOpenRow(null)} onMark={markShipped} />
       )}
@@ -325,6 +340,58 @@ export default function InvoicedOutsideShipStation() {
         <BulkDialog rows={selected} carriers={carriers} onClose={() => setBulkOpen(false)} onMark={markShipped} />
       )}
     </div>
+  );
+}
+
+function AutoLog({ rows }: { rows: AutoLogRow[] | null }) {
+  return (
+    <section className="space-y-2" aria-labelledby="auto-log-title">
+      <div>
+        <h3 id="auto-log-title" className="text-sm font-semibold text-ink">Marked shipped automatically</h3>
+        <p className="text-xs text-muted">
+          Every 30 minutes (and on Check now), orders invoiced in Frameworks in the last 7 days that are still open in ShipStation are marked shipped there. The customer isn&apos;t emailed.
+        </p>
+      </div>
+      {rows === null ? (
+        <TableSkeleton columns={4} />
+      ) : (
+        <div className="overflow-hidden rounded-xl bg-white shadow-card">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-frame bg-surface-strong">
+                <tr>
+                  <th className={TH}>When</th>
+                  <th className={TH}>Order</th>
+                  <th className={TH}>Carrier · ship date</th>
+                  <th className={TH}>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.length === 0 && (
+                  <tr><td colSpan={4} className="px-4 py-8 text-center text-sm text-muted">Nothing marked automatically yet.</td></tr>
+                )}
+                {rows.map(r => (
+                  <tr key={r.id} className="border-t border-hair first:border-t-0">
+                    <td className="whitespace-nowrap px-4 py-3 font-mono text-[0.8125rem] text-muted">
+                      {new Date(r.createdAt).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'short', timeStyle: 'short' })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="font-mono text-[0.8125rem] text-ink">{r.params.orderName}</span>
+                      <span className="block text-xs text-muted">{STORE_LABELS[r.params.store ?? ''] ?? r.params.store}</span>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-muted">{r.params.carrierCode} · {auDate(r.params.shipDate)}</td>
+                    <td className="px-4 py-3">
+                      {r.result.ok ? <Pill tone="success">Marked shipped</Pill> : <Pill tone="failed">Failed</Pill>}
+                      {r.result.error && <span className="mt-1 block text-xs text-failed">{r.result.error}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

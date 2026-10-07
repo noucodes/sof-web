@@ -12,6 +12,15 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.21.0',
+    date: '2026-10-08',
+    title: 'Invoiced orders marked shipped in ShipStation automatically',
+    added: [
+      'Orders invoiced in Frameworks are marked shipped in ShipStation automatically every 30 minutes, so they stop sitting in Awaiting shipment. Check now does it straight away.',
+      'The Invoiced outside ShipStation tab lists every order marked shipped automatically, and any ShipStation refused with the reason.',
+    ],
+  },
+  {
     version: '1.20.1',
     date: '2026-10-07',
     title: 'Tidier sidebar',
