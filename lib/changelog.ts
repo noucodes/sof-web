@@ -12,6 +12,14 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.19.1',
+    date: '2026-10-07',
+    title: 'SKU audit finds more Shopify listings',
+    fixed: [
+      'SKU audit no longer says "Not listed" for a product that is on Shopify under the same SKU or catalogue no. as another product.',
+    ],
+  },
+  {
     version: '1.19.0',
     date: '2026-10-07',
     title: 'Inventory sync status and a tidier sidebar',
