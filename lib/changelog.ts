@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.20.1',
+    date: '2026-10-07',
+    title: 'Tidier sidebar',
+    improved: ['The sidebar is grouped into Orders, Products & stock and Admin.'],
+  },
+  {
     version: '1.20.0',
     date: '2026-10-07',
     title: 'Bulk SKU search and catalogue numbers on the SKU audit',

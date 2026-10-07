@@ -1,7 +1,10 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import {
+  ChevronRight,
+  ShieldCheck,
   LayoutDashboard,
   ShoppingCart,
   CreditCard,
@@ -21,26 +24,94 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
+  useSidebar,
 } from '@/components/ui/sidebar';
 
-const NAV = [
+type Icon = typeof LayoutDashboard;
+type NavItem = { href: string; label: string; icon: Icon };
+
+// Top-level links, and collapsible groups whose icon stands in for the group
+// when the sidebar is collapsed to icons.
+const NAV: (NavItem | { label: string; icon: Icon; admin?: boolean; items: NavItem[] })[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/orders', label: 'Orders', icon: ShoppingCart },
-  { href: '/payments', label: 'Payments', icon: CreditCard },
-  { href: '/contribution', label: 'Contribution', icon: HandCoins },
-  { href: '/inventory', label: 'Inventory', icon: Boxes },
-  { href: '/shipstation', label: 'ShipStation', icon: Ship },
-  { href: '/b2b-sync', label: 'B2B Price Sync', icon: ArrowLeftRight },
-  { href: '/sku-audit', label: 'SKU Audit', icon: ListChecks },
-  { href: '/admin/users', label: 'Users', icon: Users, admin: true },
-  { href: '/admin/activity', label: 'User activity', icon: Activity, admin: true },
+  {
+    label: 'Orders',
+    icon: ShoppingCart,
+    items: [
+      { href: '/orders', label: 'Orders', icon: ShoppingCart },
+      { href: '/payments', label: 'Payments', icon: CreditCard },
+      { href: '/contribution', label: 'Contribution', icon: HandCoins },
+      { href: '/shipstation', label: 'ShipStation', icon: Ship },
+    ],
+  },
+  {
+    label: 'Products & stock',
+    icon: Boxes,
+    items: [
+      { href: '/inventory', label: 'Inventory', icon: Boxes },
+      { href: '/b2b-sync', label: 'B2B Price Sync', icon: ArrowLeftRight },
+      { href: '/sku-audit', label: 'SKU Audit', icon: ListChecks },
+    ],
+  },
+  {
+    label: 'Admin',
+    icon: ShieldCheck,
+    admin: true,
+    items: [
+      { href: '/admin/users', label: 'Users', icon: Users },
+      { href: '/admin/activity', label: 'User activity', icon: Activity },
+    ],
+  },
 ];
+
+const ACTIVE = 'data-[active=true]:bg-primary-wash data-[active=true]:text-primary';
+const isActive = (pathname: string, href: string) => pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
+
+// Opens on the group holding the current page. Clicking a group while the
+// sidebar is collapsed to icons expands the sidebar with that group open.
+function NavGroup({ label, icon: Icon, items, pathname }: { label: string; icon: Icon; items: NavItem[]; pathname: string }) {
+  const current = items.some(i => isActive(pathname, i.href));
+  const [open, setOpen] = useState(current);
+  const { state, setOpen: setSidebarOpen } = useSidebar();
+  const collapsed = state === 'collapsed';
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        tooltip={label}
+        aria-expanded={open}
+        isActive={collapsed && current}
+        className={ACTIVE}
+        onClick={() => {
+          if (collapsed) { setSidebarOpen(true); setOpen(true); } else setOpen(o => !o);
+        }}
+      >
+        <Icon />
+        <span>{label}</span>
+        <ChevronRight className={`ml-auto transition-transform duration-200 ${open ? 'rotate-90' : ''}`} />
+      </SidebarMenuButton>
+      {open && (
+        <SidebarMenuSub>
+          {items.map(({ href, label }) => (
+            <SidebarMenuSubItem key={href}>
+              <SidebarMenuSubButton asChild isActive={isActive(pathname, href)} className={ACTIVE}>
+                <Link href={href}>{label}</Link>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+          ))}
+        </SidebarMenuSub>
+      )}
+    </SidebarMenuItem>
+  );
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -58,28 +129,22 @@ export default function Sidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {NAV.filter(n => isAdmin || !('admin' in n)).map(({ href, label, icon: Icon }) => {
-                const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
-                return (
-                  <SidebarMenuItem key={href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={active}
-                      tooltip={label}
-                      className="data-[active=true]:bg-primary-wash data-[active=true]:text-primary"
-                    >
-                      <Link href={href}>
-                        <Icon />
-                        <span>{label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <SidebarMenu>
+            {NAV.filter(n => isAdmin || !('admin' in n && n.admin)).map(n =>
+              'items' in n ? (
+                <NavGroup key={n.label} label={n.label} icon={n.icon} items={n.items} pathname={pathname} />
+              ) : (
+                <SidebarMenuItem key={n.href}>
+                  <SidebarMenuButton asChild isActive={isActive(pathname, n.href)} tooltip={n.label} className={ACTIVE}>
+                    <Link href={n.href}>
+                      <n.icon />
+                      <span>{n.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ),
+            )}
+          </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
 
