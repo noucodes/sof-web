@@ -349,7 +349,7 @@ function AutoLog({ rows }: { rows: AutoLogRow[] | null }) {
       <div>
         <h3 id="auto-log-title" className="text-sm font-semibold text-ink">Marked shipped automatically</h3>
         <p className="text-xs text-muted">
-          Every 30 minutes (and on Check now), orders invoiced in Frameworks in the last 7 days that are still open in ShipStation are marked shipped there. The customer isn&apos;t emailed.
+          Every 30 minutes (and on Check now), every order invoiced in Frameworks that is still open in ShipStation are marked shipped there. The customer isn&apos;t emailed.
         </p>
       </div>
       {rows === null ? (

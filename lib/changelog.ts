@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.21.1',
+    date: '2026-10-08',
+    title: 'All open invoiced orders marked shipped',
+    improved: ['Every order invoiced in Frameworks that is still open in ShipStation is now marked shipped automatically, not just the last 7 days.'],
+  },
+  {
     version: '1.21.0',
     date: '2026-10-08',
     title: 'Invoiced orders marked shipped in ShipStation automatically',
