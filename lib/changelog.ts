@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.21.2',
+    date: '2026-10-09',
+    title: 'Invoiced orders fulfilled in Shopify too',
+    fixed: ['Orders marked shipped in ShipStation from the Invoiced outside ShipStation tab, by hand or automatically, are now also marked fulfilled in Shopify instead of staying Unfulfilled.'],
+  },
+  {
     version: '1.21.1',
     date: '2026-10-08',
     title: 'All open invoiced orders marked shipped',
