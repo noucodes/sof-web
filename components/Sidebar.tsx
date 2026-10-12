@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   ShoppingCart,
   CreditCard,
+  Undo2,
   HandCoins,
   Boxes,
   Ship,
@@ -48,6 +49,7 @@ const NAV: (NavItem | { label: string; icon: Icon; admin?: boolean; items: NavIt
     items: [
       { href: '/orders', label: 'Orders', icon: ShoppingCart },
       { href: '/payments', label: 'Payments', icon: CreditCard },
+      { href: '/refunds', label: 'Refunds', icon: Undo2 },
       { href: '/contribution', label: 'Contribution', icon: HandCoins },
       { href: '/shipstation', label: 'ShipStation', icon: Ship },
     ],

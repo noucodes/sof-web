@@ -57,6 +57,7 @@ const PAGES: Record<string, string> = {
   dashboard: 'Dashboard',
   orders: 'Orders',
   payments: 'Payments',
+  refunds: 'Refunds',
   contribution: 'Contribution',
   inventory: 'Inventory',
   shipstation: 'ShipStation',

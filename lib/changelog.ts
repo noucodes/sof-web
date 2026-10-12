@@ -12,6 +12,15 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.22.0',
+    date: '2026-10-12',
+    title: 'Refunds page',
+    added: [
+      'New Refunds page: every Shopify refund next to the Frameworks credit note or voided order for the same order, so refunds can be reconciled without a spreadsheet.',
+      'Each refund is marked Matched, Order voided, Amount differs, Not in Frameworks or Frameworks only. Show what needs attention hides the ones that match.',
+    ],
+  },
+  {
     version: '1.21.2',
     date: '2026-10-09',
     title: 'Invoiced orders fulfilled in Shopify too',
