@@ -71,7 +71,7 @@ export default async function ShipStationPage({
           <div className="space-y-0.5">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Held-to dates</h1>
             <p className="text-sm text-muted">
-              When Date Required changes on a sales order in Frameworks, the ShipStation order is held until that date. Each change and its result is listed here.
+              Every 10 minutes, open orders are checked in Frameworks. When Date Required is a future date, the ShipStation order is held until then. Each change and its result is listed here.
             </p>
           </div>
           {tabs}

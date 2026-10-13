@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.22.1',
+    date: '2026-10-13',
+    title: 'Held-to dates now update',
+    fixed: ['Held-to dates on the ShipStation page now fill in. Open orders are checked in Frameworks every 10 minutes, and any with a future Date Required are held in ShipStation until that date.'],
+  },
+  {
     version: '1.22.0',
     date: '2026-10-12',
     title: 'Refunds page',
