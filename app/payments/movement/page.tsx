@@ -44,7 +44,7 @@ export default async function MovementPage({ searchParams }: { searchParams: Pro
 
   return (
     <AppShell>
-      <PageHeader crumbs={['Payments', 'Daily movement']}>
+      <PageHeader crumbs={[{ label: 'Payments', href: '/payments' }, 'Daily movement']}>
         <Button asChild size="sm" variant="outline">
           {/* Plain <a>, not <Link>: a download endpoint must not be prefetched. */}
           <a href={`/api/orders/movement/export?${qs}`}>

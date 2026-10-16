@@ -12,6 +12,16 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.23.1',
+    date: '2026-10-16',
+    title: 'Daily movement fixes',
+    fixed: [
+      'On Daily movement, Payments at the top of the page now takes you back to the Payments page.',
+      'Daily movement CSV: sales made between midnight and 1 am were dated the next day, so some days didn’t agree with Shopify. Dates are now the Shopify day (for example 2026-10-14) and show as dates in Excel.',
+      'Daily movement no longer lists the payout to the bank (a big negative "Transfer" line), which threw out that day’s total.',
+    ],
+  },
+  {
     version: '1.23.0',
     date: '2026-10-16',
     title: 'Daily Shopify movement',
