@@ -79,6 +79,9 @@ export default async function PaymentsPage({
     <AppShell>
       <PageHeader crumbs={['Payments']}>
         <Button asChild size="sm" variant="outline">
+          <Link href="/payments/movement">Daily movement</Link>
+        </Button>
+        <Button asChild size="sm" variant="outline">
           {/* Plain <a>, not <Link>: a download endpoint must not be prefetched. */}
           <a href={`/api/orders/payments/export?${exportParams.toString()}`}>
             <Download />

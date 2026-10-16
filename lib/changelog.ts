@@ -12,6 +12,15 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.23.0',
+    date: '2026-10-16',
+    title: 'Daily Shopify movement',
+    added: [
+      'New Daily movement page under Payments: every Shopify Payments transaction with its Transaction date, Order, Amount, Fee and Net, straight from Shopify. No need to log in to each store to download it.',
+      'Pick a store and a date range (Shopify transaction date, Sydney time), then Download CSV to get the same rows as a spreadsheet.',
+    ],
+  },
+  {
     version: '1.22.1',
     date: '2026-10-13',
     title: 'Held-to dates now update',
