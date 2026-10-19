@@ -21,7 +21,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Term({ name, children }: { name: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[9.5rem_1fr] gap-3 text-sm">
+    <div className="grid gap-1 text-sm sm:grid-cols-[9.5rem_1fr] sm:gap-3">
       <dt className="font-medium text-ink">{name}</dt>
       <dd className="text-muted">{children}</dd>
     </div>
@@ -37,14 +37,14 @@ export default function SkuAuditHelp() {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-frame">
+        <DialogHeader className="px-4 pt-6 pb-4 border-b border-frame sm:px-6">
           <DialogTitle>How the SKU audit works</DialogTitle>
           <DialogDescription>
             Every product in Catsy, checked against Frameworks (stock) and each Shopify store (what&apos;s on the website).
           </DialogDescription>
         </DialogHeader>
 
-        <div className="overflow-y-auto px-6 py-5 space-y-6">
+        <div className="overflow-y-auto px-4 py-5 space-y-6 sm:px-6">
           <Section title="When it runs">
             <p className="text-sm text-muted">
               Automatically every day at 5am, or straight away with <span className="font-medium text-ink">Run now</span> (admins

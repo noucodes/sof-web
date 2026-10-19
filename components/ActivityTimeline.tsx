@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import StatusPill from '@/components/StatusPill';
+import RowSheet from '@/components/RowSheet';
 import { actionLabel, pageLabel, type ActivityEntry } from '@/lib/activity';
 import { roleLabel } from '@/lib/roles';
 
@@ -68,7 +69,8 @@ function Details({ e }: { e: ActivityEntry }) {
 export default function ActivityTimeline({ entries, showUser = true, emptyText = 'Nothing yet' }: { entries: ActivityEntry[]; showUser?: boolean; emptyText?: string }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <RowSheet>
+      <table data-compact className="stack-table w-full text-sm">
         <thead className="bg-surface-strong border-b border-frame">
           <tr>
             <th className={`${TH} w-44`}>When</th>
@@ -89,9 +91,9 @@ export default function ActivityTimeline({ entries, showUser = true, emptyText =
             const page = view ? e.params?.path : e.params?.page;
             return (
               <tr key={e.id} className="border-t border-hair first:border-t-0 align-top hover:bg-surface-hover">
-                <td className="px-4 py-2.5 text-muted whitespace-nowrap">{when(e.createdAt)}</td>
-                {showUser && <td className="px-4 py-2.5 text-ink">{e.userEmail}</td>}
-                <td className="px-4 py-2.5">
+                <td data-label="When" data-key className="px-4 py-2.5 text-muted whitespace-nowrap">{when(e.createdAt)}</td>
+                {showUser && <td data-label="Who" data-key className="px-4 py-2.5 text-ink">{e.userEmail}</td>}
+                <td data-primary className="px-4 py-2.5">
                   {view ? (
                     <span className="text-muted">Opened the page</span>
                   ) : (
@@ -101,14 +103,14 @@ export default function ActivityTimeline({ entries, showUser = true, emptyText =
                     </>
                   )}
                 </td>
-                <td className="px-4 py-2.5">
+                <td data-label="On page" className="px-4 py-2.5">
                   {page ? (
                     <Link href={page} className="text-primary hover:underline">{pageLabel(page.split('?')[0])}</Link>
                   ) : (
                     <span className="text-muted">—</span>
                   )}
                 </td>
-                <td className="px-4 py-2.5" title={e.result?.error}>
+                <td data-label="Result" data-key data-hide={view ? true : undefined} className="px-4 py-2.5" title={e.result?.error}>
                   {!view && <StatusPill tone={e.result?.ok ? 'success' : 'failed'}>{e.result?.ok ? 'Done' : 'Failed'}</StatusPill>}
                 </td>
               </tr>
@@ -116,6 +118,7 @@ export default function ActivityTimeline({ entries, showUser = true, emptyText =
           })}
         </tbody>
       </table>
+      </RowSheet>
     </div>
   );
 }

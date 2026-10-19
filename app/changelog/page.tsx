@@ -15,7 +15,7 @@ export default function ChangelogPage() {
   return (
     <AppShell>
       <PageHeader crumbs={['Changelog']} />
-      <div className="p-6 space-y-6 max-w-3xl">
+      <div className="p-4 md:p-6 space-y-6 max-w-3xl">
         <div className="space-y-0.5">
           <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Changelog</h1>
           <p className="text-sm text-muted">What’s new on the portal, newest first.</p>

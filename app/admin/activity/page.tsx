@@ -58,7 +58,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
   return (
     <AppShell>
       <PageHeader crumbs={['Admin', 'User activity']} />
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="space-y-0.5">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">User activity</h1>
@@ -70,7 +70,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
                 key={d}
                 href={href({ days: d })}
                 aria-current={d === days ? 'page' : undefined}
-                className={`rounded-md px-2.5 py-1 text-[0.8125rem] ${d === days ? 'bg-primary-wash text-primary font-semibold' : 'text-muted hover:text-ink'}`}
+                className={`rounded-md px-2.5 py-2 text-[0.8125rem] sm:py-1 ${d === days ? 'bg-primary-wash text-primary font-semibold' : 'text-muted hover:text-ink'}`}
               >
                 {d} days
               </Link>
@@ -81,7 +81,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
         <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <section className="bg-white rounded-xl shadow-card overflow-hidden">
             <h2 className="px-5 py-4 border-b border-frame text-sm font-semibold text-ink">People</h2>
-            <table className="w-full text-sm">
+            <table className="stack-table w-full text-sm">
               <thead className="bg-surface-strong border-b border-frame">
                 <tr>
                   <th className={TH}>User</th>
@@ -98,12 +98,12 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
                 )}
                 {users.map(u => (
                   <tr key={u.userEmail} className={`border-t border-hair first:border-t-0 ${u.userEmail === user ? 'bg-primary-wash' : 'hover:bg-surface-hover'}`}>
-                    <td className="px-4 py-2">
+                    <td data-primary className="px-4 py-2">
                       <Link href={href({ user: u.userEmail })} className="text-primary hover:underline">{u.userEmail}</Link>
                     </td>
-                    <td className="px-4 py-2 text-right tabular-nums">{u.views.toLocaleString()}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{u.actions.toLocaleString()}</td>
-                    <td className="px-4 py-2 text-muted">{ago(u.lastSeen)}</td>
+                    <td data-label="Page views" className="px-4 py-2 text-right tabular-nums">{u.views.toLocaleString()}</td>
+                    <td data-label="Actions" className="px-4 py-2 text-right tabular-nums">{u.actions.toLocaleString()}</td>
+                    <td data-label="Last seen" className="px-4 py-2 text-muted">{ago(u.lastSeen)}</td>
                   </tr>
                 ))}
               </tbody>

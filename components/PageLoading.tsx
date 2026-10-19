@@ -15,10 +15,10 @@ export default function PageLoading() {
         <Skeleton className="h-4 w-px" />
         <Skeleton className="h-3.5 w-32" />
       </header>
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-6 space-y-4">
         <div className="space-y-1.5">
           <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-3.5 w-72" />
+          <Skeleton className="h-3.5 w-full max-w-72" />
         </div>
         <TableSkeleton />
       </div>

@@ -32,7 +32,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
   return (
     <AppShell>
       <PageHeader crumbs={['Admin', 'Users', user.email]} />
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-6 space-y-4">
         <Link href="/admin/users" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
           <ChevronLeft className="size-4" />
           All users

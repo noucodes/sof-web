@@ -1,7 +1,9 @@
 'use client';
 import { useClientSort } from '@/components/table/useClientSort';
 import SortableTh from '@/components/table/SortableTh';
+import SortSelect from '@/components/table/SortSelect';
 import StatusPill, { humanize } from '@/components/StatusPill';
+import RowSheet from '@/components/RowSheet';
 
 
 type Entry = {
@@ -22,19 +24,22 @@ function formatDate(iso?: string) {
 const COLUMNS = [
   { key: 'status', label: 'Status', getValue: (h: Entry) => h.status },
   { key: 'source', label: 'Source', getValue: (h: Entry) => h.source ?? '' },
-  { key: 'synced', label: 'Synced', getValue: (h: Entry) => h.itemsSynced ?? 0 },
-  { key: 'unmatched', label: 'Unmatched', getValue: (h: Entry) => h.itemsFailed ?? 0 },
-  { key: 'finished', label: 'Finished', getValue: (h: Entry) => (h.finishedAt ? new Date(h.finishedAt).getTime() : 0) },
+  { key: 'synced', label: 'Synced', kind: 'number' as const, getValue: (h: Entry) => h.itemsSynced ?? 0 },
+  { key: 'unmatched', label: 'Unmatched', kind: 'number' as const, getValue: (h: Entry) => h.itemsFailed ?? 0 },
+  { key: 'finished', label: 'Finished', kind: 'date' as const, getValue: (h: Entry) => (h.finishedAt ? new Date(h.finishedAt).getTime() : 0) },
   { key: 'error', label: 'Error', getValue: (h: Entry) => h.error ?? '' },
 ];
 
 const GETTERS = Object.fromEntries(COLUMNS.map(c => [c.key, c.getValue]));
 
 export default function B2BSyncTable({ history }: { history: Entry[] }) {
-  const { sorted, sort, toggleSort } = useClientSort(history, GETTERS);
+  const { sorted, sort, toggleSort, setSort } = useClientSort(history, GETTERS);
 
   return (
-    <table className="w-full text-sm">
+    <>
+    <SortSelect columns={COLUMNS} value={sort} onChange={setSort} />
+    <RowSheet>
+    <table data-compact className="stack-table w-full text-sm">
       <thead className="bg-surface-strong border-b border-frame">
         <tr>
           {COLUMNS.map(col => (
@@ -55,17 +60,20 @@ export default function B2BSyncTable({ history }: { history: Entry[] }) {
         )}
         {sorted.map((h, i) => (
           <tr key={i} className={`border-t border-hair first:border-t-0 hover:bg-surface-hover transition-colors duration-100`}>
-            <td className="px-4 py-3">
+            <td data-label="Status" data-key className="px-4 py-3">
               <StatusPill tone={h.status === 'success' ? 'success' : h.status === 'failed' ? 'failed' : 'neutral'}>{humanize(h.status)}</StatusPill>
             </td>
-            <td className="px-4 py-3 text-sm text-muted">{h.source ?? '—'}</td>
-            <td className="px-4 py-3 text-sm text-ink">{h.itemsSynced ?? '—'}</td>
-            <td className="px-4 py-3 text-sm text-ink">{h.itemsFailed ?? '—'}</td>
-            <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{formatDate(h.finishedAt)}</td>
-            <td className="px-4 py-3 text-[0.8125rem] text-failed max-w-[280px] truncate">{h.error ?? '—'}</td>
+            <td data-label="Source" className="px-4 py-3 text-sm text-muted">{h.source ?? '—'}</td>
+            <td data-label="Synced" data-key="labelled" className="px-4 py-3 text-sm text-ink">{h.itemsSynced ?? '—'}</td>
+            <td data-label="Unmatched" className="px-4 py-3 text-sm text-ink">{h.itemsFailed ?? '—'}</td>
+            <td data-primary className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{formatDate(h.finishedAt)}</td>
+            {/* Phones: only a real error gets a line, wrapped in full. */}
+            <td data-hide={h.error ? undefined : true} className="px-4 py-3 text-[0.8125rem] text-failed max-w-[280px] truncate">{h.error ?? '—'}</td>
           </tr>
         ))}
       </tbody>
     </table>
+    </RowSheet>
+    </>
   );
 }

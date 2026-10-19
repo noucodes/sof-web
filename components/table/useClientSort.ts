@@ -28,5 +28,5 @@ export function useClientSort<T>(rows: T[], getters: Record<string, (row: T) => 
     });
   }
 
-  return { sorted, sort, toggleSort };
+  return { sorted, sort, toggleSort, setSort };
 }

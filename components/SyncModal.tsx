@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const STORES = [
   { id: 'burdens', label: 'Burdens' },
@@ -38,6 +39,7 @@ const inDbCount = (r: StoreResult) => r.alreadyInDb ?? r.seen - r.enqueued;
 const fmtDate = (d: Date) => format(d, 'd MMM yyyy');
 
 export default function SyncModal({ onClose }: { onClose: () => void }) {
+  const isMobile = useIsMobile();
   const [stores, setStores] = useState<string[]>(['burdens']);
   const [preset, setPreset] = useState('7d');
   const [range, setRange] = useState<DateRange | undefined>(PRESETS[1].range());
@@ -105,7 +107,7 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
 
         <div className="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:overflow-visible">
           {/* Settings */}
-          <div className="space-y-5 p-6">
+          <div className="space-y-5 p-4 sm:p-6">
             <fieldset className="space-y-2">
               <div className="flex items-baseline justify-between">
                 <legend className="text-xs font-medium text-ink">Stores</legend>
@@ -170,7 +172,7 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="range"
-                    numberOfMonths={2}
+                    numberOfMonths={isMobile ? 1 : 2}
                     weekStartsOn={1}
                     defaultMonth={range?.from}
                     endMonth={new Date()}
@@ -184,7 +186,7 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
 
             <div className="space-y-2">
               <p className="text-xs font-medium text-ink" id="sync-financial">Payment status</p>
-              <div role="radiogroup" aria-labelledby="sync-financial" className="grid grid-cols-4 gap-1 rounded-lg border border-frame bg-surface p-1">
+              <div role="radiogroup" aria-labelledby="sync-financial" className="grid grid-cols-2 gap-1 sm:grid-cols-4 rounded-lg border border-frame bg-surface p-1">
                 {FINANCIAL_STATUSES.map(s => (
                   <button
                     key={s}
@@ -193,7 +195,7 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
                     aria-checked={financialStatus === s}
                     onClick={() => change(setFinancialStatus)(s)}
                     className={cn(
-                      'rounded-md py-1.5 text-[0.8125rem] capitalize transition-colors focus-visible:shadow-focus-ring focus-visible:outline-none',
+                      'rounded-md py-2 text-[0.8125rem] capitalize sm:py-1.5 transition-colors focus-visible:shadow-focus-ring focus-visible:outline-none',
                       financialStatus === s ? 'bg-white font-medium text-ink shadow-card' : 'text-muted hover:text-ink',
                     )}
                   >
@@ -217,7 +219,7 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* Results */}
-          <section aria-live="polite" className="flex min-w-0 flex-col border-t border-frame bg-surface/60 p-6 md:border-l md:border-t-0">
+          <section aria-live="polite" className="flex min-w-0 flex-col border-t border-frame bg-surface/60 p-4 sm:p-6 md:border-l md:border-t-0">
             <p className="mb-3 text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">
               {results && !previewed ? 'Sync result' : 'Preview'}
             </p>
@@ -261,7 +263,7 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
                   <span className="flex items-center gap-1.5"><i className="size-2 rounded-sm bg-primary" />{previewed ? 'New, would be queued' : 'Queued'}</span>
                   <Popover>
                     <PopoverTrigger className="ml-auto text-primary hover:underline">Raw response</PopoverTrigger>
-                    <PopoverContent align="end" className="max-h-72 w-96 overflow-auto p-3">
+                    <PopoverContent align="end" className="max-h-72 w-[min(24rem,calc(100vw-2rem))] overflow-auto p-3">
                       <pre className="font-mono text-[0.6875rem] text-ink">{JSON.stringify({ results }, null, 2)}</pre>
                     </PopoverContent>
                   </Popover>
@@ -276,7 +278,7 @@ export default function SyncModal({ onClose }: { onClose: () => void }) {
             {!stores.length ? 'Pick at least one store'
               : `${stores.length} ${stores.length === 1 ? 'store' : 'stores'} · ${days} ${days === 1 ? 'day' : 'days'} · ${financialStatus === 'any' ? 'any payment status' : financialStatus}`}
           </p>
-          <div className="ml-auto flex gap-2">
+          <div className="flex w-full flex-col-reverse gap-2 sm:ml-auto sm:w-auto sm:flex-row">
             <Button variant="outline" onClick={onClose}>{results && !previewed ? 'Done' : 'Cancel'}</Button>
             <Button
               onClick={() => run(commitsPreview ? false : dryRun)}

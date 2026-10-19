@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TableSkeleton } from '@/components/TableSkeleton';
 import Pill, { type Tone } from '@/components/StatusPill';
+import RowSheet from '@/components/RowSheet';
 import { useCanAct } from '@/components/RoleProvider';
 
 type Row = {
@@ -193,7 +194,7 @@ export default function InvoicedOutsideShipStation() {
 
       <div className="flex flex-wrap items-center gap-2">
         {selected.length > 0 ? (
-          <div className="flex items-center gap-2 rounded-lg bg-primary-wash py-1 pl-3 pr-1 text-sm font-medium text-primary">
+          <div className="flex flex-wrap items-center gap-2 rounded-lg bg-primary-wash py-1 pl-3 pr-1 text-sm font-medium text-primary">
             {selected.length} selected
             <Button size="sm" onClick={() => setBulkOpen(true)}><Truck />Mark {selected.length} shipped</Button>
             <Button size="sm" variant="ghost" onClick={() => setPicked(new Set())}>Clear</Button>
@@ -201,20 +202,20 @@ export default function InvoicedOutsideShipStation() {
         ) : (
           <>
             <Select value={store} onValueChange={setStore}>
-              <SelectTrigger aria-label="Store" className="w-44"><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="Store" className="w-[calc(50%-0.25rem)] sm:w-44"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All stores</SelectItem>
                 {Object.entries(STORE_LABELS).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={String(days)} onValueChange={v => setDays(Number(v))}>
-              <SelectTrigger aria-label="Invoiced within" className="w-44"><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="Invoiced within" className="w-[calc(50%-0.25rem)] sm:w-44"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {WINDOWS.map(d => <SelectItem key={d} value={String(d)}>Last {d} days</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={view} onValueChange={v => { setView(v as View); setPicked(new Set()); }}>
-              <SelectTrigger aria-label="ShipStation status" className="w-72"><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="ShipStation status" className="w-full sm:w-72"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {(Object.keys(VIEWS) as View[]).map(v => (
                   <SelectItem key={v} value={v}>{VIEWS[v]} ({v === 'all' ? storeRows.length : count(v)})</SelectItem>
@@ -253,7 +254,7 @@ export default function InvoicedOutsideShipStation() {
       ) : (
         <div className={cn('overflow-hidden rounded-xl bg-white shadow-card transition-opacity', loading && 'opacity-60')}>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table data-compact className="stack-table w-full text-sm">
               <thead className="border-b border-frame bg-surface-strong">
                 <tr>
                   <th className={cn(TH, 'w-10')}>
@@ -295,18 +296,18 @@ export default function InvoicedOutsideShipStation() {
                         picked.has(r.id) && 'bg-primary-wash',
                       )}
                     >
-                      <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                      <td data-select className="px-4 py-3" onClick={e => e.stopPropagation()}>
                         {can && <Checkbox aria-label={`Select ${r.orderName}`} checked={picked.has(r.id)} onCheckedChange={() => toggle(r.id)} />}
                       </td>
-                      <td className="px-4 py-3">
+                      <td data-primary className="px-4 py-3">
                         <span className="font-mono text-[0.8125rem] text-ink">{r.orderName}</span>
                         <span className="block text-xs text-muted">{[r.customer, STORE_LABELS[r.store ?? ''] ?? r.store].filter(Boolean).join(' · ')}</span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
+                      <td data-label="Invoiced" className="whitespace-nowrap px-4 py-3">
                         <span className="font-mono text-[0.8125rem] text-muted">{auDate(r.invoicedAt)}</span>
                         <span className="block font-mono text-xs text-muted">{r.frameworksOrderNo ?? '—'}</span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
+                      <td data-label="ShipStation" data-key className="whitespace-nowrap px-4 py-3">
                         <StatusPill status={r.shipstation?.status ?? null} />
                         {can && (
                           <span className={cn('mt-1 block text-xs', age >= 3 ? 'font-medium text-failed' : 'text-muted')}>
@@ -314,12 +315,13 @@ export default function InvoicedOutsideShipStation() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-ink">
+                      <td data-label="Delivery" className="px-4 py-3 text-ink">
                         {r.delivery ?? r.shipstation?.service ?? '—'}
                         {r.lineCount != null && <span className="block text-xs text-muted">{r.lineCount} item{r.lineCount === 1 ? '' : 's'}</span>}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums text-ink">{money(r.total)}</td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
+                      <td data-label="Total" data-key className="whitespace-nowrap px-4 py-3 text-right tabular-nums text-ink">{money(r.total)}</td>
+                      {/* On phones the whole item opens the same dialog. */}
+                      <td data-hide className="whitespace-nowrap px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
                         <Button size="sm" variant={can ? 'outline' : 'ghost'} onClick={() => setOpenRow(r)}>{can ? 'Mark shipped' : 'Review'}</Button>
                       </td>
                     </tr>
@@ -357,7 +359,8 @@ function AutoLog({ rows }: { rows: AutoLogRow[] | null }) {
       ) : (
         <div className="overflow-hidden rounded-xl bg-white shadow-card">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <RowSheet>
+            <table data-compact className="stack-table w-full text-sm">
               <thead className="border-b border-frame bg-surface-strong">
                 <tr>
                   <th className={TH}>When</th>
@@ -372,15 +375,15 @@ function AutoLog({ rows }: { rows: AutoLogRow[] | null }) {
                 )}
                 {rows.map(r => (
                   <tr key={r.id} className="border-t border-hair first:border-t-0">
-                    <td className="whitespace-nowrap px-4 py-3 font-mono text-[0.8125rem] text-muted">
+                    <td data-label="When" data-key className="whitespace-nowrap px-4 py-3 font-mono text-[0.8125rem] text-muted">
                       {new Date(r.createdAt).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'short', timeStyle: 'short' })}
                     </td>
-                    <td className="px-4 py-3">
+                    <td data-primary className="px-4 py-3">
                       <span className="font-mono text-[0.8125rem] text-ink">{r.params.orderName}</span>
                       <span className="block text-xs text-muted">{STORE_LABELS[r.params.store ?? ''] ?? r.params.store}</span>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-muted">{r.params.carrierCode} · {auDate(r.params.shipDate)}</td>
-                    <td className="px-4 py-3">
+                    <td data-label="Carrier · ship date" className="whitespace-nowrap px-4 py-3 text-muted">{r.params.carrierCode} · {auDate(r.params.shipDate)}</td>
+                    <td data-label="Result" data-key className="px-4 py-3">
                       {r.result.ok ? <Pill tone="success">Marked shipped</Pill> : <Pill tone="failed">Failed</Pill>}
                       {r.result.error && <span className="mt-1 block text-xs text-failed">{r.result.error}</span>}
                     </td>
@@ -388,6 +391,7 @@ function AutoLog({ rows }: { rows: AutoLogRow[] | null }) {
                 ))}
               </tbody>
             </table>
+            </RowSheet>
           </div>
         </div>
       )}
@@ -467,7 +471,7 @@ function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Car
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-5 sm:px-6">
           <div className="grid items-center gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
             {side('Frameworks', <Pill tone="success">Invoiced</Pill>, [
               ['Order no.', <span key="n" className="font-mono">{row.frameworksOrderNo ?? '—'}</span>],
@@ -518,7 +522,7 @@ function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Car
 
         <DialogFooter>
           {can && <p className="min-w-0 text-xs text-muted">Recorded as shipped in ShipStation. No label is bought.</p>}
-          <div className="ml-auto flex gap-2">
+          <div className="flex w-full flex-col-reverse gap-2 sm:ml-auto sm:w-auto sm:flex-row">
             <Button variant="outline" onClick={onClose}>{can ? 'Cancel' : 'Close'}</Button>
             {can && (
               <Button onClick={submit} disabled={busy || !carrier || !shipDate}>
@@ -561,16 +565,16 @@ function BulkDialog({ rows, carriers, onClose, onMark }: { rows: Row[]; carriers
           <DialogTitle>Mark {rows.length} order{rows.length === 1 ? '' : 's'} shipped in ShipStation</DialogTitle>
           <DialogDescription>Each one is marked shipped on the date Frameworks invoiced it.</DialogDescription>
         </DialogHeader>
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-6">
           <div className="max-h-56 overflow-y-auto rounded-lg border border-frame">
-            <table className="w-full text-sm">
+            <table className="stack-table w-full text-sm">
               <tbody>
                 {rows.map((r, i) => (
                   <tr key={r.id} className="border-t border-hair first:border-t-0">
-                    <td className="px-4 py-2 font-mono text-[0.8125rem]">{r.orderName}</td>
-                    <td className="px-4 py-2">{r.customer ?? '—'}</td>
-                    <td className="px-4 py-2 text-muted">{r.shipstation!.carrierCode ?? 'Needs a carrier'}</td>
-                    <td className="px-4 py-2 text-right font-mono text-[0.8125rem] text-muted">{auDate(r.invoicedAt)}</td>
+                    <td data-primary className="px-4 py-2 font-mono text-[0.8125rem]">{r.orderName}</td>
+                    <td data-label="Customer" className="px-4 py-2">{r.customer ?? '—'}</td>
+                    <td data-label="Carrier" className="px-4 py-2 text-muted">{r.shipstation!.carrierCode ?? 'Needs a carrier'}</td>
+                    <td data-label="Invoiced" className="px-4 py-2 text-right font-mono text-[0.8125rem] text-muted">{auDate(r.invoicedAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -589,7 +593,7 @@ function BulkDialog({ rows, carriers, onClose, onMark }: { rows: Row[]; carriers
         </div>
         <DialogFooter>
           <p className="min-w-0 text-xs text-muted">No labels are bought.</p>
-          <div className="ml-auto flex gap-2">
+          <div className="flex w-full flex-col-reverse gap-2 sm:ml-auto sm:w-auto sm:flex-row">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
             <Button onClick={submit} disabled={busy || (withoutCarrier > 0 && !carrier)}>
               <Truck />{busy ? 'Marking…' : `Mark ${rows.length} shipped`}

@@ -31,20 +31,20 @@ export default function OrderFilters() {
   }, [params, router]);
 
   return (
-    <div className="flex gap-3 flex-wrap">
+    <div className="flex w-full gap-3 flex-wrap sm:w-auto">
       <Input
         type="search"
         aria-label="Search orders"
         placeholder="Search orders…"
         defaultValue={params.get('search') ?? ''}
         onChange={e => update('search', e.target.value)}
-        className="w-56"
+        className="w-full sm:w-56"
       />
 
       <SkuSearch value={params.get('skus') ?? ''} onApply={v => update('skus', v)} hint="Shows orders with any of them." />
 
       <Select defaultValue={params.get('status') ?? 'all'} onValueChange={v => update('status', v)}>
-        <SelectTrigger aria-label="Status" className="w-40">
+        <SelectTrigger aria-label="Status" className="min-w-0 flex-1 sm:w-40 sm:flex-none">
           <SelectValue>{statusLabel(params.get('status') ?? 'all')}</SelectValue>
         </SelectTrigger>
         <SelectContent>
@@ -57,7 +57,7 @@ export default function OrderFilters() {
       </Select>
 
       <Select defaultValue={params.get('store') ?? 'all'} onValueChange={v => update('store', v)}>
-        <SelectTrigger aria-label="Store" className="w-40">
+        <SelectTrigger aria-label="Store" className="min-w-0 flex-1 sm:w-40 sm:flex-none">
           <SelectValue>{STORE_LABELS[params.get('store') ?? 'all']}</SelectValue>
         </SelectTrigger>
         <SelectContent>

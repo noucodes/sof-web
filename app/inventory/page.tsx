@@ -34,7 +34,7 @@ export default function InventoryPage() {
   return (
     <AppShell>
       <PageHeader crumbs={['Inventory']} />
-      <div className="p-6 space-y-8 max-w-2xl">
+      <div className="p-4 md:p-6 space-y-8 max-w-2xl">
 
         {/* Header */}
         <div className="space-y-1">

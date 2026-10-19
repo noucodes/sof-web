@@ -6,6 +6,7 @@ import SkuAuditColumnFilter, { type ColumnFilter } from '@/components/SkuAuditCo
 import SkuAuditVendorFilter from '@/components/SkuAuditVendorFilter';
 import SkuSearch from '@/components/SkuSearch';
 import StatusPill from '@/components/StatusPill';
+import RowSheet from '@/components/RowSheet';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -213,10 +214,10 @@ export default function SkuAuditLists({
 
   return (
     <div className="bg-white rounded-xl shadow-card overflow-hidden">
-      <div className="px-5 pt-3 pb-2 flex flex-wrap items-center gap-2">
+      <div className="px-4 pt-3 pb-2 flex flex-wrap items-center gap-2 sm:px-5">
         {/* Radix Select can't hold an empty value, so 'all' stands for no store. */}
         <Select value={store || 'all'} onValueChange={v => pickStore(v === 'all' ? '' : (v as Store))}>
-          <SelectTrigger aria-label="Store" className="h-8 w-40 text-[0.8125rem]">
+          <SelectTrigger aria-label="Store" className="h-10 w-40 text-[0.8125rem] sm:h-8">
             <SelectValue>{store ? `Store: ${storeLabel}` : 'All stores'}</SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -226,7 +227,7 @@ export default function SkuAuditLists({
             ))}
           </SelectContent>
         </Select>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
           {colFilterCount > 0 && (
             <Button variant="ghost" size="sm" onClick={() => { setCols({}); setVendors([]); }} className="text-primary">
               <X />
@@ -238,9 +239,9 @@ export default function SkuAuditLists({
             onChange={e => setQ(e.target.value)}
             placeholder="Search SKU, catalogue no., title or vendor"
             aria-label="Search SKU, catalogue no., title, description or vendor"
-            className="h-8 w-72 text-[0.8125rem]"
+            className="h-10 w-full text-[0.8125rem] sm:h-8 sm:w-72"
           />
-          <SkuSearch value={skus} onApply={setSkus} hint="Matches the SKU or the vendor catalogue no." className="h-8" />
+          <SkuSearch value={skus} onApply={setSkus} hint="Matches the SKU or the vendor catalogue no." className="h-9 sm:h-8" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" disabled={exporting}>
@@ -264,7 +265,7 @@ export default function SkuAuditLists({
           </DropdownMenu>
         </div>
       </div>
-      <div className="px-4 pb-2 border-b border-frame flex flex-wrap items-center gap-1">
+      <div className="px-4 pb-2 border-b border-frame flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&>*]:shrink-0 sm:flex-wrap">
         {tabs.map(t => (
           <Button
             key={t.key}
@@ -286,9 +287,9 @@ export default function SkuAuditLists({
         </p>
       )}
 
-      <div className={loading ? 'opacity-60 transition-opacity' : undefined}>
+      <RowSheet className={loading ? 'opacity-60 transition-opacity' : undefined}>
         {showingShopifyOnly ? (
-          <table className="w-full text-sm">
+          <table data-compact className="stack-table w-full text-sm">
             <thead className="bg-surface-strong border-b border-frame">
               <tr>
                 <th className="px-4 py-2.5 text-left font-medium text-muted w-56">SKU</th>
@@ -304,9 +305,9 @@ export default function SkuAuditLists({
               )}
               {(rows as ShopifyOnly[]).map(v => (
                 <tr key={v.sku} className="border-t border-hair first:border-t-0 hover:bg-surface-hover">
-                  <td className="px-4 py-2 font-mono text-xs">{v.sku}</td>
+                  <td data-primary className="px-4 py-2 font-mono text-xs">{v.sku}</td>
                   <td className="px-4 py-2 text-ink">{v.title}</td>
-                  <td className="px-4 py-2">
+                  <td data-label="Shopify" data-key className="px-4 py-2">
                     <StatusPill tone={v.status === 'ACTIVE' ? 'success' : 'neutral'}>{SHOP_LABEL[v.status]}</StatusPill>
                   </td>
                 </tr>
@@ -314,17 +315,17 @@ export default function SkuAuditLists({
             </tbody>
           </table>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-surface-strong border-b border-frame">
+          <table data-compact className="stack-table w-full text-sm">
+            <thead data-filters className="bg-surface-strong border-b border-frame">
               <tr>
                 <th className="px-4 py-2.5 text-left font-medium text-muted w-48">SKU</th>
                 <th className="px-4 py-2.5 text-left font-medium text-muted">Title</th>
-                <th className="px-4 py-1.5 text-left font-medium text-muted w-44">
+                <th data-filter className="px-4 py-1.5 text-left font-medium text-muted w-44">
                   <SkuAuditVendorFilter vendors={counts.vendors ?? []} value={vendors} onChange={setVendors} />
                 </th>
                 <th className="px-4 py-2.5 text-left font-medium text-muted w-40">Frameworks</th>
                 {STORES.map(s => (
-                  <th key={s.key} className={`px-4 py-1.5 text-left font-medium w-36 ${store === s.key ? 'text-ink' : 'text-muted'}`}>
+                  <th key={s.key} data-filter className={`px-4 py-1.5 text-left font-medium w-36 ${store === s.key ? 'text-ink' : 'text-muted'}`}>
                     <SkuAuditColumnFilter
                       label={s.label}
                       value={cols[s.key] ?? {}}
@@ -342,7 +343,7 @@ export default function SkuAuditLists({
               )}
               {(rows as SkuRow[]).map(r => (
                 <tr key={r.sku} className="border-t border-hair first:border-t-0 hover:bg-surface-hover">
-                  <td className="px-4 py-2 font-mono text-xs">
+                  <td data-primary className="px-4 py-2 font-mono text-xs">
                     {r.sku}
                     {r.vendorSku && r.vendorSku !== r.sku && (
                       <span className="block text-[0.6875rem] text-muted mt-0.5" title="Vendor catalogue no.">Cat. {r.vendorSku}</span>
@@ -355,8 +356,8 @@ export default function SkuAuditLists({
                       <span className="block text-[0.6875rem] text-muted mt-0.5">Frameworks: {r.desc}</span>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-ink">{r.vendor ?? <span className="text-muted">—</span>}</td>
-                  <td className="px-4 py-2">
+                  <td data-label="Vendor" className="px-4 py-2 text-ink">{r.vendor ?? <span className="text-muted">—</span>}</td>
+                  <td data-label="Frameworks" data-key className="px-4 py-2">
                     <StatusPill tone={FW_TONE[r.frameworks]}>{FW_LABEL[r.frameworks]}</StatusPill>
                     {r.branches && (
                       <span className="block text-[0.6875rem] text-muted mt-0.5">Branch {branchText(r.branches)}</span>
@@ -366,7 +367,7 @@ export default function SkuAuditLists({
                     const c = r.stores?.[s.key];
                     const mismatch = notLive(c) || notEnabled(c);
                     return (
-                      <td key={s.key} className="px-4 py-2" title={`Catsy: ${catsyText(c)} · Shopify: ${shopText(c)}`}>
+                      <td key={s.key} data-label={s.label} data-key={store === s.key ? 'labelled' : undefined} className="px-4 py-2" title={`Catsy: ${catsyText(c)} · Shopify: ${shopText(c)}`}>
                         <StatusPill tone={mismatch ? 'failed' : c?.shopify === 'ACTIVE' ? 'success' : 'neutral'}>{shopText(c)}</StatusPill>
                         <span className="block text-[0.6875rem] text-muted mt-0.5">Catsy {catsyText(c)}</span>
                       </td>
@@ -377,10 +378,10 @@ export default function SkuAuditLists({
             </tbody>
           </table>
         )}
-      </div>
+      </RowSheet>
 
       {total > 0 && (
-        <div className="px-5 py-3 flex items-center justify-between border-t border-hair text-xs text-muted">
+        <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-t border-hair text-xs text-muted sm:px-5">
           <span>
             {(offset + 1).toLocaleString()}–{Math.min(offset + PAGE, total).toLocaleString()} of {total.toLocaleString()}
           </span>

@@ -13,6 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TableSkeleton } from '@/components/PageLoading';
 import AsyncCount from '@/components/AsyncCount';
 import ContributionFilters from '@/components/ContributionFilters';
+import RowSheet from '@/components/RowSheet';
+import SortSelect from '@/components/table/SortSelect';
 import { Download } from 'lucide-react';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -94,7 +96,7 @@ export default async function PaymentsPage({
           </Link>
         </Button>
       </PageHeader>
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-6 space-y-4">
         <div className="space-y-0.5">
           <h1 className="flex items-center gap-1 text-[0.9375rem] font-semibold text-ink tracking-tight">
             Payments
@@ -203,7 +205,14 @@ async function PaymentsContent({ data, params }: { data: Promise<{ orders: any[]
         )}
 
         <div className="bg-white rounded-xl shadow-card overflow-hidden">
-          <table className="w-full text-sm">
+          <SortSelect basePath="/payments" columns={[
+            { key: 'order', label: 'Shopify order' },
+            { key: 'total', label: 'Shopify price', kind: 'number' },
+            { key: 'customer', label: 'Customer' },
+            { key: 'frameworks', label: 'Frameworks no.' },
+          ]} />
+          <RowSheet>
+          <table data-compact className="stack-table w-full text-sm">
             <thead className="bg-surface-strong border-b border-frame">
               <tr>
                 {['Shopify Order', 'Payment Method', 'Shopify Price', 'Payment Amount', 'Payment Fee', 'Date', 'Customer', 'Framework Order No.'].map(h => {
@@ -232,10 +241,10 @@ async function PaymentsContent({ data, params }: { data: Promise<{ orders: any[]
               )}
               {visibleRows.map((r: any, idx: number) => (
                 <tr key={r.id} className={`border-t border-hair first:border-t-0 hover:bg-surface-hover transition-colors duration-100`}>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.shopifyOrderNo}</td>
-                  <td className="px-4 py-3 text-sm text-ink">{r.paymentMethod}</td>
-                  <td className="px-4 py-3 text-right text-sm tabular-nums text-ink">{r.shopifyPrice ? `$${parseFloat(r.shopifyPrice).toFixed(2)}` : '—'}</td>
-                  <td className="px-4 py-3 text-sm tabular-nums text-ink">
+                  <td data-primary className="px-4 py-3 font-mono text-[0.8125rem] text-ink">{r.shopifyOrderNo}</td>
+                  <td data-label="Method" className="px-4 py-3 text-sm text-ink">{r.paymentMethod}</td>
+                  <td data-label="Shopify price" className="px-4 py-3 text-right text-sm tabular-nums text-ink">{r.shopifyPrice ? `$${parseFloat(r.shopifyPrice).toFixed(2)}` : '—'}</td>
+                  <td data-label="Payment" data-key className="px-4 py-3 text-sm tabular-nums text-ink">
                     <div className="flex items-center justify-end gap-1.5">
                       <span className={r.frameworksPriceError ? 'text-failed' : ''}>
                         {r.paymentAmount ? `$${parseFloat(r.paymentAmount).toFixed(2)}` : '—'}
@@ -277,7 +286,7 @@ async function PaymentsContent({ data, params }: { data: Promise<{ orders: any[]
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right text-sm tabular-nums text-ink">
+                  <td data-label="Fee" data-hide className="px-4 py-3 text-right text-sm tabular-nums text-ink">
                     {r.paymentFee != null ? (
                       `$${parseFloat(r.paymentFee).toFixed(2)}`
                     ) : (
@@ -287,18 +296,19 @@ async function PaymentsContent({ data, params }: { data: Promise<{ orders: any[]
                       </Tooltip>
                     )}
                   </td>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.date ? new Date(r.date).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }) : '—'}</td>
-                  <td className="px-4 py-3 text-sm text-ink">{r.customerName}</td>
-                  <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.frameworksOrderNo}</td>
+                  <td data-label="Date" data-key className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.date ? new Date(r.date).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }) : '—'}</td>
+                  <td data-label="Customer" data-key className="px-4 py-3 text-sm text-ink">{r.customerName}</td>
+                  <td data-label="Frameworks no." className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{r.frameworksOrderNo}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </RowSheet>
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between text-sm text-muted">
-            <span>Page {page} of {totalPages}</span>
+          <div className="flex items-center justify-center text-sm text-muted sm:justify-between">
+            <span className="hidden sm:inline">Page {page} of {totalPages}</span>
             <Pagination page={page} totalPages={totalPages} params={params} basePath="/payments" />
           </div>
         )}

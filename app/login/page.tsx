@@ -37,8 +37,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface">
-      <div className="w-full max-w-[400px] bg-white rounded-xl shadow-card px-8 py-8">
+    <div className="min-h-dvh flex items-center justify-center bg-surface px-4 py-8">
+      <div className="w-full max-w-[400px] bg-white rounded-xl shadow-card px-6 py-8 sm:px-8">
         <div className="flex flex-col items-center mb-8">
           <img src="/favicon.png" alt="Burdens" className="h-20 w-20 object-contain mb-3" />
           <p className="text-[0.9375rem] font-semibold text-ink tracking-tight">Burdens Integrations</p>

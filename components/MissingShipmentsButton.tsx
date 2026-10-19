@@ -103,7 +103,7 @@ function MissingShipmentsDialog({ onClose }: { onClose: () => void }) {
 
         <div className="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)] md:overflow-visible">
           {/* Window + summary */}
-          <div className="space-y-5 p-6">
+          <div className="space-y-5 p-4 sm:p-6">
             <div className="space-y-2">
               <p className="text-xs font-medium text-ink" id="ms-window">Ship date</p>
               <div role="radiogroup" aria-labelledby="ms-window" className="grid grid-cols-5 gap-1 rounded-lg border border-frame bg-surface p-1">
@@ -116,7 +116,7 @@ function MissingShipmentsDialog({ onClose }: { onClose: () => void }) {
                     disabled={loading === 'fix'}
                     onClick={() => setDays(d)}
                     className={cn(
-                      'rounded-md py-1.5 text-[0.8125rem] tabular-nums transition-colors focus-visible:shadow-focus-ring focus-visible:outline-none',
+                      'rounded-md py-2 text-[0.8125rem] tabular-nums sm:py-1.5 transition-colors focus-visible:shadow-focus-ring focus-visible:outline-none',
                       days === d ? 'bg-white font-medium text-ink shadow-card' : 'text-muted hover:text-ink',
                     )}
                   >
@@ -154,7 +154,7 @@ function MissingShipmentsDialog({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* Shipment list / outcome */}
-          <section aria-live="polite" className="flex min-h-0 min-w-0 flex-col border-t border-frame bg-surface/60 p-6 md:border-l md:border-t-0">
+          <section aria-live="polite" className="flex min-h-0 min-w-0 flex-col border-t border-frame bg-surface/60 p-4 sm:p-6 md:border-l md:border-t-0">
             <p className="mb-3 text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">
               {fixed ? 'Queued' : 'Shipments'}
             </p>

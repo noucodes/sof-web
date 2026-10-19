@@ -25,7 +25,7 @@ export default async function MyProfilePage() {
   return (
     <AppShell>
       <PageHeader crumbs={['My profile']} />
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <ProfileView user={user} activity={activity} isMe sideTitle="Change password" side={<ChangePassword />} />
       </div>
     </AppShell>

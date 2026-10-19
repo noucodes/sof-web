@@ -7,6 +7,7 @@ import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import { TableSkeleton } from '@/components/PageLoading';
 import ContributionFilters from '@/components/ContributionFilters';
+import RowSheet from '@/components/RowSheet';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -53,7 +54,7 @@ export default async function MovementPage({ searchParams }: { searchParams: Pro
           </a>
         </Button>
       </PageHeader>
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-6 space-y-4">
         <div className="space-y-0.5">
           <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Daily movement</h1>
           <p className="text-sm text-muted">
@@ -89,7 +90,8 @@ async function MovementContent({ data, allStores }: { data: Promise<Data>; allSt
       </p>
 
       <div className="bg-white rounded-xl shadow-card overflow-x-auto">
-        <table className="w-full text-sm">
+        <RowSheet>
+        <table data-compact className="stack-table w-full text-sm">
           <thead className="bg-surface-strong border-b border-frame">
             <tr>
               {headers.map(h => (
@@ -107,20 +109,21 @@ async function MovementContent({ data, allStores }: { data: Promise<Data>; allSt
             )}
             {rows.map((r, i) => (
               <tr key={i} className="border-t border-hair first:border-t-0 hover:bg-surface-hover transition-colors duration-100">
-                <td className="px-4 py-3 font-mono text-[0.8125rem] text-muted whitespace-nowrap">
+                <td data-label="Date" data-key className="px-4 py-3 font-mono text-[0.8125rem] text-muted whitespace-nowrap">
                   {new Date(r.transactionDate).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'short', timeStyle: 'short' })}
                 </td>
-                {allStores && <td className="px-4 py-3 text-ink">{r.storeLabel}</td>}
-                <td className="px-4 py-3 font-mono text-[0.8125rem] text-ink">
+                {allStores && <td data-label="Store" className="px-4 py-3 text-ink">{r.storeLabel}</td>}
+                <td data-primary className="px-4 py-3 font-mono text-[0.8125rem] text-ink">
                   {r.order ?? <span className="font-sans text-sm text-muted">{typeLabel(r.type)}</span>}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums text-ink">{money(r.amount)}</td>
-                <td className="px-4 py-3 text-right tabular-nums text-ink">{money(r.fee)}</td>
-                <td className="px-4 py-3 text-right tabular-nums text-ink">{money(r.net)}</td>
+                <td data-label="Amount" data-key className="px-4 py-3 text-right tabular-nums text-ink">{money(r.amount)}</td>
+                <td data-label="Fee" className="px-4 py-3 text-right tabular-nums text-ink">{money(r.fee)}</td>
+                <td data-label="Net" className="px-4 py-3 text-right tabular-nums text-ink">{money(r.net)}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        </RowSheet>
       </div>
     </>
   );

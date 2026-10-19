@@ -28,7 +28,7 @@ export default function SkuSearch({ value, onApply, hint, className = 'h-9' }: {
             <DialogTitle>Search by SKU</DialogTitle>
             <DialogDescription>Paste SKUs, one per line or separated by commas. {hint}</DialogDescription>
           </DialogHeader>
-          <div className="px-6">
+          <div className="px-4 sm:px-6">
             <textarea
               aria-label="SKUs"
               autoFocus

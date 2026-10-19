@@ -30,7 +30,7 @@ export default function RootLayout({
         <TooltipProvider delayDuration={200}>
           {children}
         </TooltipProvider>
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-right" mobileOffset={{ top: 64 }} richColors />
       </body>
     </html>
   );

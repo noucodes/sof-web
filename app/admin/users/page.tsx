@@ -25,7 +25,7 @@ export default async function UsersPage() {
   return (
     <AppShell>
       <PageHeader crumbs={['Admin', 'Users']} />
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-6">
         <div className="space-y-0.5">
           <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Users</h1>
           <p className="text-sm text-muted">Who can sign in to the portal and what they’re allowed to do. Open someone to change their role, reset their password or see what they’ve done.</p>

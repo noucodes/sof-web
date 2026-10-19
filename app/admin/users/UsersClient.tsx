@@ -69,9 +69,9 @@ export default function UsersClient({ initialUsers, meId }: { initialUsers: User
 
       <section className="bg-white rounded-xl shadow-card overflow-hidden">
         <div className="px-5 py-3 border-b border-frame flex flex-wrap items-center gap-2">
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
-            <Input value={q} onChange={e => setQ(e.target.value)} placeholder="Search by email" aria-label="Search by email" className="h-8 w-64 pl-8 text-[0.8125rem]" />
+            <Input value={q} onChange={e => setQ(e.target.value)} placeholder="Search by email" aria-label="Search by email" className="h-10 w-full pl-8 text-[0.8125rem] sm:h-8 sm:w-64" />
           </div>
           <div className="flex rounded-md bg-surface-strong p-0.5" role="group" aria-label="Show">
             {[false, true].map(v => (
@@ -80,7 +80,7 @@ export default function UsersClient({ initialUsers, meId }: { initialUsers: User
                 type="button"
                 aria-pressed={showInactive === v}
                 onClick={() => setShowInactive(v)}
-                className={cn('rounded px-2.5 py-0.5 text-xs', showInactive === v ? 'bg-white shadow-card font-semibold text-ink' : 'text-muted hover:text-ink')}
+                className={cn('rounded px-2.5 py-2 text-xs sm:py-0.5', showInactive === v ? 'bg-white shadow-card font-semibold text-ink' : 'text-muted hover:text-ink')}
               >
                 {v ? `Deactivated (${inactiveCount})` : `Active (${active.length})`}
               </button>
@@ -97,7 +97,7 @@ export default function UsersClient({ initialUsers, meId }: { initialUsers: User
           </Button>
         </div>
 
-        <table className="w-full text-sm">
+        <table data-compact className="stack-table w-full text-sm">
           <thead className="bg-surface-strong border-b border-frame">
             <tr>
               <th className={TH}>Person</th>
@@ -122,22 +122,22 @@ export default function UsersClient({ initialUsers, meId }: { initialUsers: User
                 onClick={() => router.push(`/admin/users/${u.id}`)}
                 className="group cursor-pointer border-t border-hair first:border-t-0 hover:bg-surface-hover"
               >
-                <td className="px-4 py-2.5">
+                <td data-primary className="px-4 py-2.5">
                   <Link href={`/admin/users/${u.id}`} onClick={e => e.stopPropagation()} className="flex items-center gap-3 focus-visible:outline-none">
                     <UserAvatar email={u.email} />
                     <span className="text-ink group-hover:text-primary">{u.email}</span>
                     {u.id === meId && <span className="rounded bg-surface-strong px-1.5 text-[0.6875rem] text-muted">You</span>}
                   </Link>
                 </td>
-                <td className="px-4 py-2.5"><RoleBadge role={u.role} /></td>
-                <td className="px-4 py-2.5">
+                <td data-label="Role" data-key className="px-4 py-2.5"><RoleBadge role={u.role} /></td>
+                <td data-label="Status" data-key className="px-4 py-2.5">
                   <StatusPill tone={u.isActive ? 'success' : 'neutral'}>{u.isActive ? 'Active' : 'Deactivated'}</StatusPill>
                 </td>
-                <td className="px-4 py-2.5 text-muted">{seen(u.lastSeen)}</td>
-                <td className="px-4 py-2.5 text-muted">
+                <td data-label="Last seen" className="px-4 py-2.5 text-muted">{seen(u.lastSeen)}</td>
+                <td data-label="Added" className="px-4 py-2.5 text-muted">
                   {new Date(u.createdAt).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney', day: 'numeric', month: 'short', year: 'numeric' })}
                 </td>
-                <td className="px-2 py-2.5 text-right">
+                <td data-select className="px-2 py-2.5 text-right">
                   <ChevronRight className="inline size-4 text-muted group-hover:text-primary" aria-hidden />
                 </td>
               </tr>
@@ -198,7 +198,7 @@ function AddUserDialog({ open, onClose, onAdded }: { open: boolean; onClose: () 
             <DialogDescription>They sign in with this email and password. Ask them to change the password from My profile.</DialogDescription>
           </DialogHeader>
           {/* DialogContent has no padding of its own; the body brings it, like the header and footer. */}
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-6">
             <div className="space-y-1.5">
               <label htmlFor="add-email" className="text-xs font-medium text-ink">Email</label>
               <Input id="add-email" type="email" required value={email} placeholder="name@burdens.com.au" onChange={e => setEmail(e.target.value)} />

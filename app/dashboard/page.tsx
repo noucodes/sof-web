@@ -129,7 +129,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   return (
     <AppShell>
       <PageHeader crumbs={['Dashboard']} />
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-6">
         <div className="space-y-0.5">
           <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted">What needs doing, how orders are flowing, and whether every sync is running.</p>
@@ -267,7 +267,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                     href={n === 7 ? '/dashboard' : `/dashboard?range=${n}`}
                     scroll={false}
                     aria-current={n === range ? 'page' : undefined}
-                    className={`rounded px-2.5 py-0.5 text-xs ${n === range ? 'bg-white shadow-card font-semibold text-ink' : 'text-muted hover:text-ink'}`}
+                    className={`rounded px-2.5 py-2 text-xs sm:py-0.5 ${n === range ? 'bg-white shadow-card font-semibold text-ink' : 'text-muted hover:text-ink'}`}
                   >
                     {n} days
                   </Link>

@@ -22,14 +22,14 @@ export default function SkuAuditRunLog({ log, status, finished }: { log?: string
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-frame">
+        <DialogHeader className="px-4 pt-6 pb-4 border-b border-frame sm:px-6">
           <DialogTitle>Latest run log</DialogTitle>
           <DialogDescription>
             {status ? `${status === 'failed' ? 'Failed' : 'Finished'} ${finished}. ` : ''}
             Each step with its counts, so you can see where SKUs drop off or where it errored.
           </DialogDescription>
         </DialogHeader>
-        <div className="overflow-y-auto px-6 py-4">
+        <div className="overflow-y-auto px-4 py-4 sm:px-6">
           {log?.length ? (
             <pre className="text-xs leading-relaxed whitespace-pre-wrap break-words font-mono text-ink">
               {log.map((line, i) => (

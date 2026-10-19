@@ -10,6 +10,7 @@ import MissingShipmentsButton from '@/components/MissingShipmentsButton';
 import InvoicedOutsideShipStation from '@/components/InvoicedOutsideShipStation';
 import HeldToChanges from '@/components/HeldToChanges';
 import ShipStationTable from '@/components/ShipStationTable';
+import LinkSelect from '@/components/LinkSelect';
 import AsyncCount from '@/components/AsyncCount';
 import { TableSkeleton } from '@/components/PageLoading';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,6 +30,7 @@ async function getJobs(cookieHeader: string, params: Record<string, string>) {
 }
 
 const STATUSES = ['all', 'pending', 'success', 'failed'];
+const statusLabel = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default async function ShipStationPage({
   searchParams,
@@ -42,7 +44,7 @@ export default async function ShipStationPage({
   const heldToView = params.view === 'held-to';
 
   const tabs = (
-    <nav aria-label="ShipStation views" className="inline-flex h-9 items-center rounded-lg bg-surface-strong p-1 text-muted">
+    <nav aria-label="ShipStation views" className="flex h-9 max-w-full items-center overflow-x-auto rounded-lg bg-surface-strong p-1 text-muted [scrollbar-width:none] sm:inline-flex">
       {[
         ['Label jobs', '/shipstation', !invoicedView && !heldToView],
         ['Invoiced outside ShipStation', '/shipstation?view=invoiced-outside', invoicedView],
@@ -52,7 +54,7 @@ export default async function ShipStationPage({
           key={label as string}
           href={href as string}
           aria-current={active ? 'page' : undefined}
-          className={`inline-flex items-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-colors focus-visible:shadow-focus-ring focus-visible:outline-none ${active ? 'bg-white text-ink shadow-card' : 'hover:text-ink'}`}
+          className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-colors focus-visible:shadow-focus-ring focus-visible:outline-none ${active ? 'bg-white text-ink shadow-card' : 'hover:text-ink'}`}
         >
           {label as string}
         </Link>
@@ -67,7 +69,7 @@ export default async function ShipStationPage({
           <MissingShipmentsButton />
           <RetryFailedReleasesButton />
         </PageHeader>
-        <div className="p-6 space-y-4">
+        <div className="p-4 md:p-6 space-y-4">
           <div className="space-y-0.5">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Held-to dates</h1>
             <p className="text-sm text-muted">
@@ -88,7 +90,7 @@ export default async function ShipStationPage({
           <MissingShipmentsButton />
           <RetryFailedReleasesButton />
         </PageHeader>
-        <div className="p-6 space-y-4">
+        <div className="p-4 md:p-6 space-y-4">
           <div className="space-y-0.5">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Invoiced outside ShipStation</h1>
             <p className="text-sm text-muted">
@@ -112,6 +114,13 @@ export default async function ShipStationPage({
       <PageHeader crumbs={['ShipStation']}>
         <MissingShipmentsButton />
         <RetryFailedReleasesButton />
+        {/* Phones: the four status buttons become one dropdown. */}
+        <LinkSelect
+          label="Status"
+          value={params.status ?? 'all'}
+          options={STATUSES.map(s => ({ value: s, label: statusLabel(s), href: `/shipstation?status=${s}` }))}
+          className="h-9 w-32 md:hidden"
+        />
         {STATUSES.map(s => {
           const active = (params.status ?? 'all') === s;
           return (
@@ -120,16 +129,16 @@ export default async function ShipStationPage({
               asChild
               size="sm"
               variant="outline"
-              className={active ? 'border-primary bg-primary-wash text-primary hover:bg-primary-wash' : 'text-muted hover:text-ink'}
+              className={`hidden md:inline-flex ${active ? 'border-primary bg-primary-wash text-primary hover:bg-primary-wash' : 'text-muted hover:text-ink'}`}
             >
               <Link href={`/shipstation?status=${s}`} aria-current={active ? 'page' : undefined}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
+                {statusLabel(s)}
               </Link>
             </Button>
           );
         })}
       </PageHeader>
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-6 space-y-4">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <h1 className="flex items-center gap-1 text-[0.9375rem] font-semibold text-ink tracking-tight">
@@ -170,8 +179,8 @@ async function ShipStationContent({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted">
-          <span>Page {page} of {totalPages}</span>
+        <div className="flex items-center justify-center text-sm text-muted sm:justify-between">
+          <span className="hidden sm:inline">Page {page} of {totalPages}</span>
           <Pagination page={page} totalPages={totalPages} params={params} basePath="/shipstation" />
         </div>
       )}

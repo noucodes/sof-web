@@ -25,9 +25,10 @@ export const useOrdersToolbar = () => useContext(Ctx);
 export default function OrdersToolbar() {
   const { compact, setDensity, setSlot } = useOrdersToolbar();
   return (
-    <div className="ml-auto flex items-center gap-3">
+    <div className="flex items-center gap-3 sm:ml-auto">
       <div ref={setSlot} className="contents" />
-      <div role="group" aria-label="Row density" className="inline-flex h-9 items-center rounded-lg bg-surface-strong p-1">
+      {/* Phones show orders as a list, where density has no effect. */}
+      <div role="group" aria-label="Row density" className="hidden h-9 items-center md:inline-flex rounded-lg bg-surface-strong p-1">
         {([['Comfortable', false], ['Compact', true]] as const).map(([label, value]) => (
           <button
             key={label}

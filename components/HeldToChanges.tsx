@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TableSkeleton } from '@/components/TableSkeleton';
 import StatusPill, { type Tone } from '@/components/StatusPill';
+import RowSheet from '@/components/RowSheet';
 import { useCanAct } from '@/components/RoleProvider';
 
 type Change = {
@@ -83,7 +84,7 @@ export default function HeldToChanges() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <Select value={String(days)} onValueChange={v => setDays(Number(v))}>
-          <SelectTrigger aria-label="Changed within" className="w-44"><SelectValue /></SelectTrigger>
+          <SelectTrigger aria-label="Changed within" className="w-full sm:w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
             {WINDOWS.map(d => <SelectItem key={d} value={String(d)}>Last {d} days</SelectItem>)}
           </SelectContent>
@@ -91,7 +92,7 @@ export default function HeldToChanges() {
         {failed > 0 && (
           <span className="text-sm font-medium text-failed">{failed} change{failed === 1 ? '' : 's'} not applied in ShipStation</span>
         )}
-        <Button size="sm" variant="outline" className="ml-auto" onClick={() => load(days)} disabled={loading}>
+        <Button size="sm" variant="outline" className="sm:ml-auto" onClick={() => load(days)} disabled={loading}>
           <RefreshCw className={loading ? 'animate-spin' : undefined} />
           Refresh
         </Button>
@@ -111,7 +112,8 @@ export default function HeldToChanges() {
       ) : (
         <div className={cn('overflow-hidden rounded-xl bg-white shadow-card transition-opacity', loading && 'opacity-60')}>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <RowSheet>
+            <table data-compact className="stack-table w-full text-sm">
               <thead className="border-b border-frame bg-surface-strong">
                 <tr>
                   <th className={TH}>Order</th>
@@ -134,31 +136,33 @@ export default function HeldToChanges() {
                   const canRetry = canAct && !r.result.ok && latest.has(r.id);
                   return (
                     <tr key={r.id} className="border-t border-hair transition-colors duration-100 first:border-t-0 hover:bg-surface-hover">
-                      <td className="px-4 py-3">
+                      <td data-primary className="px-4 py-3">
                         <span className="font-mono text-[0.8125rem] text-ink">{r.params.orderName ?? '—'}</span>
                         <span className="block text-xs text-muted">
                           {[`FW ${r.params.numTran}-${r.params.suffixTran}`, STORE_LABELS[r.params.store ?? ''] ?? r.params.store].filter(Boolean).join(' · ')}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 font-mono text-[0.8125rem]">
-                        {r.params.previous && r.params.previous !== r.params.dateRequired && (
-                          <>
-                            <span className="text-muted line-through">{auDate(r.params.previous)}</span>
-                            <ArrowRight aria-label="changed to" className="mx-1.5 inline size-3.5 text-muted" />
-                          </>
-                        )}
-                        <span className="text-ink">{auDate(r.params.dateRequired)}</span>
+                      <td data-label="Date required" data-key className="whitespace-nowrap px-4 py-3 font-mono text-[0.8125rem]">
+                        <span>
+                          {r.params.previous && r.params.previous !== r.params.dateRequired && (
+                            <>
+                              <span className="text-muted line-through">{auDate(r.params.previous)}</span>
+                              <ArrowRight aria-label="changed to" className="mx-1.5 inline size-3.5 text-muted" />
+                            </>
+                          )}
+                          <span className="text-ink">{auDate(r.params.dateRequired)}</span>
+                        </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td data-label="ShipStation" data-key className="px-4 py-3">
                         <StatusPill tone={tone}>{label}</StatusPill>
                         {r.result.error && <span className="mt-1 block max-w-xs text-xs text-failed">{r.result.error}</span>}
                         {!r.result.ok && !latest.has(r.id) && <span className="mt-1 block text-xs text-muted">Superseded by a later change</span>}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-muted">
+                      <td data-label="Received" className="whitespace-nowrap px-4 py-3 text-muted">
                         {auDateTime(r.createdAt)}
                         {r.userEmail && r.userEmail !== 'frameworks' && <span className="block text-xs">Retried by {r.userEmail}</span>}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right">
+                      <td data-label="" data-key data-hide={canRetry ? undefined : true} className="whitespace-nowrap px-4 py-3 text-right">
                         {canRetry && (
                           <Button size="sm" variant="outline" onClick={() => retry(r)} disabled={retrying === r.id}>
                             <RefreshCw className={retrying === r.id ? 'animate-spin' : undefined} />
@@ -171,6 +175,7 @@ export default function HeldToChanges() {
                 })}
               </tbody>
             </table>
+            </RowSheet>
           </div>
         </div>
       )}

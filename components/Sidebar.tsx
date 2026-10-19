@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ChevronRight,
   ShieldCheck,
@@ -118,6 +118,9 @@ function NavGroup({ label, icon: Icon, items, pathname }: { label: string; icon:
 export default function Sidebar() {
   const pathname = usePathname();
   const isAdmin = useRole() === 'admin';
+  // On phones the sidebar is a drawer over the page: close it once a link is followed.
+  const { setOpenMobile } = useSidebar();
+  useEffect(() => setOpenMobile(false), [pathname, setOpenMobile]);
 
   return (
     <SidebarPrimitive collapsible="icon" className="border-frame">

@@ -68,7 +68,7 @@ export default async function OrdersPage({
         <RetryFailedButton />
         <SyncTrigger />
       </PageHeader>
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-6 space-y-4">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <h1 className="flex items-center gap-1 text-[0.9375rem] font-semibold text-ink tracking-tight">
@@ -118,8 +118,8 @@ async function OrdersContent({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted">
-          <span>Page {page} of {totalPages}</span>
+        <div className="flex items-center justify-center text-sm text-muted sm:justify-between">
+          <span className="hidden sm:inline">Page {page} of {totalPages}</span>
           <Pagination page={page} totalPages={totalPages} params={params} />
         </div>
       )}

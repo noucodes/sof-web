@@ -13,15 +13,16 @@ import {
 
 // Top bar of every page: sidebar toggle │ SOF › …crumbs, page actions on the
 // right. h-14 + border-b matches the sidebar's logo header so the lines meet.
+// On phones the actions wrap to a second row that scrolls sideways.
 // A crumb is plain text, or { label, href } to link back to a parent page.
 type Crumb = string | { label: string; href: string };
 
 export default function PageHeader({ crumbs, children }: { crumbs: Crumb[]; children?: React.ReactNode }) {
   return (
-    <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b border-frame bg-white px-4">
-      <SidebarTrigger className="-ml-1" />
+    <header className="sticky top-0 z-10 flex shrink-0 flex-wrap items-center gap-x-2 border-b border-frame bg-white px-4">
+      <SidebarTrigger className="-ml-2 md:-ml-1" />
       <Separator orientation="vertical" className="mr-1 !h-4 bg-frame" />
-      <Breadcrumb className="min-w-0">
+      <Breadcrumb className="flex h-14 min-w-0 flex-1 items-center">
         <BreadcrumbList className="flex-nowrap">
           <BreadcrumbItem className="hidden md:inline-flex">
             <BreadcrumbLink asChild>
@@ -49,7 +50,11 @@ export default function PageHeader({ crumbs, children }: { crumbs: Crumb[]; chil
           })}
         </BreadcrumbList>
       </Breadcrumb>
-      {children && <div className="ml-auto flex shrink-0 items-center gap-2">{children}</div>}
+      {children && (
+        <div className="-mx-4 flex w-[calc(100%+2rem)] items-center gap-2 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&>*]:shrink-0 md:mx-0 md:w-auto md:shrink-0 md:overflow-visible md:px-0 md:pb-0">
+          {children}
+        </div>
+      )}
     </header>
   );
 }

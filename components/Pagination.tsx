@@ -31,17 +31,20 @@ export default function Pagination({
 
   return (
     <nav aria-label="Pagination" className="flex items-center justify-center gap-1">
-      <Button asChild variant="outline" size="icon" className="h-8 w-8" aria-disabled={page <= 1}>
+      <Button asChild variant="outline" size="icon" className="h-10 w-10 sm:h-8 sm:w-8" aria-disabled={page <= 1}>
         <Link href={hrefFor(page - 1)} aria-label="Previous page" className={page <= 1 ? 'pointer-events-none opacity-40' : undefined}>
           <ChevronLeft />
         </Link>
       </Button>
 
+      {/* Phones get ‹ Page 3 of 12 › instead of the page numbers. */}
+      <span className="px-3 text-sm text-muted sm:hidden">Page {page} of {totalPages}</span>
+
       {pageList(page, totalPages).map((p, i) =>
         p === '...' ? (
-          <span key={`ellipsis-${i}`} className="px-2 text-sm text-muted">…</span>
+          <span key={`ellipsis-${i}`} className="hidden px-2 text-sm text-muted sm:inline">…</span>
         ) : (
-          <Button key={p} asChild variant={p === page ? 'default' : 'ghost'} size="sm" className="min-w-8 px-2.5">
+          <Button key={p} asChild variant={p === page ? 'default' : 'ghost'} size="sm" className="hidden min-w-8 px-2.5 sm:inline-flex">
             <Link href={hrefFor(p)} aria-current={p === page ? 'page' : undefined}>
               {p}
             </Link>
@@ -49,7 +52,7 @@ export default function Pagination({
         )
       )}
 
-      <Button asChild variant="outline" size="icon" className="h-8 w-8" aria-disabled={page >= totalPages}>
+      <Button asChild variant="outline" size="icon" className="h-10 w-10 sm:h-8 sm:w-8" aria-disabled={page >= totalPages}>
         <Link href={hrefFor(page + 1)} aria-label="Next page" className={page >= totalPages ? 'pointer-events-none opacity-40' : undefined}>
           <ChevronRight />
         </Link>

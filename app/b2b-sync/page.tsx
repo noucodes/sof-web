@@ -52,7 +52,7 @@ export default async function B2BSyncPage() {
   return (
     <AppShell>
       <PageHeader crumbs={['B2B Price Sync']} />
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-6">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">B2B Price Sync</h1>

@@ -39,6 +39,111 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Phones: text fields at 16px so iOS doesn't zoom the page when one is tapped,
+   and the 11px status pills, labels and notes go up to 12px. */
+@media (max-width: 767.98px) {
+  input:not([type=checkbox]):not([type=radio]), textarea { font-size: 1rem; }
+  .text-\[0\.6875rem\], .text-\[0\.7rem\] { font-size: 0.75rem; }
+}
+
+/* Phones: a <table className="stack-table"> turns each row into a list item.
+   Per cell:  data-label="Total" shows "Total ........ $12.00";
+              data-label="" right-aligns the cell with no label (actions);
+              data-primary is the item's title line, moved to the top;
+              data-select pins a checkbox to the item's top-right corner;
+              data-hide drops the cell on phones.
+   A cell with none of these is a plain full-width line. The header row is
+   hidden, so anything that must stay usable there (filters) lives elsewhere. */
+@media (max-width: 767.98px) {
+  .stack-table,
+  .stack-table > tbody,
+  .stack-table > tbody > tr,
+  .stack-table > tbody > tr > td {
+    display: block;
+    width: 100%;
+    max-width: none;
+  }
+  .stack-table > thead { display: none; }
+  /* A header holding filters (thead data-filters) stays as a row of chips: only th[data-filter] show. */
+  .stack-table > thead[data-filters] { display: block; }
+  .stack-table > thead[data-filters] > tr { display: flex; flex-wrap: wrap; gap: 0.25rem 0.5rem; padding: 0.5rem 1rem; }
+  .stack-table > thead[data-filters] > tr > th { display: none; }
+  .stack-table > thead[data-filters] > tr > th[data-filter] { display: block; width: auto; padding: 0; }
+  .stack-table > tbody > tr { position: relative; display: flex; flex-direction: column; padding: 0.75rem 1rem; }
+  .stack-table > tbody > tr > td {
+    padding: 0.125rem 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+  /* Label on the left; the cell's parts stack on the right, one per line. */
+  .stack-table > tbody > tr > td[data-label] {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 1rem;
+    align-items: center;
+    justify-items: end;
+    text-align: right;
+  }
+  .stack-table > tbody > tr > td[data-label] > * { grid-column: 2; }
+  .stack-table > tbody > tr > td[data-label]::before {
+    content: attr(data-label);
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    text-align: left;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+  .stack-table > tbody > tr > td[data-primary] { order: -1; padding-bottom: 0.375rem; }
+  .stack-table > tbody > tr:has(> td[data-select]) > td[data-primary] { padding-right: 2.5rem; }
+  .stack-table > tbody > tr > td[data-select] {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    width: auto;
+    padding: 0.25rem;
+  }
+  .stack-table > tbody > tr > td[colspan] { padding: 1.5rem 0; text-align: center; }
+  .stack-table > tbody > tr > td[data-hide] { display: none; }
+
+  /* Compact cards (<table data-compact>): the title line, then only the data-key
+     cells side by side without labels. The rest opens in a sheet (RowSheet) or
+     the row's own details window. */
+  .stack-table[data-compact] > tbody > tr {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.75rem;
+    row-gap: 0.25rem;
+    cursor: pointer;
+  }
+  .stack-table[data-compact] > tbody > tr:not(:has(> td[data-select])) { padding-right: 2.25rem; }
+  .stack-table[data-compact] > tbody > tr:not(:has(> td[data-select])):not(:has(> td[colspan]))::after {
+    content: '';
+    position: absolute;
+    right: 1.125rem;
+    top: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 1.5px solid var(--color-muted);
+    border-bottom: 1.5px solid var(--color-muted);
+    transform: translateY(-50%) rotate(-45deg);
+  }
+  .stack-table[data-compact] > tbody > tr > td { width: auto; }
+  .stack-table[data-compact] > tbody > tr > td[data-primary],
+  .stack-table[data-compact] > tbody > tr > td[colspan] { width: 100%; }
+  .stack-table[data-compact] > tbody > tr > td[data-label]:not([data-key]) { display: none; }
+  .stack-table[data-compact] > tbody > tr > td[data-key] { display: block; text-align: left; }
+  .stack-table[data-compact] > tbody > tr > td[data-key]::before { content: none; }
+  /* data-key="labelled" keeps a small label in front, for values that mean nothing alone. */
+  .stack-table[data-compact] > tbody > tr > td[data-key="labelled"] { display: flex; align-items: center; gap: 0.375rem; }
+  .stack-table[data-compact] > tbody > tr > td[data-key="labelled"]::before { content: attr(data-label); font-size: 0.75rem; color: var(--color-muted); }
+  .stack-table[data-compact] > tbody > tr > td:not([data-label]):not([data-primary]):not([data-select]):not([colspan]) { width: 100%; }
+  .stack-table[data-compact] > tbody > tr > td[data-hide] { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     transition-duration: 1ms !important;

@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import SortableTh from '@/components/table/SortableTh';
+import SortSelect from '@/components/table/SortSelect';
 import StatusPill, { humanize, type Tone } from '@/components/StatusPill';
 import { useOrdersToolbar } from '@/components/OrdersToolbar';
 import { createPortal } from 'react-dom';
@@ -28,12 +29,12 @@ const COLUMNS = [
   { key: 'order', label: 'Order' },
   { key: 'status', label: 'Status' },
   { key: 'payment', label: 'Payment' },
-  { key: 'total', label: 'Total', right: true },
-  { key: 'items', label: 'Items' },
+  { key: 'total', label: 'Total', right: true, kind: 'number' as const },
+  { key: 'items', label: 'Items', kind: 'number' as const },
   { key: 'delivery', label: 'Delivery' },
   { key: 'frameworks', label: 'Frameworks no.' },
   { key: 'released', label: 'Released', sortable: false },
-  { key: 'created', label: 'Created' },
+  { key: 'created', label: 'Created', kind: 'date' as const },
 ];
 
 const money = (v: string | number | null | undefined) =>
@@ -116,7 +117,7 @@ function Summary({ order }: { order: any }) {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-lg border border-frame bg-surface p-3 text-center">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-lg border border-frame bg-surface p-3 text-center max-sm:grid-cols-2 max-sm:[&>:nth-child(2)]:order-last max-sm:[&>:nth-child(2)]:col-span-2 max-sm:[&>:nth-child(2)]:justify-self-center">
         <div>
           <p className="text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">Customer paid</p>
           <p className="text-lg font-semibold tabular-nums text-ink">{money(order.total)}</p>
@@ -406,8 +407,9 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
         slot,
       )}
 
+      <SortSelect basePath="/orders" columns={COLUMNS.filter(c => c.sortable !== false)} />
       <div className="overflow-x-auto">
-        <table className={cn('w-full', compact ? 'text-[0.8125rem]' : 'text-sm')}>
+        <table data-compact className={cn('stack-table w-full', compact ? 'text-[0.8125rem]' : 'text-sm')}>
           <thead className="bg-surface-strong border-b border-frame">
             <tr>
               <th className="w-10 py-[10px] pl-4 pr-0">
@@ -452,10 +454,10 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
                   picked.has(o.id) ? 'bg-primary-wash' : 'hover:bg-surface-hover focus-visible:bg-surface-hover',
                 )}
               >
-                <td className={cn(cell, 'w-10 pr-0')} onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
+                <td data-select className={cn(cell, 'w-10 pr-0')} onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
                   <Checkbox aria-label={`Select ${o.orderName}`} checked={picked.has(o.id)} onCheckedChange={() => toggle(o.id)} />
                 </td>
-                <td className={cell}>
+                <td data-primary className={cell}>
                   <span className="inline-flex items-center gap-1.5 font-mono text-[0.8125rem] text-ink">
                     {o.orderName}
                     {orderWarnings.has(o.id) && <WarningIcon message={orderWarnings.get(o.id)!} />}
@@ -464,19 +466,21 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
                   </span>
                   {!compact && <span className="block text-xs text-muted">{[o.customer?.name, o.storeLabel].filter(Boolean).join(' · ')}</span>}
                 </td>
-                <td className={cell}><StatusPill tone={STATUS_TONE[o.status] ?? 'neutral'}>{o.statusLabel}</StatusPill></td>
-                <td className={cell}>
+                <td data-label="Status" data-key className={cell}><StatusPill tone={STATUS_TONE[o.status] ?? 'neutral'}>{o.statusLabel}</StatusPill></td>
+                <td data-label="Payment" className={cell}>
                   {o.paymentStatus
                     ? <StatusPill tone={PAYMENT_TONE[o.paymentStatus] ?? 'neutral'}>{humanize(o.paymentStatus)}</StatusPill>
                     : <span className="text-sm text-muted">—</span>}
                 </td>
-                <td className={cn(cell, 'whitespace-nowrap text-right tabular-nums text-ink')}>{money(o.total)}</td>
-                <td className={cn(cell, 'whitespace-nowrap text-muted')}>{o.lineItemCount != null ? `${o.lineItemCount} item${o.lineItemCount !== 1 ? 's' : ''}` : '—'}</td>
-                <td className={cn(cell, 'text-muted')}>{o.deliveryMethod ?? '—'}</td>
-                <td className={cn(cell, 'whitespace-nowrap font-mono text-[0.8125rem] text-muted')}>{fwNo(o) ?? '—'}</td>
-                <td className={cn(cell, 'whitespace-nowrap tabular-nums text-muted')}>{sydney(o.createdAt)}</td>
+                <td data-label="Total" data-key className={cn(cell, 'whitespace-nowrap text-right tabular-nums text-ink')}>{money(o.total)}</td>
+                <td data-label="Items" className={cn(cell, 'whitespace-nowrap text-muted')}>{o.lineItemCount != null ? `${o.lineItemCount} item${o.lineItemCount !== 1 ? 's' : ''}` : '—'}</td>
+                <td data-label="Delivery" className={cn(cell, 'text-muted')}>{o.deliveryMethod ?? '—'}</td>
+                <td data-label="Frameworks no." className={cn(cell, 'whitespace-nowrap font-mono text-[0.8125rem] text-muted')}>{fwNo(o) ?? '—'}</td>
+                <td data-label="Released" className={cell}><StatusPill tone={releaseOf(o)[0]}>{releaseOf(o)[1]}</StatusPill></td>
+                <td data-label="Created" className={cn(cell, 'whitespace-nowrap tabular-nums text-muted')}>{sydney(o.createdAt)}</td>
                 {/* Shown on hover/focus with a mouse; always shown on touch screens, which have no hover. */}
-                <td className={cn(cell, 'whitespace-nowrap text-right')}>
+                {/* On phones the whole item opens the details, so only a Retry earns a line. */}
+                <td data-label="" data-key data-hide={o.status === 'failed' && canAct ? undefined : true} className={cn(cell, 'whitespace-nowrap text-right')}>
                   <span className="opacity-0 transition-opacity duration-100 group-hover:opacity-100 group-focus-within:opacity-100 group-focus-visible:opacity-100 [@media(hover:none)]:opacity-100">
                     {o.status === 'failed' && canAct ? (
                       <Button
@@ -523,7 +527,7 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
               </DialogDescription>
             </DialogHeader>
 
-            <div role="tablist" aria-label="Order details" className="flex gap-1 border-b border-frame px-6">
+            <div role="tablist" aria-label="Order details" className="flex gap-1 overflow-x-auto border-b border-frame px-4 [scrollbar-width:none] sm:px-6">
               {TABS.map(([t, label]) => (
                 <button
                   key={t}
@@ -540,7 +544,7 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
               ))}
             </div>
 
-            <div role="tabpanel" className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+            <div role="tabpanel" className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
               {!loaded && tab !== 'summary' ? (
                 <div className="space-y-2">
                   <Skeleton className="h-3 w-40" />
@@ -551,7 +555,7 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
               )}
             </div>
 
-            <DialogFooter className="justify-between">
+            <DialogFooter className="flex-row flex-wrap justify-between gap-2">
               <div className="flex gap-1">
                 <Button size="sm" variant="outline" onClick={() => step(-1)} disabled={openIdx === 0} aria-label="Previous order">
                   <ChevronLeft />Previous

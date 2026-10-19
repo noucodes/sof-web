@@ -12,6 +12,22 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.24.0',
+    date: '2026-10-19',
+    title: 'Works on phones',
+    improved: [
+      'The portal now works on phones. Tables show as a short list, one card per order, payment or SKU, with just the key details (like status, amount and date). Tap a card to see everything about it. Nothing is cut off and there’s no scrolling sideways.',
+      'On a phone, the buttons at the top of a page sit on their own row under the page name. On ShipStation the status buttons become one dropdown.',
+      'The menu closes by itself once you pick a page on a phone.',
+      'Filters, search boxes and pop-up windows fit a phone screen, buttons are easier to tap, and tapping a search box no longer zooms the page.',
+      'Page numbers on a phone show as ‹ Page 3 of 12 ›, and date pickers show one month at a time.',
+      'On a phone, sort Orders, Payments, Contribution, ShipStation and B2B Sync with the Sort dropdown above the list (for example "Total, highest first").',
+    ],
+    fixed: [
+      'The Released column on Orders now shows each order’s release status. Before, it was empty and the Created dates showed under the wrong heading.',
+    ],
+  },
+  {
     version: '1.23.1',
     date: '2026-10-16',
     title: 'Daily movement fixes',

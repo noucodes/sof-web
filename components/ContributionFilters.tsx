@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const STORE_LABELS: Record<string, string> = {
   all: 'All stores',
@@ -43,7 +44,7 @@ export default function ContributionFilters({ basePath = '/contribution', showSt
   return (
     <div className="flex gap-3 flex-wrap items-center">
       {showStatus && <Select defaultValue={params.get('status') ?? 'success'} onValueChange={v => update({ status: v })}>
-        <SelectTrigger aria-label="Status" className="w-40">
+        <SelectTrigger aria-label="Status" className="min-w-0 flex-1 sm:w-40 sm:flex-none">
           <SelectValue>{STATUS_LABELS[params.get('status') ?? 'success']}</SelectValue>
         </SelectTrigger>
         <SelectContent>
@@ -54,7 +55,7 @@ export default function ContributionFilters({ basePath = '/contribution', showSt
       </Select>}
 
       <Select defaultValue={params.get('store') ?? 'all'} onValueChange={v => update({ store: v })}>
-        <SelectTrigger aria-label="Store" className="w-40">
+        <SelectTrigger aria-label="Store" className="min-w-0 flex-1 sm:w-40 sm:flex-none">
           <SelectValue>{STORE_LABELS[params.get('store') ?? 'all']}</SelectValue>
         </SelectTrigger>
         <SelectContent>
@@ -81,6 +82,7 @@ const toParam = (d?: Date) => (d ? format(d, 'yyyy-MM-dd') : '');
 // shadcn range date picker (DatePickerWithRange). Every pick is applied to
 // the URL straight away; the popover stays open so the end date can follow.
 function DateRangeFilter({ from, to, onApply }: { from: string; to: string; onApply: (from: string, to: string) => void }) {
+  const isMobile = useIsMobile();
   const [range, setRange] = useState<DateRange | undefined>(
     from || to ? { from: toDate(from), to: toDate(to) } : undefined,
   );
@@ -97,7 +99,7 @@ function DateRangeFilter({ from, to, onApply }: { from: string; to: string; onAp
           variant="outline"
           aria-label="Date range"
           data-empty={!range?.from}
-          className="h-9 w-64 justify-start border-[1.5px] px-2.5 font-normal data-[empty=true]:text-muted"
+          className="h-10 w-full justify-start sm:h-9 sm:w-64 border-[1.5px] px-2.5 font-normal data-[empty=true]:text-muted"
         >
           <CalendarIcon className="text-muted" />
           {range?.from ? (
@@ -114,7 +116,7 @@ function DateRangeFilter({ from, to, onApply }: { from: string; to: string; onAp
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar mode="range" defaultMonth={range?.from} selected={range} onSelect={select} numberOfMonths={2} />
+        <Calendar mode="range" defaultMonth={range?.from} selected={range} onSelect={select} numberOfMonths={isMobile ? 1 : 2} />
         {range?.from && (
           <div className="flex justify-end border-t border-frame p-2">
             <Button variant="ghost" size="sm" onClick={() => select(undefined)}>
