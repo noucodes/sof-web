@@ -19,6 +19,10 @@ const ACTIONS: Record<string, string> = {
   'UsersController.create': 'Added a user',
   'UsersController.update': 'Changed a user',
   'SkuAuditController.run': 'Ran the SKU audit',
+  'RoutingController.approve': 'Approved an order route',
+  'RoutingController.changeAction': 'Changed an order route',
+  'RoutingController.reject': 'Rejected an order route',
+  'RoutingController.retry': 'Retried an order route',
 };
 
 export type ActivityParams = {
@@ -56,11 +60,16 @@ export function actionLabel(p: ActivityParams | null | undefined) {
 const PAGES: Record<string, string> = {
   dashboard: 'Dashboard',
   orders: 'Orders',
+  'order-routing': 'Order routing',
+  states: 'Order states',
   payments: 'Payments',
   movement: 'Daily movement',
   refunds: 'Refunds',
   contribution: 'Contribution',
   inventory: 'Inventory',
+  automations: 'Automations',
+  'inventory-shipstation': 'Inventory → ShipStation',
+  'inventory-shopify': 'Inventory → Shopify',
   shipstation: 'ShipStation',
   'b2b-sync': 'B2B Price Sync',
   'sku-audit': 'SKU Audit',

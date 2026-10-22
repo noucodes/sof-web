@@ -32,7 +32,8 @@ const COLUMNS = [
 
 const GETTERS = Object.fromEntries(COLUMNS.map(c => [c.key, c.getValue]));
 
-export default function B2BSyncTable({ history }: { history: Entry[] }) {
+// Also the run history on Automations pages, where the failed column reads "Failed".
+export default function B2BSyncTable({ history, failedLabel = 'Unmatched' }: { history: Entry[]; failedLabel?: string }) {
   const { sorted, sort, toggleSort, setSort } = useClientSort(history, GETTERS);
 
   return (
@@ -45,7 +46,7 @@ export default function B2BSyncTable({ history }: { history: Entry[] }) {
           {COLUMNS.map(col => (
             <SortableTh
               key={col.key}
-              label={col.label}
+              label={col.key === 'unmatched' ? failedLabel : col.label}
               direction={sort?.key === col.key ? sort.dir : null}
               onClick={() => toggleSort(col.key)}
             />
@@ -65,7 +66,7 @@ export default function B2BSyncTable({ history }: { history: Entry[] }) {
             </td>
             <td data-label="Source" className="px-4 py-3 text-sm text-muted">{h.source ?? '—'}</td>
             <td data-label="Synced" data-key="labelled" className="px-4 py-3 text-sm text-ink">{h.itemsSynced ?? '—'}</td>
-            <td data-label="Unmatched" className="px-4 py-3 text-sm text-ink">{h.itemsFailed ?? '—'}</td>
+            <td data-label={failedLabel} className="px-4 py-3 text-sm text-ink">{h.itemsFailed ?? '—'}</td>
             <td data-primary className="px-4 py-3 font-mono text-[0.8125rem] text-muted">{formatDate(h.finishedAt)}</td>
             {/* Phones: only a real error gets a line, wrapped in full. */}
             <td data-hide={h.error ? undefined : true} className="px-4 py-3 text-[0.8125rem] text-failed max-w-[280px] truncate">{h.error ?? '—'}</td>

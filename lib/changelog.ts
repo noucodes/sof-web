@@ -12,6 +12,28 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.26.0',
+    date: '2026-10-22',
+    title: 'Automations',
+    added: [
+      'New Automations section in the sidebar, listing every job that runs on its own and how its last run went (healthy, failed or never run).',
+      'Each automation has its own page with the last run, how many items it updated, any error, and the last two days of runs.',
+      'Inventory → Shopify: stock from each branch now goes to its own Plumbers HQ location in Shopify, ready for Uber delivery. Products at 0 stock can still be bought.',
+    ],
+    improved: [
+      'The Inventory page now opens Automations, where the ShipStation and Shopify stock syncs live.',
+    ],
+  },
+  {
+    version: '1.25.0',
+    date: '2026-10-21',
+    title: 'Order routing',
+    added: [
+      'New Order routing page under Orders: every new online order on branch 20, checked against stock at every branch, with what should happen to it (pick slip, branch handover, PO or direct-delivery PO). Nothing is sent to a supplier or a printer until you approve it.',
+      'Map view shows each step as a block on a floor plan, with every order sitting where it is now. Click an order to see its route, its flags and its history, and approve or reject it from the side panel.',
+      'Table view lists the same orders with a tab for each state. Tick several and press Approve selected to approve them in one go.',
+      'Each order has its own page: change the action, edit the email to the supplier, then approve, reject or retry.',
+      'Order states page explains every state, who acts next, and whether Frameworks has been changed yet.',
     version: '1.24.0',
     date: '2026-10-19',
     title: 'Works on phones',

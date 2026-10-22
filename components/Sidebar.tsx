@@ -12,10 +12,12 @@ import {
   HandCoins,
   Boxes,
   Ship,
+  Route,
   ArrowLeftRight,
   ListChecks,
   Users,
   Activity,
+  Workflow,
 } from 'lucide-react';
 import { VERSION } from '@/lib/changelog';
 import NavUser from '@/components/NavUser';
@@ -48,6 +50,7 @@ const NAV: (NavItem | { label: string; icon: Icon; admin?: boolean; items: NavIt
     icon: ShoppingCart,
     items: [
       { href: '/orders', label: 'Orders', icon: ShoppingCart },
+      { href: '/order-routing', label: 'Order routing', icon: Route },
       { href: '/payments', label: 'Payments', icon: CreditCard },
       { href: '/refunds', label: 'Refunds', icon: Undo2 },
       { href: '/contribution', label: 'Contribution', icon: HandCoins },
@@ -58,9 +61,17 @@ const NAV: (NavItem | { label: string; icon: Icon; admin?: boolean; items: NavIt
     label: 'Products & stock',
     icon: Boxes,
     items: [
-      { href: '/inventory', label: 'Inventory', icon: Boxes },
       { href: '/b2b-sync', label: 'B2B Price Sync', icon: ArrowLeftRight },
       { href: '/sku-audit', label: 'SKU Audit', icon: ListChecks },
+    ],
+  },
+  {
+    label: 'Automations',
+    icon: Workflow,
+    items: [
+      { href: '/automations', label: 'All automations', icon: Workflow },
+      { href: '/automations/inventory-shipstation', label: 'Inventory → ShipStation', icon: Boxes },
+      { href: '/automations/inventory-shopify', label: 'Inventory → Shopify', icon: Boxes },
     ],
   },
   {
@@ -75,7 +86,9 @@ const NAV: (NavItem | { label: string; icon: Icon; admin?: boolean; items: NavIt
 ];
 
 const ACTIVE = 'data-[active=true]:bg-primary-wash data-[active=true]:text-primary';
-const isActive = (pathname: string, href: string) => pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
+// '/automations' is an exact-match link, so it isn't lit up alongside the job page you're on.
+const isActive = (pathname: string, href: string) =>
+  pathname === href || (href !== '/dashboard' && href !== '/automations' && pathname.startsWith(href));
 
 // Opens on the group holding the current page. Clicking a group while the
 // sidebar is collapsed to icons expands the sidebar with that group open.

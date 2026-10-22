@@ -150,3 +150,8 @@ body {
     animation-duration: 1ms !important;
   }
 }
+
+/* Order routing map: the dashed "next leg" of the selected route moves along. */
+@keyframes routing-flow {
+  to { stroke-dashoffset: -15; }
+}

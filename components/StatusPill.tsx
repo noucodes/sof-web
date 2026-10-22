@@ -1,12 +1,13 @@
 import { cn } from '@/lib/utils';
 
-export type Tone = 'success' | 'failed' | 'pending' | 'neutral';
+export type Tone = 'success' | 'failed' | 'pending' | 'neutral' | 'info';
 
 const TONES: Record<Tone, string> = {
   success: 'bg-success-bg text-success',
   failed: 'bg-failed-bg text-failed',
   pending: 'bg-pending-bg text-pending',
   neutral: 'bg-surface-strong text-muted',
+  info: 'bg-primary-wash text-primary',
 };
 
 // The app's one status look: coloured dot + sentence-case label. The dot keeps
