@@ -34,6 +34,9 @@ export const CHANGELOG: Release[] = [
       'Table view lists the same orders with a tab for each state. Tick several and press Approve selected to approve them in one go.',
       'Each order has its own page: change the action, edit the email to the supplier, then approve, reject or retry.',
       'Order states page explains every state, who acts next, and whether Frameworks has been changed yet.',
+    ],
+  },
+  {
     version: '1.24.0',
     date: '2026-10-19',
     title: 'Works on phones',
