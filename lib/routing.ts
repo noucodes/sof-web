@@ -8,6 +8,7 @@ export type RoutingDetail = {
   supplierName?: string;
   printer?: string;
   branch?: string;
+  kind?: 'pickup' | 'local_delivery' | 'stock';
   shipTo?: string;
   poValue?: number;
   emailBody?: string;
@@ -38,7 +39,7 @@ export type RoutingOrder = {
 export type RoutingState =
   | 'new' | 'checking' | 'awaiting_approval' | 'needs_review' | 'on_hold'
   | 'approved' | 'in_progress' | 'done' | 'failed' | 'rejected';
-export type RoutingAction = 'pick_slip' | 'handover' | 'po_branch' | 'po_direct';
+export type RoutingAction = 'pick_slip' | 'handover' | 'po_branch' | 'po_direct' | 'requisition';
 
 // Everything the Order states page says, and what every badge shows.
 export const STATES: { state: RoutingState; label: string; tone: Tone; meaning: string; who: string; frameworks: string }[] = [
@@ -46,7 +47,7 @@ export const STATES: { state: RoutingState; label: string; tone: Tone; meaning: 
   { state: 'checking', label: 'Checking stock', tone: 'neutral', meaning: 'Reading the lines and the available stock at each branch.', who: 'The system', frameworks: 'No' },
   { state: 'awaiting_approval', label: 'Awaiting approval', tone: 'pending', meaning: 'An action is proposed: pick slip, handover, PO or direct-delivery PO.', who: 'Bek: approve, change or reject', frameworks: 'No' },
   { state: 'needs_review', label: 'Needs review', tone: 'pending', meaning: 'No rule fits, or something is missing (a product not found, no stock data).', who: 'Bek: choose an action', frameworks: 'No' },
-  { state: 'on_hold', label: 'On hold', tone: 'neutral', meaning: 'A Fienza order or a pick-up order. Their rules aren’t agreed yet.', who: 'Nobody until the rule exists', frameworks: 'No, the assignee stays shopify' },
+  { state: 'on_hold', label: 'On hold', tone: 'neutral', meaning: 'CANCELLED on the order, on Bek’s don’t-touch list, or a run-out item no branch has.', who: 'Bek', frameworks: 'No, the assignee stays shopify' },
   { state: 'approved', label: 'Approved', tone: 'info', meaning: 'Approved and waiting its turn to run.', who: 'The system', frameworks: 'Not yet' },
   { state: 'in_progress', label: 'In progress', tone: 'info', meaning: 'Updating the order, creating the PO, emailing or printing.', who: 'The system', frameworks: 'Yes, step by step' },
   { state: 'done', label: 'Done', tone: 'success', meaning: 'Every step finished and checked. The order has left the shopify list.', who: 'Nobody', frameworks: 'Yes' },
@@ -60,6 +61,7 @@ export const ACTIONS: { action: RoutingAction; label: string }[] = [
   { action: 'po_direct', label: 'Direct delivery PO' },
   { action: 'pick_slip', label: 'Print pick slip' },
   { action: 'handover', label: 'Hand over to a branch' },
+  { action: 'requisition', label: 'Requisition (under supplier minimum)' },
 ];
 export const actionLabel = (a: RoutingAction | null) => ACTIONS.find(x => x.action === a)?.label ?? 'No action yet';
 
@@ -67,7 +69,8 @@ export const actionLabel = (a: RoutingAction | null) => ACTIONS.find(x => x.acti
 export function actionSub(o: RoutingOrder) {
   const d = o.detail ?? {};
   if (o.action === 'pick_slip') return d.printer ? `Printer ${d.printer}` : null;
-  if (o.action === 'handover') return d.branch ? `To ${d.branch}` : null;
+  if (o.action === 'handover') return d.branch ? `To ${d.branch}${d.kind === 'pickup' ? ' · customer pick-up' : d.kind === 'local_delivery' ? ' · local delivery' : ''}` : null;
+  if (o.action === 'requisition') return [d.supplier, 'Bek combines into a PO'].filter(Boolean).join(' · ');
   if (o.action === 'po_direct') return [d.supplier, 'ships to customer'].filter(Boolean).join(' · ');
   if (o.action === 'po_branch') return [d.supplier, 'ships to Burdens Ecommerce'].filter(Boolean).join(' · ');
   return o.holdReason;

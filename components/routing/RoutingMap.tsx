@@ -54,8 +54,8 @@ const LEGS: Record<string, [number, number][]> = {
 
 const NODE_NAME: Record<NodeId, string> = { sof: 'SOF checker', approval: 'Approval', hold: 'On hold', suppliers: 'Suppliers', printer: 'Printer', branches: 'Branch handovers' };
 const COUNT_LABEL: Record<NodeId, string> = { approval: 'awaiting', sof: 'to review', hold: 'on hold', suppliers: 'PO', printer: 'pick slip', branches: 'handover' };
-const EXEC_NODE = { po_branch: 'suppliers', po_direct: 'suppliers', pick_slip: 'printer', handover: 'branches' } as const;
-const EXEC_LEG = { po_branch: 'apprSup', po_direct: 'apprSup', pick_slip: 'apprPrn', handover: 'apprBrn' } as const;
+const EXEC_NODE = { po_branch: 'suppliers', po_direct: 'suppliers', requisition: 'suppliers', pick_slip: 'printer', handover: 'branches' } as const;
+const EXEC_LEG = { po_branch: 'apprSup', po_direct: 'apprSup', requisition: 'apprSup', pick_slip: 'apprPrn', handover: 'apprBrn' } as const;
 const RUNNING = ['approved', 'in_progress', 'failed', 'done'];
 
 function nodeOf(o: RoutingOrder): NodeId {
