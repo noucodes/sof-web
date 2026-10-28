@@ -84,6 +84,7 @@ export const TABS: { id: RoutingState | 'open'; label: string }[] = [
   { id: 'awaiting_approval', label: 'Awaiting approval' },
   { id: 'needs_review', label: 'Needs review' },
   { id: 'on_hold', label: 'On hold' },
+  { id: 'approved', label: 'Approved' },
   { id: 'in_progress', label: 'In progress' },
   { id: 'failed', label: 'Failed' },
   { id: 'done', label: 'Done' },

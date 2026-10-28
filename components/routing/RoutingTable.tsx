@@ -13,7 +13,8 @@ import { useRoutingAction } from './useRoutingAction';
 function stockSummary(o: RoutingOrder) {
   const lines = (o.lines ?? []).filter(l => !l.skip);
   if (!lines.length) return '—';
-  const branches = new Set(lines.flatMap(l => Object.keys(l.available ?? {})));
+  // Same preference as the worker's rules (PICK_BRANCHES 20, 11, 8), so this matches the proposed action.
+  const branches = new Set(['20', '11', '8', ...lines.flatMap(l => Object.keys(l.available ?? {}))]);
   for (const b of branches) {
     if (lines.every(l => (l.available?.[b] ?? 0) >= l.qty)) return `All at branch ${b}`;
   }
