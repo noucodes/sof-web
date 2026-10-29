@@ -30,6 +30,7 @@ export default async function RoutingOrderPage({ params }: { params: Promise<{ i
     ['Branch', d.branch],
     ['PO value', d.poValue != null ? `$${d.poValue.toFixed(2)} ex GST` : null],
     ['PO number', d.poNumber],
+    ['Rejected because', d.rejectReason],
     ['Approved by', o.approvedBy && `${o.approvedBy}${o.approvedAt ? `, ${fmtTime(o.approvedAt)}` : ''}`],
   ].filter(([, v]) => v);
 

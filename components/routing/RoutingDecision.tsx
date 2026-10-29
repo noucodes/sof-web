@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCanAct } from '@/components/RoleProvider';
 import { ACTIONS, DECIDABLE, type RoutingAction, type RoutingOrder } from '@/lib/routing';
+import RejectDialog from './RejectDialog';
 import { useRoutingAction } from './useRoutingAction';
 
 const SHIP_TO_US = 'Burdens Ecommerce, 203 Frankston Dandenong Road, Dandenong South VIC 3175';
@@ -22,6 +23,7 @@ export default function RoutingDecision({ order }: { order: RoutingOrder }) {
   const { run, isBusy } = useRoutingAction();
   const [action, setAction] = useState<RoutingAction | ''>(order.action ?? '');
   const [email, setEmail] = useState(order.detail?.emailBody ?? defaultEmail(order, order.action ?? ''));
+  const [rejecting, setRejecting] = useState(false);
   const decidable = DECIDABLE.includes(order.state);
   const isPo = action === 'po_branch' || action === 'po_direct';
   const label = order.customerOrderNo ?? order.orderNo;
@@ -74,7 +76,7 @@ export default function RoutingDecision({ order }: { order: RoutingOrder }) {
 
       {canAct && (
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" disabled={isBusy(order.id, 'reject')} onClick={() => run(order.id, 'reject', {}, `${label} rejected`)}>Reject</Button>
+          <Button variant="outline" onClick={() => setRejecting(true)}>Reject</Button>
           <Button
             disabled={!action || isBusy(order.id, 'approve')}
             onClick={() => run(order.id, 'approve', { action, ...(isPo && { emailBody: email }) }, `${label} approved`)}
@@ -83,6 +85,14 @@ export default function RoutingDecision({ order }: { order: RoutingOrder }) {
             Approve{action ? `: ${ACTIONS.find(a => a.action === action)!.label}` : ''}
           </Button>
         </div>
+      )}
+      {rejecting && (
+        <RejectDialog
+          label={label}
+          busy={isBusy(order.id, 'reject')}
+          onClose={() => setRejecting(false)}
+          onReject={async reason => { if (await run(order.id, 'reject', { reason }, `${label} rejected`)) setRejecting(false); }}
+        />
       )}
     </div>
   );

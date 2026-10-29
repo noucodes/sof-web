@@ -5,6 +5,7 @@ import { ArrowRight, Check, ChevronLeft, FileText, Loader2, RotateCcw, X } from 
 import StatusPill from '@/components/StatusPill';
 import { useCanAct } from '@/components/RoleProvider';
 import { DECIDABLE, actionLabel, actionSub, fmtTime, stateMeta, type RoutingOrder } from '@/lib/routing';
+import RejectDialog from './RejectDialog';
 import { useRoutingAction } from './useRoutingAction';
 
 // The routing steps as blocks on an isometric floor (CSS 3D, no library).
@@ -107,9 +108,11 @@ export default function RoutingMap({ rows }: { rows: RoutingOrder[] }) {
   const pickOrder = (o: RoutingOrder) => setSel({ node: nodeOf(o), id: o.id });
   // After a decision, go straight to the next order waiting on one.
   const nextAfter = (id: number) => rows.find(r => r.id !== id && DECIDABLE.includes(r.state) && r.action) ?? null;
-  async function decide(o: RoutingOrder, verb: 'approve' | 'reject' | 'retry', done: string) {
+  async function decide(o: RoutingOrder, verb: 'approve' | 'reject' | 'retry', done: string, body: Record<string, unknown> = {}) {
     const next = nextAfter(o.id);
-    if (await run(o.id, verb, {}, done)) setSel(next ? { node: nodeOf(next), id: next.id } : { node: sel.node, id: null });
+    const ok = await run(o.id, verb, body, done);
+    if (ok) setSel(next ? { node: nodeOf(next), id: next.id } : { node: sel.node, id: null });
+    return ok;
   }
 
   const pin = order ? (() => { const c = centre(nodeOf(order)); return project(c.x, c.y, c.z); })() : null;
@@ -274,7 +277,7 @@ function OrderPanel({ o, canAct, isBusy, back, backLabel, onDecide, next, onNext
   isBusy: (id: number, verb: 'approve' | 'reject' | 'retry') => boolean;
   back?: () => void;
   backLabel: string;
-  onDecide: (o: RoutingOrder, verb: 'approve' | 'reject' | 'retry', done: string) => void;
+  onDecide: (o: RoutingOrder, verb: 'approve' | 'reject' | 'retry', done: string, body?: Record<string, unknown>) => Promise<boolean>;
   next: RoutingOrder | null;
   onNext: (o: RoutingOrder) => void;
 }) {
@@ -282,6 +285,7 @@ function OrderPanel({ o, canAct, isBusy, back, backLabel, onDecide, next, onNext
   const decidable = DECIDABLE.includes(o.state) && !!o.action;
   const lines = (o.lines ?? []).filter(l => !l.skip);
   const sub = actionSub(o);
+  const [rejecting, setRejecting] = useState(false);
 
   return (
     <>
@@ -328,10 +332,18 @@ function OrderPanel({ o, canAct, isBusy, back, backLabel, onDecide, next, onNext
               {isBusy(o.id, 'retry') ? <Loader2 className="size-4 animate-spin" /> : <RotateCcw className="size-4" />}Retry
             </button>
           )}
-          <button type="button" disabled={isBusy(o.id, 'reject')} onClick={() => onDecide(o, 'reject', `${label(o)} rejected, do it in Frameworks`)} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-frame-input px-4 text-sm font-medium text-ink hover:bg-surface-hover disabled:opacity-50">
+          <button type="button" disabled={isBusy(o.id, 'reject')} onClick={() => (decidable ? setRejecting(true) : onDecide(o, 'reject', `${label(o)} rejected, do it in Frameworks`))} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-frame-input px-4 text-sm font-medium text-ink hover:bg-surface-hover disabled:opacity-50">
             <X className="size-4" />Reject
           </button>
         </div>
+      )}
+      {rejecting && (
+        <RejectDialog
+          label={label(o)}
+          busy={isBusy(o.id, 'reject')}
+          onClose={() => setRejecting(false)}
+          onReject={async reason => { if (await onDecide(o, 'reject', `${label(o)} rejected, do it in Frameworks`, { reason })) setRejecting(false); }}
+        />
       )}
       <div className="flex items-center justify-between gap-2 text-[0.8125rem]">
         <Link href={`/order-routing/${o.id}`} className="inline-flex items-center gap-1 text-primary hover:underline">

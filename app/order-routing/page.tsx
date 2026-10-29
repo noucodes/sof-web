@@ -9,7 +9,8 @@ import { TABS, type RoutingOrder } from '@/lib/routing';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
-type ListResponse = { rows: RoutingOrder[]; counts: Record<string, number>; doneToday: number };
+type Accuracy = { right: number; changed: number; rejected: number; total: number; rate: number | null };
+type ListResponse = { rows: RoutingOrder[]; counts: Record<string, number>; doneToday: number; accuracy: Accuracy };
 
 async function getRouting(cookieHeader: string, state: string, q?: string): Promise<ListResponse> {
   const qs = new URLSearchParams({ state });
@@ -26,7 +27,7 @@ export default async function OrderRoutingPage({ searchParams }: { searchParams:
   const params = await searchParams;
   const table = params.view === 'table';
   const tab = TABS.some(t => t.id === params.state) ? params.state : 'open';
-  const { rows, counts, doneToday } = await getRouting(cookieHeader, table ? tab : 'open', table ? params.q : undefined);
+  const { rows, counts, doneToday, accuracy } = await getRouting(cookieHeader, table ? tab : 'open', table ? params.q : undefined);
 
   const open = Object.entries(counts).filter(([s]) => s !== 'done' && s !== 'rejected').reduce((n, [, c]) => n + c, 0);
   const tabCount = (id: string) => (id === 'open' ? open : id === 'done' ? doneToday : counts[id] ?? 0);
@@ -65,7 +66,7 @@ export default async function OrderRoutingPage({ searchParams }: { searchParams:
           <p className="text-sm text-muted">New online orders on branch 20, checked against stock at every branch. Nothing goes to a supplier or a printer until it’s approved.</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
           {cards.map(c => (
             <Link
               key={c.label}
@@ -77,6 +78,13 @@ export default async function OrderRoutingPage({ searchParams }: { searchParams:
               <p className={`mt-1 text-2xl font-semibold ${c.color}`}>{c.value}</p>
             </Link>
           ))}
+          <div className="rounded-xl bg-white p-4 shadow-card" title="Suggestions approved as proposed, out of every suggestion approved, changed or rejected. Rejection comments are on each order's history.">
+            <p className="text-xs font-medium uppercase tracking-[0.07em] text-muted">Suggestions right</p>
+            <p className="mt-1 text-2xl font-semibold text-ink">{accuracy?.rate == null ? '—' : `${accuracy.rate}%`}</p>
+            {!!accuracy?.total && (
+              <p className="text-xs text-muted">{accuracy.right} of {accuracy.total} · {accuracy.changed} changed · {accuracy.rejected} rejected</p>
+            )}
+          </div>
         </div>
 
         {table ? (

@@ -13,6 +13,9 @@ export type RoutingDetail = {
   poValue?: number;
   emailBody?: string;
   poNumber?: string;
+  // What the planner first proposed, and the comment left when it was rejected.
+  proposedAction?: RoutingAction | null;
+  rejectReason?: string;
 };
 export type RoutingOrder = {
   id: number;
@@ -52,7 +55,7 @@ export const STATES: { state: RoutingState; label: string; tone: Tone; meaning: 
   { state: 'in_progress', label: 'In progress', tone: 'info', meaning: 'Updating the order, creating the PO, emailing or printing.', who: 'The system', frameworks: 'Yes, step by step' },
   { state: 'done', label: 'Done', tone: 'success', meaning: 'Every step finished and checked. The order has left the shopify list.', who: 'Nobody', frameworks: 'Yes' },
   { state: 'failed', label: 'Failed', tone: 'failed', meaning: 'A step failed. The history shows which step, and what already happened.', who: 'Bek: retry, or finish it in Frameworks', frameworks: 'Partly, see the history' },
-  { state: 'rejected', label: 'Rejected', tone: 'neutral', meaning: 'Bek chose to handle it in Frameworks instead.', who: 'Bek, outside SOF', frameworks: 'No' },
+  { state: 'rejected', label: 'Rejected', tone: 'neutral', meaning: 'Bek rejected the suggestion, said what to do instead, and handles it in Frameworks.', who: 'Bek, outside SOF', frameworks: 'No' },
 ];
 export const stateMeta = (s: RoutingState) => STATES.find(x => x.state === s) ?? STATES[0];
 
