@@ -22,7 +22,7 @@ export default function RejectDialog({ label, busy, onReject, onClose }: {
           <DialogTitle>Reject the suggestion for {label}</DialogTitle>
           <DialogDescription>Say why it’s wrong and what should be done instead, e.g. “Branch 11 has it, print a pick slip there”. You’ll still do this one in Frameworks.</DialogDescription>
         </DialogHeader>
-        <label className="flex flex-col gap-1">
+        <label className="flex flex-col gap-1.5 px-4 py-4 sm:px-6">
           <span className="text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">What should be done instead</span>
           <textarea
             autoFocus
