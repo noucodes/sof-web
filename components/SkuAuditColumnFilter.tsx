@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export type ShopifyFilter = 'ACTIVE' | 'DRAFT' | 'ARCHIVED' | 'none';
-export type CatsyFilter = 'on' | 'off' | 'unknown';
+export type CatsyFilter = 'on' | 'off' | 'unknown' | 'warn';
 export type ColumnFilter = { shopify?: ShopifyFilter; catsy?: CatsyFilter };
 
 const SHOPIFY: { value: ShopifyFilter; label: string }[] = [
@@ -26,9 +26,10 @@ const CATSY: { value: CatsyFilter; label: string }[] = [
   { value: 'on', label: 'On' },
   { value: 'off', label: 'Off' },
   { value: 'unknown', label: 'Unknown (?)' },
+  { value: 'warn', label: 'Warning (enabled ≠ in channel)' },
 ];
 
-// Filter menu in a store column header: Shopify status and the Catsy Enabled flag.
+// Filter menu in a store column header: Shopify status and on Catsy (Enabled flag AND in channel).
 // Radix radio groups can't hold an empty value, so 'any' stands for no filter.
 export default function SkuAuditColumnFilter({
   label,
@@ -65,7 +66,7 @@ export default function SkuAuditColumnFilter({
           ))}
         </DropdownMenuRadioGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuLabel className="text-xs text-muted font-medium">{label} enabled in Catsy</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs text-muted font-medium">{label} on Catsy (enabled + in channel)</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={value.catsy ?? 'any'}
           onValueChange={v => onChange({ ...value, catsy: v === 'any' ? undefined : (v as CatsyFilter) })}

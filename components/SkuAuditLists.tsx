@@ -21,7 +21,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 export type FrameworksStatus = 'active' | 'inactive' | 'missing';
 type ShopifyStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
 type Store = 'burdens' | 'bathroomhq' | 'plumbershq';
-type StoreCell = { enabled: boolean | null; shopify: ShopifyStatus | null };
+// enabled = on Catsy for the store: Enabled flag AND in the store's Catsy channel (sof-api combines them).
+type StoreCell = { enabled: boolean | null; flag?: boolean | null; inChannel?: boolean | null; shopify: ShopifyStatus | null };
 type SkuRow = {
   sku: string;
   vendorSku?: string; // Catsy vendor_catalog_no
@@ -59,8 +60,8 @@ const HINTS: Record<Filter, (store: string) => string> = {
   active: () => 'In Catsy and Stocked in at least one Frameworks branch (kept on the shelf).',
   inactive: () => 'In Catsy and in Frameworks, but not Stocked in any branch. Usually ordered in from the supplier when sold.',
   missing: () => 'In Catsy, but the SKU does not exist in Frameworks. Usually a typo or a deleted product.',
-  notLive: s => `Switched on for ${s} in Catsy, but not live on the ${s} Shopify site (missing, draft or archived).`,
-  notEnabled: s => `Live on the ${s} Shopify site, but switched off for ${s} in Catsy.`,
+  notLive: s => `On Catsy for ${s} (enabled and in the ${s} channel), but not live on the ${s} Shopify site (missing, draft or archived).`,
+  notEnabled: s => `Live on the ${s} Shopify site, but not on Catsy for ${s} (switched off, or not in the ${s} channel).`,
   shopifyOnly: s => `On the ${s} Shopify site, but not in Catsy at all, so Catsy can't update them.`,
 };
 
@@ -74,6 +75,12 @@ const branchText = (b?: Record<string, string>) =>
 
 const shopText = (c?: StoreCell) => (c?.shopify ? SHOP_LABEL[c.shopify] : 'Not listed');
 const catsyText = (c?: StoreCell) => (c?.enabled === true ? 'on' : c?.enabled === false ? 'off' : '?');
+// Enabled flag and channel disagree: something's set up wrong in Catsy.
+const channelWarn = (c?: StoreCell) =>
+  c?.flag == null || c.inChannel == null || c.flag === c.inChannel ? null : c.flag ? 'enabled, not in channel' : 'in channel, not enabled';
+const yesNo = (v?: boolean | null) => (v === true ? 'yes' : v === false ? 'no' : '?');
+// Older runs have no flag/inChannel; their "on" was the Enabled flag alone.
+const catsyDetail = (c?: StoreCell) => (c && 'inChannel' in c ? ` (enabled ${yesNo(c.flag)}, in channel ${yesNo(c.inChannel)})` : '');
 
 const PAGE = 500;
 
@@ -367,9 +374,10 @@ export default function SkuAuditLists({
                     const c = r.stores?.[s.key];
                     const mismatch = notLive(c) || notEnabled(c);
                     return (
-                      <td key={s.key} data-label={s.label} data-key={store === s.key ? 'labelled' : undefined} className="px-4 py-2" title={`Catsy: ${catsyText(c)} · Shopify: ${shopText(c)}`}>
+                      <td key={s.key} data-label={s.label} data-key={store === s.key ? 'labelled' : undefined} className="px-4 py-2" title={`Catsy: ${catsyText(c)}${catsyDetail(c)} · Shopify: ${shopText(c)}`}>
                         <StatusPill tone={mismatch ? 'failed' : c?.shopify === 'ACTIVE' ? 'success' : 'neutral'}>{shopText(c)}</StatusPill>
                         <span className="block text-[0.6875rem] text-muted mt-0.5">Catsy {catsyText(c)}</span>
+                        {channelWarn(c) && <span className="block text-[0.6875rem] font-medium text-pending">⚠ {channelWarn(c)}</span>}
                       </td>
                     );
                   })}

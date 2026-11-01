@@ -72,7 +72,7 @@ export default function SkuAuditHelp() {
                 One column per Shopify store. The pill is the product&apos;s status on that store:{' '}
                 <span className="font-medium text-ink">Live</span>, <span className="font-medium text-ink">Draft</span>,{' '}
                 <span className="font-medium text-ink">Archived</span> or <span className="font-medium text-ink">Not listed</span>.
-                The small line underneath is the store&apos;s &quot;Enabled&quot; switch in Catsy (on / off, or ? if unknown).
+                The small line underneath says whether the SKU is on Catsy for that store: <strong>on</strong> only when it&apos;s both switched on (the store&apos;s &quot;Enabled&quot; attribute) and in the store&apos;s Catsy channel, otherwise <strong>off</strong> (? if either couldn&apos;t be read). Hover the cell to see which one. An amber <strong>⚠</strong> line means the two disagree (enabled but not in the channel, or in the channel but not enabled): fix it in Catsy. Filter a store column by <strong>Warning</strong> to list them.
                 A red pill means the two disagree.
               </Term>
             </dl>
@@ -86,11 +86,11 @@ export default function SkuAuditHelp() {
             <p className="text-sm text-muted">Pick a store from the dropdown to see three more tabs for that store:</p>
             <dl className="space-y-2">
               <Term name="Enabled, not live">
-                Switched on for the store in Catsy, but not live on its Shopify site (missing, draft or archived). These should
+                On Catsy for the store (enabled and in its channel), but not live on its Shopify site (missing, draft or archived). These should
                 probably be published.
               </Term>
               <Term name="Live, not enabled">
-                Live on the Shopify site, but switched off for that store in Catsy. Either Catsy needs switching on, or the product
+                Live on the Shopify site, but not on Catsy for that store: switched off, or missing from the store&apos;s Catsy channel. Either Catsy needs fixing, or the product
                 should come down.
               </Term>
               <Term name="On Shopify, not in Catsy">
@@ -132,7 +132,7 @@ export default function SkuAuditHelp() {
                 Catsy&apos;s Vendor Catalog No. Burdens and PHQ use the Burdens SKU.
               </li>
               <li>
-                &quot;Catsy ?&quot; means the Enabled switch couldn&apos;t be read for that store. Those SKUs are never counted as
+                &quot;Catsy ?&quot; means the Enabled switch or the store&apos;s Catsy channel couldn&apos;t be read. Those SKUs are never counted as
                 mismatches.
               </li>
               <li>
