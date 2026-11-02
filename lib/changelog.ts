@@ -12,6 +12,14 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.27.0',
+    date: '2026-11-02',
+    title: 'Knowledge base',
+    added: [
+      'New Knowledge base link in the sidebar: how online orders, order routing, shipping, stock, product data and the three websites work, all in one place. Search it, or press Ctrl K to jump to a page. You stay signed in with your portal login.',
+    ],
+  },
+  {
     version: '1.26.0',
     date: '2026-10-22',
     title: 'Automations',

@@ -18,6 +18,7 @@ import {
   Users,
   Activity,
   Workflow,
+  BookOpen,
 } from 'lucide-react';
 import { VERSION } from '@/lib/changelog';
 import NavUser from '@/components/NavUser';
@@ -162,6 +163,15 @@ export default function Sidebar() {
                 </SidebarMenuItem>
               ),
             )}
+            <SidebarMenuItem>
+              {/* plain <a>: /kb is a separate app (ops-kb) behind a rewrite, so it needs a full page load */}
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/kb')} tooltip="Knowledge base" className={ACTIVE}>
+                <a href="/kb">
+                  <BookOpen />
+                  <span>Knowledge base</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
