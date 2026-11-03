@@ -12,6 +12,14 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.28.0',
+    date: '2026-11-02',
+    title: 'Supplier credits',
+    added: [
+      'New Supplier credits page (Orders → Supplier credits), in test mode. Add completed customer credit numbers and the automation checks each line: whether it’s non-stock at the credit’s branch (so it goes back to the supplier), stock on hand, and whether a Stock Return to that supplier was already raised around the credit date. Approve or reject the plan; nothing is raised in Frameworks yet.',
+    ],
+  },
+  {
     version: '1.27.0',
     date: '2026-11-02',
     title: 'Knowledge base',

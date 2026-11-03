@@ -19,6 +19,7 @@ import {
   Activity,
   Workflow,
   BookOpen,
+  PackageX,
 } from 'lucide-react';
 import { VERSION } from '@/lib/changelog';
 import NavUser from '@/components/NavUser';
@@ -54,6 +55,7 @@ const NAV: (NavItem | { label: string; icon: Icon; admin?: boolean; items: NavIt
       { href: '/order-routing', label: 'Order routing', icon: Route },
       { href: '/payments', label: 'Payments', icon: CreditCard },
       { href: '/refunds', label: 'Refunds', icon: Undo2 },
+      { href: '/supplier-credits', label: 'Supplier credits', icon: PackageX },
       { href: '/contribution', label: 'Contribution', icon: HandCoins },
       { href: '/shipstation', label: 'ShipStation', icon: Ship },
     ],
