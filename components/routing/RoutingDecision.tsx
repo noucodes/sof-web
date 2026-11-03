@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCanAct } from '@/components/RoleProvider';
-import { ACTIONS, DECIDABLE, type RoutingAction, type RoutingOrder } from '@/lib/routing';
+import { ACTIONS, DECIDABLE, PO_CC, approveSteps, type RoutingAction, type RoutingOrder } from '@/lib/routing';
 import RejectDialog from './RejectDialog';
 import { useRoutingAction } from './useRoutingAction';
 
@@ -12,7 +12,7 @@ const SHIP_TO_US = 'Burdens Ecommerce, 203 Frankston Dandenong Road, Dandenong S
 // The supplier email from Bek's skill, filled in once Frameworks gives the PO number.
 function defaultEmail(o: RoutingOrder, action: RoutingAction | '') {
   if (action === 'po_direct') {
-    return `Hi team,\n\nPlease see attached PO [PO number]. Please deliver this order direct to the end customer: ${o.detail?.shipTo ?? '[customer name and address]'}.\n\nThanks,\nBurdens Ecommerce`;
+    return `Hi team,\n\nPlease see attached PO [PO number]. Please deliver this order direct to the end customer: ${o.detail?.shipTo ?? '[customer name and address]'}.${o.detail?.phone ? ` Phone: ${o.detail.phone}.` : ''}\n\nThanks,\nBurdens Ecommerce`;
   }
   return `Hi team,\n\nPlease see attached PO [PO number] for delivery to ${SHIP_TO_US}.\n\nThanks,\nBurdens Ecommerce`;
 }
@@ -60,6 +60,31 @@ export default function RoutingDecision({ order }: { order: RoutingOrder }) {
         </select>
       </label>
 
+      {action && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">When you approve</span>
+          <ol className="m-0 flex list-decimal flex-col gap-1 pl-5 text-sm">
+            {approveSteps(order, action).map(s => (
+              <li key={s.text}>
+                {s.text}{' '}
+                <span className={`rounded px-1.5 py-0.5 text-[0.6875rem] font-medium ${s.auto ? 'bg-success-bg text-success' : 'bg-pending-bg text-pending'}`}>
+                  {s.auto ? 'Automatic' : 'You, in Frameworks for now'}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {isPo && (
+        <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+          <dt className="text-muted">To</dt><dd className="m-0">{order.detail?.supplier ?? 'The supplier'}’s order contact in Frameworks</dd>
+          <dt className="text-muted">CC</dt><dd className="m-0">{PO_CC}</dd>
+          <dt className="text-muted">Subject</dt><dd className="m-0">Burdens Ecommerce - Purchase Order - [PO number]</dd>
+          <dt className="text-muted">Attached</dt><dd className="m-0">The PO</dd>
+        </dl>
+      )}
+
       {isPo && (
         <label className="flex flex-col gap-1">
           <span className="text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">Email to supplier</span>
@@ -70,7 +95,7 @@ export default function RoutingDecision({ order }: { order: RoutingOrder }) {
             onChange={e => setEmail(e.target.value)}
             className="resize-y rounded-lg border-[1.5px] border-frame-input bg-white px-3 py-2 text-sm focus:border-primary focus:shadow-focus-ring focus:outline-none"
           />
-          <span className="text-xs text-muted">Sent with the PO attached once you approve. [PO number] is filled in when Frameworks creates it.</span>
+          <span className="text-xs text-muted">[PO number] is filled in when Frameworks creates the PO.</span>
         </label>
       )}
 

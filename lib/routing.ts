@@ -13,6 +13,8 @@ export type RoutingDetail = {
   poValue?: number;
   emailBody?: string;
   poNumber?: string;
+  phone?: string;
+  suppliers?: { supplier: string; value: number; min: number | null; kind: 'po' | 'requisition' }[];
   // What the planner first proposed, and the comment left when it was rejected.
   proposedAction?: RoutingAction | null;
   rejectReason?: string;
@@ -80,6 +82,41 @@ export function actionSub(o: RoutingOrder) {
 }
 
 export const DECIDABLE: RoutingState[] = ['awaiting_approval', 'needs_review'];
+
+export const PO_CC = 'ecommerce@burdens.com.au';
+const DEFAULT_PRINTER = 'dan1';
+
+// What approving does, step by step: auto = the automation does it in
+// Frameworks; otherwise it's still done by hand. Keep in step with
+// burdens-workers jobs/order-routing (STEPS in index.js).
+export function approveSteps(o: RoutingOrder, action: RoutingAction | ''): { text: string; auto: boolean }[] {
+  const d = o.detail ?? {};
+  const assign = { text: 'Change the assignee from shopify to Claude, so you can see it was actioned', auto: true };
+  const supplier = d.supplier ?? 'the supplier';
+  switch (action) {
+    case 'pick_slip':
+      return [{ text: `Print the pick slip to ${d.printer ?? DEFAULT_PRINTER}`, auto: true }, assign];
+    case 'po_branch':
+      return [
+        { text: `Create a PO for ${supplier} from the order's lines (Linked PO), shipped to Burdens Ecommerce`, auto: true },
+        { text: `Email the PO to ${supplier}'s order contact, CC ${PO_CC}, with the message below`, auto: false },
+        assign,
+      ];
+    case 'po_direct':
+      return [
+        { text: 'Set despatch to SUDEL (supplier direct delivery)', auto: false },
+        { text: `Create a PO for ${supplier}, shipped to the customer${d.shipTo ? `: ${d.shipTo}` : ''}`, auto: false },
+        { text: `Email the PO to ${supplier}'s order contact, CC ${PO_CC}, with the message below`, auto: false },
+        { ...assign, auto: false }, // the automation stops before assigning a direct delivery
+      ];
+    case 'requisition':
+      return [{ text: `Add the lines to a requisition for ${supplier}; it's under the supplier minimum, so it waits to be combined into a PO`, auto: false }];
+    case 'handover':
+      return [{ text: `Email ${d.branch ?? 'the branch'} the handover (Outlook template)${d.kind === 'pickup' ? ' for customer pick-up' : d.kind === 'local_delivery' ? ' for local delivery' : ''}`, auto: false }];
+    default:
+      return [];
+  }
+}
 
 // Tabs on the Order routing page, in order. 'open' = everything not done or rejected.
 export const TABS: { id: RoutingState | 'open'; label: string }[] = [

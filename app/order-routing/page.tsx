@@ -5,6 +5,7 @@ import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import RoutingMap from '@/components/routing/RoutingMap';
 import RoutingTable from '@/components/routing/RoutingTable';
+import CheckFrameworksButton from '@/components/routing/CheckFrameworksButton';
 import { TABS, type RoutingOrder } from '@/lib/routing';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -46,6 +47,7 @@ export default async function OrderRoutingPage({ searchParams }: { searchParams:
   return (
     <AppShell>
       <PageHeader crumbs={['Orders', 'Order routing']}>
+        <CheckFrameworksButton />
         <Link href="/order-routing/states" className="text-[0.8125rem] text-primary hover:underline">Order states</Link>
         <nav aria-label="View" className="inline-flex h-9 items-center rounded-lg bg-surface-strong p-1 text-muted">
           {[['Map', href({ view: undefined, state: undefined }), !table], ['Table', href({ view: 'table' }), table]].map(([label, to, active]) => (

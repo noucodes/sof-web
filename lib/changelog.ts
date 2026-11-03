@@ -12,6 +12,18 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.29.0',
+    date: '2026-11-04',
+    title: 'Check Frameworks now',
+    added: [
+      'New Check Frameworks button on the Order routing page. It looks in Frameworks straight away instead of waiting for the next 15-minute run: new orders appear, orders already done by hand close, and every approved order is checked. A message then says what it found, such as approved orders already done by hand, ones that need doing by hand (like direct-delivery POs) and ones assigned to someone with no PO raised.',
+    ],
+    improved: [
+      'Before you approve an order route, it now lists what approving does step by step, and marks each step Automatic or “You, in Frameworks for now”, so you know what you still have to do yourself.',
+      'PO suggestions show who the supplier email goes to, the CC, the subject and the attachment. Direct-delivery emails include the customer’s phone number.',
+    ],
+  },
+  {
     version: '1.28.0',
     date: '2026-11-02',
     title: 'Supplier credits',

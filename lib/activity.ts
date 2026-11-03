@@ -23,6 +23,7 @@ const ACTIONS: Record<string, string> = {
   'RoutingController.changeAction': 'Changed an order route',
   'RoutingController.reject': 'Rejected an order route',
   'RoutingController.retry': 'Retried an order route',
+  'RoutingController.requestSync': 'Checked Frameworks for order routing',
 };
 
 export type ActivityParams = {
