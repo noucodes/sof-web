@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.29.1',
+    date: '2026-11-04',
+    title: 'Close the Check Frameworks message',
+    improved: ['The message after Check Frameworks has an X to close it.'],
+  },
+  {
     version: '1.29.0',
     date: '2026-11-04',
     title: 'Check Frameworks now',

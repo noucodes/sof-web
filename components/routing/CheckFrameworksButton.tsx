@@ -40,13 +40,13 @@ export default function CheckFrameworksButton() {
       if (!res.ok || !asked?.requestedAt) throw new Error(asked?.message ?? `Request failed (${res.status})`);
       const last = await waitFor(asked.requestedAt);
       if (!last) {
-        toast.error('No answer from Frameworks', { id, description: 'The routing job on sql1 didn’t pick this up. Is order-routing running in pm2?' });
+        toast.error('No answer from Frameworks', { id, closeButton: true, description: 'The routing job on sql1 didn’t pick this up. Is order-routing running in pm2?' });
         return;
       }
       report(id, last);
       router.refresh();
     } catch (e) {
-      toast.error('Couldn’t check Frameworks', { id, description: e instanceof Error ? e.message : undefined });
+      toast.error('Couldn’t check Frameworks', { id, closeButton: true, description: e instanceof Error ? e.message : undefined });
     } finally {
       setBusy(false);
     }
@@ -74,7 +74,7 @@ async function waitFor(requestedAt: string): Promise<Last | null> {
 
 function report(id: string | number, last: Last) {
   if (last.error) {
-    toast.error('Frameworks check failed', { id, description: last.error });
+    toast.error('Frameworks check failed', { id, closeButton: true, description: last.error });
     return;
   }
   const a = last.approved;
@@ -90,12 +90,13 @@ function report(id: string | number, last: Last) {
   if (a?.error.length) found.push(`Couldn’t read: ${refs(a.error)}`);
 
   if (!found.length) {
-    toast.success('Frameworks checked: nothing new', { id, description: undefined });
+    toast.success('Frameworks checked: nothing new', { id, closeButton: true, description: undefined });
     return;
   }
   const attention = Boolean(a?.check.length || a?.manual.length || a?.error.length || last.executeFailed);
   (attention ? toast.warning : toast.success)('Frameworks checked', {
     id,
+    closeButton: true,
     description: <ul className="list-disc space-y-0.5 pl-4">{found.map(f => <li key={f}>{f}</li>)}</ul>,
     duration: 15_000,
   });
