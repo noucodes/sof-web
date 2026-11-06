@@ -57,7 +57,7 @@ const NAV: (NavItem | { label: string; icon: Icon; admin?: boolean; items: NavIt
       { href: '/refunds', label: 'Refunds', icon: Undo2 },
       { href: '/supplier-credits', label: 'Supplier credits', icon: PackageX },
       { href: '/contribution', label: 'Contribution', icon: HandCoins },
-      { href: '/shipstation', label: 'ShipStation', icon: Ship },
+      { href: '/shipstation', label: 'MachShip', icon: Ship },
     ],
   },
   {

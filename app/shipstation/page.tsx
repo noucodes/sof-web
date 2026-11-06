@@ -65,7 +65,7 @@ export default async function ShipStationPage({
   if (heldToView) {
     return (
       <AppShell>
-        <PageHeader crumbs={['ShipStation']}>
+        <PageHeader crumbs={['MachShip']}>
           <MissingShipmentsButton />
           <RetryFailedReleasesButton />
         </PageHeader>
@@ -86,7 +86,7 @@ export default async function ShipStationPage({
   if (invoicedView) {
     return (
       <AppShell>
-        <PageHeader crumbs={['ShipStation']}>
+        <PageHeader crumbs={['MachShip']}>
           <MissingShipmentsButton />
           <RetryFailedReleasesButton />
         </PageHeader>
@@ -111,7 +111,7 @@ export default async function ShipStationPage({
 
   return (
     <AppShell>
-      <PageHeader crumbs={['ShipStation']}>
+      <PageHeader crumbs={['MachShip']}>
         <MissingShipmentsButton />
         <RetryFailedReleasesButton />
         {/* Phones: the four status buttons become one dropdown. */}
@@ -142,13 +142,13 @@ export default async function ShipStationPage({
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <h1 className="flex items-center gap-1 text-[0.9375rem] font-semibold text-ink tracking-tight">
-              ShipStation Jobs
+              MachShip Jobs
               <Suspense key={key} fallback={<Skeleton className="h-3.5 w-10" />}>
                 <AsyncCount data={data} />
               </Suspense>
             </h1>
           </div>
-          <p className="text-sm text-muted">Label print jobs received from ShipStation and linked to Frameworks orders.</p>
+          <p className="text-sm text-muted">Shipments from MachShip (and ShipStation) linked to Frameworks orders, each released to invoice the order.</p>
         </div>
 
         {tabs}

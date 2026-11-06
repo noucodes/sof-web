@@ -71,7 +71,7 @@ const PAGES: Record<string, string> = {
   automations: 'Automations',
   'inventory-shipstation': 'Inventory → ShipStation',
   'inventory-shopify': 'Inventory → Shopify',
-  shipstation: 'ShipStation',
+  shipstation: 'MachShip',
   'b2b-sync': 'B2B Price Sync',
   'sku-audit': 'SKU Audit',
   admin: 'Admin',

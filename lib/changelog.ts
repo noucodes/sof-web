@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.29.2',
+    date: '2026-11-06',
+    title: 'ShipStation is now MachShip',
+    improved: ['The ShipStation page in the sidebar is now called MachShip, as shipments now go through MachShip. Old links still work.'],
+  },
+  {
     version: '1.29.1',
     date: '2026-11-04',
     title: 'Close the Check Frameworks message',
