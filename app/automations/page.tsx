@@ -4,7 +4,7 @@ import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import StatusPill from '@/components/StatusPill';
 import AutomationsHelp from '@/components/AutomationsHelp';
-import { JOBS, getAutomations, formatDate, type Run } from '@/lib/automations';
+import { JOBS, RETIRED, getAutomations, formatDate, type Run } from '@/lib/automations';
 
 export default async function AutomationsPage() {
   const cookieStore = await cookies();
@@ -12,7 +12,7 @@ export default async function AutomationsPage() {
   const latest = await getAutomations<Run[]>('', cookieHeader);
   const byJob = new Map(latest.map(r => [r.job, r]));
   // Known jobs first (in JOBS order), then anything reporting that isn't listed yet.
-  const names = [...Object.keys(JOBS), ...latest.map(r => r.job).filter(j => !JOBS[j])];
+  const names = [...Object.keys(JOBS), ...latest.map(r => r.job).filter(j => !JOBS[j] && !RETIRED.includes(j))];
 
   return (
     <AppShell>

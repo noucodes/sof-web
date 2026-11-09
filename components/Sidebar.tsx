@@ -73,7 +73,6 @@ const NAV: (NavItem | { label: string; icon: Icon; admin?: boolean; items: NavIt
     icon: Workflow,
     items: [
       { href: '/automations', label: 'All automations', icon: Workflow },
-      { href: '/automations/inventory-shipstation', label: 'Inventory → ShipStation', icon: Boxes },
       { href: '/automations/inventory-shopify', label: 'Inventory → Shopify', icon: Boxes },
     ],
   },

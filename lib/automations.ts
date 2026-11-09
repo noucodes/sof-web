@@ -6,12 +6,6 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 // Automations page even before its first run ("Never run"). The key is the job
 // name burdens-workers reports under (POST /api/automations/<key>/status).
 export const JOBS: Record<string, { title: string; description: string; schedule: string; itemLabel: string }> = {
-  'inventory-shipstation': {
-    title: 'Inventory → ShipStation',
-    description: 'Stock on hand from Frameworks (branches 8 and 20, added together) sent to ShipStation. Only products whose stock changed are sent.',
-    schedule: 'Every hour',
-    itemLabel: 'SKUs',
-  },
   'inventory-shopify': {
     title: 'Inventory → Shopify',
     description: 'Stock on hand from each Frameworks branch sent to its own Plumbers HQ location in Shopify, so Uber delivery knows which store has the item. Products at 0 stay available to buy.',
@@ -19,6 +13,10 @@ export const JOBS: Record<string, { title: string; description: string; schedule
     itemLabel: 'Stock levels',
   },
 };
+
+// Jobs switched off but with old runs in the history: kept off the Automations page.
+// inventory-shipstation: retired 9 Nov 2026 (ShipStation replaced by MachShip, which takes no stock).
+export const RETIRED = ['inventory-shipstation'];
 
 export type Run = {
   job: string;
