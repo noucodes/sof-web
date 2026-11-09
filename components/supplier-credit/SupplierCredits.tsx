@@ -1,5 +1,5 @@
 'use client';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -48,7 +48,7 @@ function AddCredits() {
     setBusy(true);
     try {
       const r = await post('', { creditNos });
-      toast.success(`${r.added.length} credit${r.added.length === 1 ? '' : 's'} added${r.alreadyThere.length ? `, ${r.alreadyThere.length} already on the list` : ''}. The automation reads them within a minute.`);
+      toast.success(`${r.added.length} credit${r.added.length === 1 ? '' : 's'} added${r.alreadyThere.length ? `, ${r.alreadyThere.length} already on the list` : ''}. Reading them from Frameworks now: the plan shows here in a few seconds.`);
       setText('');
       router.refresh();
     } catch (e: any) {
@@ -80,6 +80,15 @@ function AddCredits() {
 export default function SupplierCredits({ rows }: { rows: SupplierCredit[] }) {
   const router = useRouter();
   const canAct = useCanAct();
+  // While a credit is waiting to be read, refresh every 5 s so its plan shows up by itself
+  // (the job reads new credits within ~15 s). ponytail: gives up after 3 min, e.g. job down.
+  const waiting = rows.some(r => r.state === 'new');
+  useEffect(() => {
+    if (!waiting) return;
+    const started = Date.now();
+    const t = setInterval(() => (Date.now() - started > 180_000 ? clearInterval(t) : router.refresh()), 5000);
+    return () => clearInterval(t);
+  }, [waiting, router]);
   const [open, setOpen] = useState<Set<number>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const [rejecting, setRejecting] = useState<SupplierCredit | null>(null);

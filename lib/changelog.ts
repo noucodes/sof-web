@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.29.5',
+    date: '2026-11-09',
+    title: 'Supplier credit plans appear by themselves',
+    improved: ['After you add a supplier credit, its plan appears on the page by itself a few seconds later. No need to refresh.'],
+  },
+  {
     version: '1.29.4',
     date: '2026-11-09',
     title: 'Supplier credits read straight away',
