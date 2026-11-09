@@ -29,7 +29,7 @@ export default function SupplierCreditsHelp() {
           <Section title="Steps">
             <ol className="list-decimal space-y-1 pl-5 text-sm text-muted">
               <li>Add completed customer credit numbers at the top.</li>
-              <li>Every 30 minutes in business hours the automation reads each credit from Frameworks and writes a plan.</li>
+              <li>The automation reads a credit from Frameworks within a minute of it being added and writes a plan. Every 30 minutes in business hours it checks the ones awaiting approval again.</li>
               <li>Open a credit (the arrow) to see each line, its stock type at the branch, stock on hand and what to do.</li>
               <li>Approve the plan, or reject it with what should happen instead. Rejection comments are how the rules get fixed.</li>
             </ol>
@@ -48,12 +48,6 @@ export default function SupplierCreditsHelp() {
               <li>A Reason For Credit that isn&apos;t mapped to a Stock Return reason: you choose it.</li>
               <li>The original PO and supplier invoice # can&apos;t be read automatically yet: confirm them in Frameworks. The Stock Return Ref is the branch prefix (e.g. RWD, ECM for E-commerce) plus the original PO.</li>
             </ul>
-          </Section>
-          <Section title="Waiting on API access">
-            <p className="text-sm text-muted">
-              Until Frameworks gives the automation access to credit details, plans say &quot;Waiting on Frameworks API access&quot;. They fill in by
-              themselves on the next run once access is granted, so there&apos;s no need to add the credits again.
-            </p>
           </Section>
         </div>
       </DialogContent>

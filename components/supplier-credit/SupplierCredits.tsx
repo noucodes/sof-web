@@ -48,7 +48,7 @@ function AddCredits() {
     setBusy(true);
     try {
       const r = await post('', { creditNos });
-      toast.success(`${r.added.length} credit${r.added.length === 1 ? '' : 's'} added${r.alreadyThere.length ? `, ${r.alreadyThere.length} already on the list` : ''}. The automation reads them within 30 minutes.`);
+      toast.success(`${r.added.length} credit${r.added.length === 1 ? '' : 's'} added${r.alreadyThere.length ? `, ${r.alreadyThere.length} already on the list` : ''}. The automation reads them within a minute.`);
       setText('');
       router.refresh();
     } catch (e: any) {

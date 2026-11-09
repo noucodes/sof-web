@@ -12,6 +12,13 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.29.4',
+    date: '2026-11-09',
+    title: 'Supplier credits read straight away',
+    improved: ['A supplier credit you add is now read from Frameworks within a minute, instead of waiting up to 30 minutes.'],
+    fixed: ['Fuel levy and delivery lines on a credit are no longer listed as goods to check.'],
+  },
+  {
     version: '1.29.3',
     date: '2026-11-09',
     title: 'Inventory → ShipStation retired',
