@@ -4,6 +4,7 @@ import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import SupplierCredits, { type SupplierCredit } from '@/components/supplier-credit/SupplierCredits';
 import SupplierCreditsHelp from '@/components/supplier-credit/SupplierCreditsHelp';
+import CheckCreditsButton from '@/components/supplier-credit/CheckCreditsButton';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -25,6 +26,7 @@ export default async function SupplierCreditsPage() {
   return (
     <AppShell>
       <PageHeader crumbs={['Orders', 'Supplier credits']}>
+        <CheckCreditsButton />
         <SupplierCreditsHelp />
       </PageHeader>
       <div className="space-y-5 p-6">

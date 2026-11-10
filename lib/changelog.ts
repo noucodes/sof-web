@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.31.0',
+    date: '2026-11-11',
+    title: 'Check Frameworks for new supplier credits',
+    added: ['New Check Frameworks button on Supplier credits: pulls today’s completed credit notes from Frameworks now, instead of waiting for the 11:37, 2:37 and 5:37 checks. It takes a few minutes and tells you how many came in.', 'Approving a supplier credit now also emails the Stock Return (to Bek while in test mode) and prints it twice to the default printer.'],
+  },
+  {
     version: '1.30.0',
     date: '2026-11-10',
     title: 'Approving a supplier credit raises the Stock Return (on TEST)',
