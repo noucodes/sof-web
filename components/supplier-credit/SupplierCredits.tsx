@@ -21,7 +21,9 @@ export type SupplierCredit = {
 const STATE: Record<string, { label: string; tone: Tone }> = {
   new: { label: 'Waiting to be read', tone: 'neutral' },
   planned: { label: 'Awaiting approval', tone: 'pending' },
-  approved: { label: 'Approved', tone: 'success' },
+  approved: { label: 'Approved: raising…', tone: 'pending' },
+  raised: { label: 'Raised on TEST', tone: 'success' },
+  failed: { label: 'Failed: approve to retry', tone: 'failed' },
   rejected: { label: 'Rejected', tone: 'failed' },
 };
 const ACTION: Record<CreditLine['action'], { label: string; tone: Tone }> = {
@@ -162,7 +164,7 @@ export default function SupplierCredits({ rows }: { rows: SupplierCredit[] }) {
                       </td>
                       <td className="px-4 py-3"><StatusPill tone={state.tone}>{state.label}</StatusPill></td>
                       <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                        {canAct && c.state === 'planned' && (
+                        {canAct && (c.state === 'planned' || c.state === 'failed') && (
                           <div className="flex justify-end gap-2">
                             {toReturn > 0 && (
                               <Button size="sm" disabled={busy === `${c.id}:approve`} onClick={() => act(c, 'approve')}>

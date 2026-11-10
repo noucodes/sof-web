@@ -18,7 +18,7 @@ export default async function SupplierCreditsPage() {
   const cards = [
     { label: 'Waiting to be read', value: counts.new ?? 0, color: 'text-ink' },
     { label: 'Awaiting approval', value: counts.planned ?? 0, color: 'text-pending' },
-    { label: 'Approved', value: counts.approved ?? 0, color: 'text-success' },
+    { label: 'Raised on TEST', value: (counts.approved ?? 0) + (counts.raised ?? 0), color: 'text-success' },
     { label: 'Rejected', value: counts.rejected ?? 0, color: 'text-failed' },
   ];
 
@@ -30,7 +30,7 @@ export default async function SupplierCreditsPage() {
       <div className="space-y-5 p-6">
         <div className="space-y-0.5">
           <h1 className="text-[0.9375rem] font-semibold tracking-tight text-ink">Supplier credits</h1>
-          <p className="text-sm text-muted">Completed customer credits checked for a supplier Stock Return. Test mode: nothing is raised, emailed or printed in Frameworks.</p>
+          <p className="text-sm text-muted">Completed customer credits checked for a supplier Stock Return. Test mode: approving raises the Stock Return on Frameworks TEST only. Nothing is raised, emailed or printed in live Frameworks.</p>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {cards.map(c => (

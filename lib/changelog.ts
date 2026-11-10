@@ -12,6 +12,13 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.30.0',
+    date: '2026-11-10',
+    title: 'Approving a supplier credit raises the Stock Return (on TEST)',
+    added: ['Approving a supplier credit now raises its Stock Return in Frameworks TEST within a minute: right supplier, branch, reason and lines. The PO number shows in the credit’s history. Nothing is raised in live Frameworks yet.', 'A credit whose Stock Return failed shows the reason and can be approved again to retry.'],
+    improved: ['A line that is still in stock at the branch is now marked Return to supplier, even if that supplier had other Stock Returns that week.'],
+  },
+  {
     version: '1.29.5',
     date: '2026-11-09',
     title: 'Supplier credit plans appear by themselves',

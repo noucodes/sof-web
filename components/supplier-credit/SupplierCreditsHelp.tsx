@@ -23,7 +23,7 @@ export default function SupplierCreditsHelp() {
       <DialogContent className="max-w-2xl">
         <DialogHeader className="border-b border-frame px-4 pb-4 pt-6 sm:px-6">
           <DialogTitle>How supplier credits work</DialogTitle>
-          <DialogDescription>Customer credits checked for a supplier Stock Return. Test mode: nothing is raised in Frameworks yet.</DialogDescription>
+          <DialogDescription>Customer credits checked for a supplier Stock Return. Test mode: approving raises the Stock Return on Frameworks TEST, not live.</DialogDescription>
         </DialogHeader>
         <div className="space-y-6 overflow-y-auto px-4 py-5 sm:px-6">
           <Section title="Steps">
@@ -32,13 +32,14 @@ export default function SupplierCreditsHelp() {
               <li>The automation reads a credit from Frameworks within a minute of it being added and writes a plan. Every 30 minutes in business hours it checks the ones awaiting approval again.</li>
               <li>Open a credit (the arrow) to see each line, its stock type at the branch, stock on hand and what to do.</li>
               <li>Approve the plan, or reject it with what should happen instead. Rejection comments are how the rules get fixed.</li>
+              <li>Approving raises the Stock Return on Frameworks TEST within a minute (one per supplier, ref = branch prefix + original PO). Its PO number shows in the credit&apos;s history. If it fails, the reason shows there and you can approve again to retry.</li>
             </ol>
           </Section>
           <Section title="What each line gets">
             <ul className="list-disc space-y-1 pl-5 text-sm text-muted">
               <li><span className="font-medium text-ink">Return to supplier</span>: NOT Stocked at the credit&apos;s branch, so it goes back on a Stock Return (one per supplier).</li>
               <li><span className="font-medium text-ink">Back on the shelf</span>: stocked at the branch. Nothing to return.</li>
-              <li><span className="font-medium text-ink">Check first</span>: a Stock Return to the same supplier was raised from the branch around the credit date (it may already be returned), or the branch has less stock on hand than was credited.</li>
+              <li><span className="font-medium text-ink">Check first</span>: the branch has less stock on hand than was credited, so it has probably been returned or sold already. Any Stock Returns to that supplier around the credit date are listed to check.</li>
             </ul>
             <p className="text-sm text-muted">Restocking fees, delivery and discount lines are ignored.</p>
           </Section>
