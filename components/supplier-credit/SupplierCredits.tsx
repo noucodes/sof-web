@@ -18,14 +18,16 @@ export type SupplierCredit = {
   lines: CreditLine[] | null; flags: string[] | null; history: { at: string; text: string; by?: string }[] | null;
   sendOut?: SendOut[] | null;
 };
-export type SendOut = { po: string; supplier: string; stage: 'store' | 'ready' | 'sent' | 'failed'; link: string; enteredBy?: string; note?: string };
+export type SendOut = { po: string; supplier: string; stage: 'store' | 'ready' | 'sent' | 'failed' | 'receipted'; link: string; enteredBy?: string; note?: string };
 
-// Each raised Stock Return: store enters cartons/pallets on its link, then the supplier is emailed.
+// Each raised Stock Return: store enters cartons/pallets on its link, the supplier is emailed, and
+// 7 days later (the take-up date in that email) it's receipted out.
 const SEND: Record<SendOut['stage'], { label: string; tone: Tone }> = {
   store: { label: 'Waiting for store’s cartons/pallets', tone: 'pending' },
   ready: { label: 'Emailing supplier…', tone: 'pending' },
   sent: { label: 'Supplier emailed', tone: 'success' },
   failed: { label: 'Supplier email failed: store can resend', tone: 'failed' },
+  receipted: { label: 'Receipted out', tone: 'success' },
 };
 
 const STATE: Record<string, { label: string; tone: Tone }> = {

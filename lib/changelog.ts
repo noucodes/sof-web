@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.33.0',
+    date: '2026-11-12',
+    title: 'Stock Returns are receipted out on the take-up date',
+    added: ['7 days after the supplier is emailed (the take-up date in that email), the Stock Return is receipted out in Frameworks by itself: docket CR + the credit number, whatever is still outstanding on the PO. Supplier credits shows it as Receipted out, with the details in the credit’s history. Still on Frameworks TEST only.'],
+  },
+  {
     version: '1.32.0',
     date: '2026-11-12',
     title: 'Stores enter cartons and pallets, the supplier is emailed for them',
