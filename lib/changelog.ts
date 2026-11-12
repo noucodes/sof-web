@@ -12,6 +12,16 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.32.0',
+    date: '2026-11-12',
+    title: 'Stores enter cartons and pallets, the supplier is emailed for them',
+    added: [
+      'When a Stock Return is raised, the store gets an email with the goods to put aside and a link. They enter the number of cartons and pallets (and their weight) and press Send: the supplier then gets the Credit Request, the take-up date 7 days out and the pick-up details. No forms to download or forward. While testing, every email goes to Bek only.',
+      'The pick-up request can be printed from the same link.',
+      'Supplier credits shows where each Stock Return is up to (waiting for the store, supplier emailed) with a link to its store page.',
+    ],
+  },
+  {
     version: '1.31.0',
     date: '2026-11-11',
     title: 'Check Frameworks for new supplier credits',

@@ -30,6 +30,9 @@ export async function proxy(req: NextRequest) {
     return res;
   }
 
+  // Store staff's cartons/pallets page: no burdens.dev login, the signed link is the key (sof-api checks it).
+  if (pathname.startsWith('/pickup/')) return NextResponse.next();
+
   if (pathname === '/login') {
     if (token) return withRefreshCookies(NextResponse.redirect(new URL('/dashboard', req.url)));
     return NextResponse.next();

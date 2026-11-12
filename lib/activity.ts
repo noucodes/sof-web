@@ -25,6 +25,7 @@ const ACTIONS: Record<string, string> = {
   'RoutingController.retry': 'Retried an order route',
   'RoutingController.requestSync': 'Checked Frameworks for order routing',
   'SupplierCreditController.requestPull': 'Checked Frameworks for supplier credits',
+  'SupplierCreditController.submitPickup': 'Store sent cartons/pallets for a Stock Return',
 };
 
 export type ActivityParams = {

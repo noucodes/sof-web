@@ -16,6 +16,16 @@ export type SupplierCredit = {
   id: number; creditNo: string; state: string; branchId: number | null; customerName: string | null; creditDate: string | null;
   total: number | null; reason: { code: string | null; desc: string | null; mapped: string | null } | null;
   lines: CreditLine[] | null; flags: string[] | null; history: { at: string; text: string; by?: string }[] | null;
+  sendOut?: SendOut[] | null;
+};
+export type SendOut = { po: string; supplier: string; stage: 'store' | 'ready' | 'sent' | 'failed'; link: string; enteredBy?: string; note?: string };
+
+// Each raised Stock Return: store enters cartons/pallets on its link, then the supplier is emailed.
+const SEND: Record<SendOut['stage'], { label: string; tone: Tone }> = {
+  store: { label: 'Waiting for store’s cartons/pallets', tone: 'pending' },
+  ready: { label: 'Emailing supplier…', tone: 'pending' },
+  sent: { label: 'Supplier emailed', tone: 'success' },
+  failed: { label: 'Supplier email failed: store can resend', tone: 'failed' },
 };
 
 const STATE: Record<string, { label: string; tone: Tone }> = {
@@ -162,7 +172,16 @@ export default function SupplierCredits({ rows }: { rows: SupplierCredit[] }) {
                           {(c.flags ?? []).map(f => <span key={f} className="rounded-md bg-pending-bg px-2 py-px text-xs text-pending">{f}</span>)}
                         </div>
                       </td>
-                      <td className="px-4 py-3"><StatusPill tone={state.tone}>{state.label}</StatusPill></td>
+                      <td className="px-4 py-3">
+                        <StatusPill tone={state.tone}>{state.label}</StatusPill>
+                        {(c.sendOut ?? []).map(s => (
+                          <div key={s.po} className="mt-1.5 text-xs">
+                            <span className="font-mono">{s.po}</span>{' '}
+                            <StatusPill tone={SEND[s.stage].tone}>{SEND[s.stage].label}</StatusPill>{' '}
+                            <a href={s.link} target="_blank" rel="noreferrer" className="text-primary underline-offset-2 hover:underline">store page</a>
+                          </div>
+                        ))}
+                      </td>
                       <td className="whitespace-nowrap px-4 py-2.5 text-right">
                         {canAct && (c.state === 'planned' || c.state === 'failed') && (
                           <div className="flex justify-end gap-2">
