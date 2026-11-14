@@ -14,3 +14,16 @@ export async function getRole(): Promise<Role> {
     return 'viewer';
   }
 }
+
+// Signed-in email from the same token. Display-only like getRole: sof-api
+// re-checks it (e.g. the dev-only "Retry all failed" in common/dev-only.ts).
+export async function getEmail(): Promise<string> {
+  const token = (await cookies()).get('access_token')?.value;
+  try {
+    return String(JSON.parse(Buffer.from(token!.split('.')[1], 'base64url').toString()).email ?? '').toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+export const DEV_EMAIL = 'development@burdens.com.au';

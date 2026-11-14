@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.34.0',
+    date: '2026-11-14',
+    title: 'Retry all failed orders and ShipStation jobs in one click',
+    added: ['Dashboard: a Retry all failed button that requeues every failed order and every failed ShipStation job, whatever the error. For clearing up after a bridge outage. Only the development account sees it.'],
+  },
+  {
     version: '1.33.0',
     date: '2026-11-12',
     title: 'Stock Returns are receipted out on the take-up date',

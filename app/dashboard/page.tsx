@@ -5,6 +5,8 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { ChevronRight, CircleCheck } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
+import RetryAllFailedButton from '@/components/RetryAllFailedButton';
+import { getEmail, DEV_EMAIL } from '@/lib/session';
 import StatusPill, { type Tone } from '@/components/StatusPill';
 import { actionLabel, pageLabel, type ActivityParams } from '@/lib/activity';
 
@@ -128,7 +130,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   return (
     <AppShell>
-      <PageHeader crumbs={['Dashboard']} />
+      <PageHeader crumbs={['Dashboard']}>{(await getEmail()) === DEV_EMAIL && <RetryAllFailedButton />}</PageHeader>
       <div className="p-4 md:p-6 space-y-6">
         <div className="space-y-0.5">
           <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Dashboard</h1>
