@@ -12,6 +12,13 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.35.0',
+    date: '2026-11-16',
+    title: 'Retry all failed: pick the date, see the count first',
+    added: ['Retry all failed on the Dashboard has a Failed since date. It shows how many orders and ShipStation jobs failed from that date before you confirm, so only the days you pick are sent again.'],
+    fixed: ['Retry all failed (and the Retry bridge errors buttons) no longer reach every failed order ever. On 14 Nov it requeued failed orders from as far back as March, which landed in Frameworks as new orders. Without a date the bridge-error buttons now only look at the last 7 days.'],
+  },
+  {
     version: '1.34.0',
     date: '2026-11-14',
     title: 'Retry all failed orders and ShipStation jobs in one click',
