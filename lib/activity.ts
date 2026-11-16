@@ -14,6 +14,7 @@ const ACTIONS: Record<string, string> = {
   'JobsController.fixMissingShipments': 'Fixed missing shipments',
   'JobsController.checkInvoicedOutside': 'Checked invoiced-outside orders',
   'JobsController.markInvoicedOutsideShipped': 'Marked invoiced-outside orders shipped',
+  'JobsController.syncMachship': 'Synced MachShip consignments',
   'JobsController.retryHeldTo': 'Retried a Date Required change',
   'SyncController.pull': 'Pulled orders from Shopify',
   'UsersController.create': 'Added a user',
