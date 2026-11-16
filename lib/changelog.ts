@@ -16,6 +16,7 @@ export const CHANGELOG: Release[] = [
     date: '2026-11-16',
     title: 'MachShip: orders not in Frameworks',
     added: ['New "Not in Frameworks" tab on the MachShip page. It lists consignments manifested in MachShip whose order still isn\'t invoiced in Frameworks, for example because the sql-bridge was down when the shipment came through. Tick the ready ones and press Push to Frameworks to release them.'],
+    improved: ['ShipStation is retired, so the portal now says MachShip (or "shipment job") wherever it used to say ShipStation.'],
   },
   {
     version: '1.35.0',

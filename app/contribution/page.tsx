@@ -80,7 +80,7 @@ export default async function ContributionPage({
             </h1>
           </div>
           <p className="text-sm text-muted">
-            Net sales (ex GST, incl. shipping charged) − COGS − freight (ShipStation label cost) − payment fees (1.8%).
+            Net sales (ex GST, incl. shipping charged) − COGS − freight (carrier freight cost) − payment fees (1.8%).
           </p>
         </div>
 

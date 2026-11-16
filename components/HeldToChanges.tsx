@@ -23,7 +23,7 @@ const OUTCOME: Record<Change['result']['outcome'], [Tone, string]> = {
   held: ['success', 'Held until date'],
   released: ['success', 'Released from hold'],
   unchanged: ['neutral', 'No hold needed'],
-  not_open: ['neutral', 'Not open in ShipStation'],
+  not_open: ['neutral', 'Not open in MachShip'],
   failed: ['failed', 'Failed'],
 };
 const TH = 'text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap';
@@ -64,8 +64,8 @@ export default function HeldToChanges() {
       const res = await fetch(`/api/jobs/shipstation/held-to/${row.id}/retry`, { method: 'POST' });
       const json = await res.json();
       if (!res.ok) throw new Error(json.message ?? 'Retry failed');
-      if (json.result?.ok) toast.success(`${row.params.orderName} updated in ShipStation`);
-      else toast.error(json.result?.error ?? 'ShipStation did not accept the change');
+      if (json.result?.ok) toast.success(`${row.params.orderName} updated in MachShip`);
+      else toast.error(json.result?.error ?? 'MachShip did not accept the change');
       await load(days);
     } catch (err: any) {
       toast.error(err.message);
@@ -90,7 +90,7 @@ export default function HeldToChanges() {
           </SelectContent>
         </Select>
         {failed > 0 && (
-          <span className="text-sm font-medium text-failed">{failed} change{failed === 1 ? '' : 's'} not applied in ShipStation</span>
+          <span className="text-sm font-medium text-failed">{failed} change{failed === 1 ? '' : 's'} not applied in MachShip</span>
         )}
         <Button size="sm" variant="outline" className="sm:ml-auto" onClick={() => load(days)} disabled={loading}>
           <RefreshCw className={loading ? 'animate-spin' : undefined} />
@@ -118,7 +118,7 @@ export default function HeldToChanges() {
                 <tr>
                   <th className={TH}>Order</th>
                   <th className={TH}>Date required</th>
-                  <th className={TH}>ShipStation</th>
+                  <th className={TH}>MachShip</th>
                   <th className={TH}>Received</th>
                   <th className={TH}><span className="sr-only">Actions</span></th>
                 </tr>
@@ -153,7 +153,7 @@ export default function HeldToChanges() {
                           <span className="text-ink">{auDate(r.params.dateRequired)}</span>
                         </span>
                       </td>
-                      <td data-label="ShipStation" data-key className="px-4 py-3">
+                      <td data-label="MachShip" data-key className="px-4 py-3">
                         <StatusPill tone={tone}>{label}</StatusPill>
                         {r.result.error && <span className="mt-1 block max-w-xs text-xs text-failed">{r.result.error}</span>}
                         {!r.result.ok && !latest.has(r.id) && <span className="mt-1 block text-xs text-muted">Superseded by a later change</span>}

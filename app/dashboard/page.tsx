@@ -90,7 +90,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const attention: { tone: Tone; title: string; detail: string; href: string }[] = [];
   if (metrics?.bridge === 'down') attention.push({ tone: 'failed', title: 'Bridge is down', detail: 'Orders can’t reach Frameworks until it’s back.', href: '/orders' });
   if (metrics?.failedOrders > 0) attention.push({ tone: 'failed', title: `${metrics.failedOrders} failed order${metrics.failedOrders === 1 ? '' : 's'}`, detail: 'Didn’t make it into Frameworks. Retry or fix them.', href: '/orders?status=failed' });
-  if (failedJobs && failedJobs.total > 0) attention.push({ tone: 'failed', title: `${failedJobs.total} failed ShipStation job${failedJobs.total === 1 ? '' : 's'}`, detail: 'Labels printed but not released in Frameworks.', href: '/shipstation?status=failed' });
+  if (failedJobs && failedJobs.total > 0) attention.push({ tone: 'failed', title: `${failedJobs.total} failed shipment job${failedJobs.total === 1 ? '' : 's'}`, detail: 'Labels printed but not released in Frameworks.', href: '/shipstation?status=failed' });
   if (b2b?.latest?.status === 'failed') attention.push({ tone: 'failed', title: 'Last B2B price sync failed', detail: b2b.latest.error?.slice(0, 120) ?? ago(b2b.latest.finishedAt ?? b2b.latest.createdAt), href: '/b2b-sync' });
   if (stalePending) attention.push({ tone: 'pending', title: `${metrics.pendingOrders} pending order${metrics.pendingOrders === 1 ? '' : 's'}`, detail: `Oldest has waited ${metrics.oldestPendingAge}.`, href: '/orders?status=pending' });
   if (skuErrors.length) attention.push({ tone: 'pending', title: 'SKU audit couldn’t read Shopify', detail: `${skuErrors.join(', ')} on the last run.`, href: '/sku-audit' });

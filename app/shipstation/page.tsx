@@ -46,10 +46,10 @@ export default async function ShipStationPage({
   const missingView = params.view === 'machship-missing';
 
   const tabs = (
-    <nav aria-label="ShipStation views" className="flex h-9 max-w-full items-center overflow-x-auto rounded-lg bg-surface-strong p-1 text-muted [scrollbar-width:none] sm:inline-flex">
+    <nav aria-label="MachShip views" className="flex h-9 max-w-full items-center overflow-x-auto rounded-lg bg-surface-strong p-1 text-muted [scrollbar-width:none] sm:inline-flex">
       {[
         ['Label jobs', '/shipstation', !invoicedView && !heldToView && !missingView],
-        ['Invoiced outside ShipStation', '/shipstation?view=invoiced-outside', invoicedView],
+        ['Invoiced outside MachShip', '/shipstation?view=invoiced-outside', invoicedView],
         ['Held-to dates', '/shipstation?view=held-to', heldToView],
         ['Not in Frameworks', '/shipstation?view=machship-missing', missingView],
       ].map(([label, href, active]) => (
@@ -97,7 +97,7 @@ export default async function ShipStationPage({
           <div className="space-y-0.5">
             <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Held-to dates</h1>
             <p className="text-sm text-muted">
-              Every 10 minutes, open orders are checked in Frameworks. When Date Required is a future date, the ShipStation order is held until then. Each change and its result is listed here.
+              Every 10 minutes, open orders are checked in Frameworks. When Date Required is a future date, the MachShip order is held until then. Each change and its result is listed here.
             </p>
           </div>
           {tabs}
@@ -116,9 +116,9 @@ export default async function ShipStationPage({
         </PageHeader>
         <div className="p-4 md:p-6 space-y-4">
           <div className="space-y-0.5">
-            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Invoiced outside ShipStation</h1>
+            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Invoiced outside MachShip</h1>
             <p className="text-sm text-muted">
-              Orders invoiced directly in Frameworks that ShipStation still shows as open. Mark them shipped so they aren&apos;t picked twice.
+              Orders invoiced directly in Frameworks that MachShip still shows as open. Mark them shipped so they aren&apos;t picked twice.
             </p>
           </div>
           {tabs}
@@ -172,7 +172,7 @@ export default async function ShipStationPage({
               </Suspense>
             </h1>
           </div>
-          <p className="text-sm text-muted">Shipments from MachShip (and ShipStation) linked to Frameworks orders, each released to invoice the order.</p>
+          <p className="text-sm text-muted">Shipments from MachShip linked to Frameworks orders, each released to invoice the order.</p>
         </div>
 
         {tabs}

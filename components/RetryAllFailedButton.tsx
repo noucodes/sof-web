@@ -34,7 +34,7 @@ export default function RetryAllFailedButton() {
 
       const [o, j] = await both(true);
       if (!o && !j) return void toast.info(`Nothing failed since ${since}`);
-      if (!confirm(`Requeue ${o} failed order${o === 1 ? '' : 's'} and ${j} failed ShipStation job${j === 1 ? '' : 's'} created since ${since}?\n\nOrders go straight into Frameworks.`)) return;
+      if (!confirm(`Requeue ${o} failed order${o === 1 ? '' : 's'} and ${j} failed shipment job${j === 1 ? '' : 's'} created since ${since}?\n\nOrders go straight into Frameworks.`)) return;
 
       const [orders, jobs] = await both(false);
       toast.success(`${orders} order${orders === 1 ? '' : 's'} and ${jobs} job${jobs === 1 ? '' : 's'} queued for retry`);
@@ -52,7 +52,7 @@ export default function RetryAllFailedButton() {
         Failed since
         <Input type="date" value={since} max={daysAgo(0)} onChange={e => setSince(e.target.value)} className="h-8 w-auto text-xs" />
       </label>
-      <Button variant="outline" size="sm" onClick={retryAll} disabled={loading || !since} title="Shows how many first, then requeues failed orders and ShipStation jobs from that date on (development account only)">
+      <Button variant="outline" size="sm" onClick={retryAll} disabled={loading || !since} title="Shows how many first, then requeues failed orders and shipment jobs from that date on (development account only)">
         {loading ? <Loader2 className="animate-spin" /> : <RefreshCw />}
         {loading ? 'Checking…' : 'Retry all failed'}
       </Button>

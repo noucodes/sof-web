@@ -58,7 +58,7 @@ function MissingShipmentsDialog({ onClose }: { onClose: () => void }) {
     fetch(`/api/jobs/shipstation/missing?days=${days}`)
       .then(async res => {
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message ?? 'Could not reach ShipStation');
+        if (!res.ok) throw new Error(data.message ?? 'Could not reach MachShip');
         if (!stale) setPreview(data);
       })
       .catch(err => !stale && toast.error(err.message))
@@ -97,8 +97,8 @@ function MissingShipmentsDialog({ onClose }: { onClose: () => void }) {
     <Dialog open onOpenChange={o => !o && onClose()}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Missing ShipStation shipments</DialogTitle>
-          <DialogDescription>Labels printed in ShipStation whose webhook never reached us, so the order was never released or invoiced.</DialogDescription>
+          <DialogTitle>Missing MachShip shipments</DialogTitle>
+          <DialogDescription>Labels printed in MachShip whose webhook never reached us, so the order was never released or invoiced.</DialogDescription>
         </DialogHeader>
 
         <div className="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)] md:overflow-visible">
@@ -128,7 +128,7 @@ function MissingShipmentsDialog({ onClose }: { onClose: () => void }) {
 
             <dl className="grid grid-cols-2 divide-x divide-frame rounded-lg border border-frame">
               <div className="px-3 py-2.5">
-                <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">In ShipStation</dt>
+                <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">In MachShip</dt>
                 <dd className="text-xl font-semibold tabular-nums text-ink">{preview ? preview.checked.toLocaleString() : <Skeleton className="mt-1 h-6 w-12" />}</dd>
               </div>
               <div className="px-3 py-2.5">
@@ -170,7 +170,7 @@ function MissingShipmentsDialog({ onClose }: { onClose: () => void }) {
                 <CheckCircle2 className="size-6 text-success" />
                 <p className="text-sm font-medium text-ink">Nothing missing</p>
                 <p className="max-w-[34ch] text-xs text-muted">
-                  All {preview.checked.toLocaleString()} ShipStation shipments from the last {days === 1 ? '24 hours' : `${days} days`} are recorded here.
+                  All {preview.checked.toLocaleString()} MachShip shipments from the last {days === 1 ? '24 hours' : `${days} days`} are recorded here.
                 </p>
               </div>
             )}
@@ -215,7 +215,7 @@ function MissingShipmentsDialog({ onClose }: { onClose: () => void }) {
 
         <DialogFooter>
           <p className="min-w-0 text-xs text-muted">
-            {loading === 'preview' ? 'Checking ShipStation…'
+            {loading === 'preview' ? 'Checking MachShip…'
               : loading === 'fix' ? 'Queuing…'
               : preview ? `Queuing releases and invoices these orders in Frameworks, the same as their webhook would have.` : ''}
           </p>

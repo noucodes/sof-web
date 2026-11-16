@@ -45,9 +45,9 @@ const SS_STATUS: Record<string, [Tone, string]> = {
 const TH = 'text-left px-4 py-[10px] text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em] whitespace-nowrap';
 const WINDOWS = [7, 30, 90];
 const VIEWS = {
-  open: 'Still open in ShipStation',
-  cancelled: 'Cancelled in ShipStation',
-  gone: 'Already shipped or not in ShipStation',
+  open: 'Still open in MachShip',
+  cancelled: 'Cancelled in MachShip',
+  gone: 'Already shipped or not in MachShip',
   all: 'All statuses',
 } as const;
 type View = keyof typeof VIEWS;
@@ -96,7 +96,7 @@ export default function InvoicedOutsideShipStation() {
     try {
       const res = await fetch(`/api/jobs/shipstation/invoiced-outside?days=${d}`);
       const json = await res.json();
-      if (!res.ok) throw new Error(json.message ?? 'Could not load orders from ShipStation');
+      if (!res.ok) throw new Error(json.message ?? 'Could not load orders from MachShip');
       setData(json);
       setPicked(new Set());
     } catch (err: any) {
@@ -129,7 +129,7 @@ export default function InvoicedOutsideShipStation() {
       const added = json.orders.filter((o: Row) => !before.has(o.id)).length;
       setData(json);
       setPicked(new Set());
-      toast.success(added ? `Check complete. ${added} new order${added === 1 ? '' : 's'} invoiced outside ShipStation.` : 'Check complete. Nothing new.');
+      toast.success(added ? `Check complete. ${added} new order${added === 1 ? '' : 's'} invoiced outside MachShip.` : 'Check complete. Nothing new.');
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -153,12 +153,12 @@ export default function InvoicedOutsideShipStation() {
       }),
     });
     const json = await res.json();
-    if (!res.ok) throw new Error(json.message ?? 'ShipStation did not accept the request');
+    if (!res.ok) throw new Error(json.message ?? 'MachShip did not accept the request');
     const failed = json.results.filter((r: any) => !r.ok);
     const done = new Set<number>(json.results.filter((r: any) => r.ok).map((r: any) => r.shipstationOrderId));
     setData(d => (d ? { ...d, orders: d.orders.filter(o => !o.shipstation || !done.has(o.shipstation.orderId)) } : d));
     setPicked(p => new Set([...p].filter(id => !items.some(i => i.row.id === id && done.has(i.row.shipstation!.orderId)))));
-    if (json.marked) toast.success(`Marked ${json.marked} order${json.marked === 1 ? '' : 's'} shipped in ShipStation`);
+    if (json.marked) toast.success(`Marked ${json.marked} order${json.marked === 1 ? '' : 's'} shipped in MachShip`);
     if (failed.length) toast.error(`${failed.length} not marked: ${failed[0].error}`);
     return failed.length === 0;
   }
@@ -215,7 +215,7 @@ export default function InvoicedOutsideShipStation() {
               </SelectContent>
             </Select>
             <Select value={view} onValueChange={v => { setView(v as View); setPicked(new Set()); }}>
-              <SelectTrigger aria-label="ShipStation status" className="w-full sm:w-72"><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="MachShip status" className="w-full sm:w-72"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {(Object.keys(VIEWS) as View[]).map(v => (
                   <SelectItem key={v} value={v}>{VIEWS[v]} ({v === 'all' ? storeRows.length : count(v)})</SelectItem>
@@ -226,14 +226,14 @@ export default function InvoicedOutsideShipStation() {
         )}
         <span className="ml-auto flex items-center gap-1.5 text-xs text-muted" aria-live="polite">
           <Clock className="size-3.5" />
-          {checking ? 'Checking Frameworks and ShipStation…' : data ? `Last checked ${agoLabel(data.checkedAt)}` : error ? 'Not loaded' : 'Loading…'}
+          {checking ? 'Checking Frameworks and MachShip…' : data ? `Last checked ${agoLabel(data.checkedAt)}` : error ? 'Not loaded' : 'Loading…'}
         </span>
         {canAct && <Button
           size="sm"
           variant="outline"
           onClick={checkNow}
           disabled={checking || loading}
-          title="Re-read invoice dates from Frameworks and order statuses from ShipStation"
+          title="Re-read invoice dates from Frameworks and order statuses from MachShip"
         >
           <RefreshCw className={checking ? 'animate-spin' : undefined} />
           {checking ? 'Checking…' : 'Check now'}
@@ -244,7 +244,7 @@ export default function InvoicedOutsideShipStation() {
         <div className="flex flex-col items-center gap-3 rounded-xl bg-white px-6 py-10 text-center shadow-card">
           <TriangleAlert className="size-5 text-failed" />
           <div className="space-y-1">
-            <p className="text-sm font-medium text-ink">Couldn&apos;t load orders invoiced outside ShipStation</p>
+            <p className="text-sm font-medium text-ink">Couldn&apos;t load orders invoiced outside MachShip</p>
             <p className="text-xs text-muted">{error}</p>
           </div>
           <Button size="sm" variant="outline" onClick={() => load(days)}>Try again</Button>
@@ -267,7 +267,7 @@ export default function InvoicedOutsideShipStation() {
                   </th>
                   <th className={TH}>Order</th>
                   <th className={TH}>Invoiced in Frameworks</th>
-                  <th className={TH}>ShipStation</th>
+                  <th className={TH}>MachShip</th>
                   <th className={TH}>Delivery</th>
                   <th className={cn(TH, 'text-right')}>Total</th>
                   <th className={TH}><span className="sr-only">Actions</span></th>
@@ -277,7 +277,7 @@ export default function InvoicedOutsideShipStation() {
                 {rows.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted">
-                      {view === 'all' ? 'Nothing invoiced in Frameworks without a ShipStation label' : `No orders ${VIEWS[view].toLowerCase()}`} in the last {days} days{store !== 'all' ? ` for ${STORE_LABELS[store]}` : ''}.
+                      {view === 'all' ? 'Nothing invoiced in Frameworks without a MachShip label' : `No orders ${VIEWS[view].toLowerCase()}`} in the last {days} days{store !== 'all' ? ` for ${STORE_LABELS[store]}` : ''}.
                     </td>
                   </tr>
                 )}
@@ -307,7 +307,7 @@ export default function InvoicedOutsideShipStation() {
                         <span className="font-mono text-[0.8125rem] text-muted">{auDate(r.invoicedAt)}</span>
                         <span className="block font-mono text-xs text-muted">{r.frameworksOrderNo ?? '—'}</span>
                       </td>
-                      <td data-label="ShipStation" data-key className="whitespace-nowrap px-4 py-3">
+                      <td data-label="MachShip" data-key className="whitespace-nowrap px-4 py-3">
                         <StatusPill status={r.shipstation?.status ?? null} />
                         {can && (
                           <span className={cn('mt-1 block text-xs', age >= 3 ? 'font-medium text-failed' : 'text-muted')}>
@@ -351,7 +351,7 @@ function AutoLog({ rows }: { rows: AutoLogRow[] | null }) {
       <div>
         <h3 id="auto-log-title" className="text-sm font-semibold text-ink">Marked shipped automatically</h3>
         <p className="text-xs text-muted">
-          Every 30 minutes (and on Check now), every order invoiced in Frameworks that is still open in ShipStation is marked shipped there. The customer isn&apos;t emailed.
+          Every 30 minutes (and on Check now), every order invoiced in Frameworks that is still open in MachShip is marked shipped there. The customer isn&apos;t emailed.
         </p>
       </div>
       {rows === null ? (
@@ -480,7 +480,7 @@ function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Car
               ['Lines', row.lineCount ?? '—'],
             ])}
             <ArrowRight className="hidden size-4 justify-self-center text-muted sm:block" />
-            {side('ShipStation', <StatusPill status={row.shipstation?.status ?? null} />, [
+            {side('MachShip', <StatusPill status={row.shipstation?.status ?? null} />, [
               ['Order no.', <span key="s" className="font-mono">{row.shipstation?.orderNumber ?? '—'}</span>],
               ['Service', row.shipstation?.service ?? '—'],
               ['Label printed', 'No'],
@@ -493,7 +493,7 @@ function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Car
               <div className="space-y-1.5">
                 <label htmlFor="mark-carrier" className="text-xs font-medium text-ink">Shipped with</label>
                 <CarrierSelect id="mark-carrier" carriers={carriers} value={carrier} onChange={setCarrier} />
-                <p className="text-[0.6875rem] text-muted">Carriers connected to your ShipStation account.</p>
+                <p className="text-[0.6875rem] text-muted">Carriers connected to your MachShip account.</p>
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="mark-date" className="text-xs font-medium text-ink">Ship date</label>
@@ -510,23 +510,23 @@ function RowDialog({ row, carriers, onClose, onMark }: { row: Row; carriers: Car
             </div>
           ) : !row.shipstation ? (
             <p className="rounded-lg border border-frame bg-surface px-4 py-3 text-sm text-muted">
-              Not open in ShipStation. It was already shipped there without a label job here, or never sent to ShipStation (pickup, counter sale). Nothing to do.
+              Not open in MachShip. It was already shipped there without a label job here, or never sent to MachShip (pickup, counter sale). Nothing to do.
             </p>
           ) : (
             <div className="flex items-start gap-2 rounded-lg bg-pending-bg px-4 py-3 text-sm text-pending">
               <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-              <span>Cancelled in ShipStation but invoiced in Frameworks. One of them is wrong. Confirm with the store before changing either.</span>
+              <span>Cancelled in MachShip but invoiced in Frameworks. One of them is wrong. Confirm with the store before changing either.</span>
             </div>
           )}
         </div>
 
         <DialogFooter>
-          {can && <p className="min-w-0 text-xs text-muted">Recorded as shipped in ShipStation. No label is bought.</p>}
+          {can && <p className="min-w-0 text-xs text-muted">Recorded as shipped in MachShip. No label is bought.</p>}
           <div className="flex w-full flex-col-reverse gap-2 sm:ml-auto sm:w-auto sm:flex-row">
             <Button variant="outline" onClick={onClose}>{can ? 'Cancel' : 'Close'}</Button>
             {can && (
               <Button onClick={submit} disabled={busy || !carrier || !shipDate}>
-                <Truck />{busy ? 'Marking…' : 'Mark shipped in ShipStation'}
+                <Truck />{busy ? 'Marking…' : 'Mark shipped in MachShip'}
               </Button>
             )}
           </div>
@@ -562,7 +562,7 @@ function BulkDialog({ rows, carriers, onClose, onMark }: { rows: Row[]; carriers
     <Dialog open onOpenChange={o => !o && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Mark {rows.length} order{rows.length === 1 ? '' : 's'} shipped in ShipStation</DialogTitle>
+          <DialogTitle>Mark {rows.length} order{rows.length === 1 ? '' : 's'} shipped in MachShip</DialogTitle>
           <DialogDescription>Each one is marked shipped on the date Frameworks invoiced it.</DialogDescription>
         </DialogHeader>
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-6">

@@ -13,13 +13,13 @@ export const ROLES: { key: Role; label: string; summary: string; can: string[] }
     key: 'operator',
     label: 'Operator',
     summary: 'Day-to-day work: sees every page and can press every action.',
-    can: ['Retry orders and ShipStation jobs', 'Sync from Shopify, verify prices', 'Fix missing shipments, mark orders shipped', 'Run the SKU audit'],
+    can: ['Retry orders and shipment jobs', 'Sync from Shopify, verify prices', 'Fix missing shipments, mark orders shipped', 'Run the SKU audit'],
   },
   {
     key: 'viewer',
     label: 'Viewer',
     summary: 'Read-only: sees every page but can’t change anything.',
-    can: ['See Orders, Payments, Contribution, ShipStation, B2B sync and SKU audit', 'Download exports'],
+    can: ['See Orders, Payments, Contribution, MachShip, B2B sync and SKU audit', 'Download exports'],
   },
 ];
 

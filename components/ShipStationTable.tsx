@@ -115,7 +115,7 @@ export default function ShipStationTable({ jobs }: { jobs: any[] }) {
               </DialogDescription>
             </DialogHeader>
             <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-5 sm:px-6">
-              <p className="text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em]">Request — ShipStation shipment</p>
+              <p className="text-[0.6875rem] font-medium text-muted uppercase tracking-[0.07em]">Request — MachShip shipment</p>
               {loading ? <Skeleton className="h-48 w-full" /> : <JsonView data={selected.payload} />}
             </div>
           </DialogContent>
