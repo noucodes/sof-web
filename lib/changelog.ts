@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.36.1',
+    date: '2026-11-16',
+    title: 'Not in Frameworks: manual consignments hidden',
+    improved: ['Not in Frameworks no longer lists MachShip consignments without a Frameworks order. Those orders were entered in Frameworks by hand, so there is nothing to push.'],
+  },
+  {
     version: '1.36.0',
     date: '2026-11-16',
     title: 'MachShip: orders not in Frameworks',
