@@ -9,6 +9,7 @@ import RetryFailedReleasesButton from '@/components/RetryFailedReleasesButton';
 import MissingShipmentsButton from '@/components/MissingShipmentsButton';
 import InvoicedOutsideShipStation from '@/components/InvoicedOutsideShipStation';
 import HeldToChanges from '@/components/HeldToChanges';
+import MachshipMissing from '@/components/MachshipMissing';
 import ShipStationTable from '@/components/ShipStationTable';
 import LinkSelect from '@/components/LinkSelect';
 import AsyncCount from '@/components/AsyncCount';
@@ -42,13 +43,15 @@ export default async function ShipStationPage({
   const params = await searchParams;
   const invoicedView = params.view === 'invoiced-outside';
   const heldToView = params.view === 'held-to';
+  const missingView = params.view === 'machship-missing';
 
   const tabs = (
     <nav aria-label="ShipStation views" className="flex h-9 max-w-full items-center overflow-x-auto rounded-lg bg-surface-strong p-1 text-muted [scrollbar-width:none] sm:inline-flex">
       {[
-        ['Label jobs', '/shipstation', !invoicedView && !heldToView],
+        ['Label jobs', '/shipstation', !invoicedView && !heldToView && !missingView],
         ['Invoiced outside ShipStation', '/shipstation?view=invoiced-outside', invoicedView],
         ['Held-to dates', '/shipstation?view=held-to', heldToView],
+        ['Not in Frameworks', '/shipstation?view=machship-missing', missingView],
       ].map(([label, href, active]) => (
         <Link
           key={label as string}
@@ -61,6 +64,27 @@ export default async function ShipStationPage({
       ))}
     </nav>
   );
+
+  if (missingView) {
+    return (
+      <AppShell>
+        <PageHeader crumbs={['MachShip']}>
+          <MissingShipmentsButton />
+          <RetryFailedReleasesButton />
+        </PageHeader>
+        <div className="p-4 md:p-6 space-y-4">
+          <div className="space-y-0.5">
+            <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Not in Frameworks</h1>
+            <p className="text-sm text-muted">
+              Consignments manifested in MachShip whose order isn&apos;t invoiced in Frameworks yet. Usually the release was missed or failed, for example while the sql-bridge was down. Tick the ready ones and push them to Frameworks. MachShip is checked every hour.
+            </p>
+          </div>
+          {tabs}
+          <MachshipMissing />
+        </div>
+      </AppShell>
+    );
+  }
 
   if (heldToView) {
     return (

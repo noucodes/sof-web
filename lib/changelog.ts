@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.36.0',
+    date: '2026-11-16',
+    title: 'MachShip: orders not in Frameworks',
+    added: ['New "Not in Frameworks" tab on the MachShip page. It lists consignments manifested in MachShip whose order still isn\'t invoiced in Frameworks, for example because the sql-bridge was down when the shipment came through. Tick the ready ones and press Push to Frameworks to release them.'],
+  },
+  {
     version: '1.35.0',
     date: '2026-11-16',
     title: 'Retry all failed: pick the date, see the count first',
