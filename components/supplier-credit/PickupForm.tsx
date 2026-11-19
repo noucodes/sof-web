@@ -13,14 +13,27 @@ export type Pickup = {
   cartons?: number; cartonsKg?: number; pallets?: number; palletsKg?: number; enteredBy?: string; sentAt?: string;
 };
 
+// Frameworks' branch/details suburb can already hold the state and postcode ("Pakenham VIC 3810").
+// Same regex as the worker's rules.splitPlace: strip a trailing state/postcode, keep the stored ones first.
+const PLACE = /^(.*?)(?:(?:^|[\s,]+)(VIC|NSW|QLD|SA|WA|TAS|NT|ACT))?(?:(?:^|[\s,]+)(\d{4}))?[\s,]*$/i;
+function splitPlace(p: Party, defState?: string) {
+  const m = String(p.suburb ?? '').trim().match(PLACE) ?? [];
+  return {
+    suburb: m[1] || '',
+    state: String(p.state || m[2] || defState || '').trim().toUpperCase(),
+    postcode: String(p.postcode || m[3] || '').trim(),
+  };
+}
+
 // Same fields as the worker's rules.pickupRows (the supplier email's "Collection details").
 function rows(p: Pickup): [string, string][] {
   const b = p.info.branch ?? {}, s = p.info.supplier ?? {};
+  const bp = splitPlace(b, 'VIC'), sp = splitPlace(s);
   const qty = (q?: number, kg?: number) => (q == null ? '' : q ? `${q} (${kg} kg)` : '0');
   return [
     ['Date', p.info.creditDate ? p.info.creditDate.slice(0, 10).split('-').reverse().join('/') : ''],
     ['Pick up from', b.name ? `Burdens ${b.name}` : ''],
-    ['Address', b.address ? [b.address, b.suburb, 'VIC', b.postcode].filter(Boolean).join(', ') : ''],
+    ['Address', b.address ? [b.address, bp.suburb, bp.state, bp.postcode].filter(Boolean).join(', ') : ''],
     ['Phone', b.phone ?? ''],
     ['Contact name', p.info.contact ?? ''],
     ['Cartons', qty(p.cartons, p.cartonsKg)],
@@ -28,7 +41,7 @@ function rows(p: Pickup): [string, string][] {
     ['Time ready', '6:30am'],
     ['Time closing', '3:30pm'],
     ['Charge to', s.name ?? p.supplierName ?? ''],
-    ['Return address', [s.address, [s.suburb, s.state, s.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ')],
+    ['Return address', [s.address, [sp.suburb, sp.state, sp.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ')],
   ];
 }
 

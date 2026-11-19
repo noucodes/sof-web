@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.36.2',
+    date: '2026-11-19',
+    title: 'Pick-up request: branch address shown once',
+    fixed: ['The pick-up request page no longer repeats the state and postcode in the branch address (it showed "Pakenham VIC 3810, VIC, 3810"). Older pick-up pages show it once too.'],
+  },
+  {
     version: '1.36.1',
     date: '2026-11-16',
     title: 'Not in Frameworks: manual consignments hidden',
