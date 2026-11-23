@@ -84,7 +84,7 @@ export default async function RoutingOrderPage({ params }: { params: Promise<{ i
                 <table className="w-full min-w-[720px] border-collapse text-sm">
                   <thead>
                     <tr className="bg-surface text-left text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">
-                      {['Product', 'Qty', 'Ecom 20', 'Dandenong 11', 'Branch 8', 'Other branches'].map(h => <th key={h} scope="col" className="border-b border-frame px-4 py-2.5">{h}</th>)}
+                      {['Product', 'Qty', 'Ecom 20', 'Warehouse 11', 'Dandenong 8', 'Other branches'].map(h => <th key={h} scope="col" className="border-b border-frame px-4 py-2.5">{h}</th>)}
                     </tr>
                   </thead>
                   <tbody>

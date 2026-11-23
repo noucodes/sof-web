@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.36.4',
+    date: '2026-11-24',
+    title: 'Order routing: branch names in the stock table',
+    fixed: ['On an order's routing page, the stock table now labels branch 11 as Warehouse and branch 8 as Dandenong (they were mixed up).'],
+  },
+  {
     version: '1.36.3',
     date: '2026-11-23',
     title: 'Email links open the right page',
