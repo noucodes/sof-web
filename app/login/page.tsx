@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { safeNext } from '@/lib/safe-next';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function LoginPage() {
         return;
       }
       toast.success('Signed in successfully');
-      router.push('/dashboard');
+      router.push(safeNext(new URLSearchParams(window.location.search).get('next')));
       router.refresh();
     } catch {
       setError('Network error — check your connection');

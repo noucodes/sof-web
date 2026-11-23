@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { refreshAccessToken } from './lib/auth';
+import { safeNext } from './lib/safe-next';
 
 function withAccessToken(cookieHeader: string | null, accessToken: string): string {
   const kept = (cookieHeader ?? '').split('; ').filter(Boolean).filter(c => !c.startsWith('access_token='));
@@ -34,12 +35,15 @@ export async function proxy(req: NextRequest) {
   if (pathname.startsWith('/pickup/')) return NextResponse.next();
 
   if (pathname === '/login') {
-    if (token) return withRefreshCookies(NextResponse.redirect(new URL('/dashboard', req.url)));
+    if (token) return withRefreshCookies(NextResponse.redirect(new URL(safeNext(req.nextUrl.searchParams.get('next')), req.url)));
     return NextResponse.next();
   }
 
   if (!token) {
-    return NextResponse.redirect(new URL('/login', req.url));
+    // Keep the page they asked for (e.g. the "Review & approve" link) so login lands there, not on the dashboard.
+    const login = new URL('/login', req.url);
+    login.searchParams.set('next', pathname + req.nextUrl.search);
+    return NextResponse.redirect(login);
   }
 
   // Admin-only guard

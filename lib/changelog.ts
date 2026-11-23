@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.36.3',
+    date: '2026-11-23',
+    title: 'Email links open the right page',
+    fixed: ['Links in emails (like "Review & approve on burdens.dev") open the page straight away when you are already signed in, instead of asking you to sign in again.', 'If you do need to sign in, you land on the page the link was for, not the dashboard.'],
+  },
+  {
     version: '1.36.2',
     date: '2026-11-19',
     title: 'Pick-up request: branch address shown once',
