@@ -12,6 +12,18 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.38.1',
+    date: '2026-11-26',
+    title: 'Link a hand-keyed order to Frameworks',
+    added: ['A failed order now has an "Entered in Frameworks" box. When the SKU has been fixed and the order keyed into Frameworks by hand, type its SO number (for example 21855351-0) and press Save. The order is marked processed with that Frameworks number, so it stops showing as failed and the price, contribution and invoiced checks pick it up.', 'The invalid-SKU alert email has a button that opens the order with this box ready to type in.'],
+  },
+  {
+    version: '1.38.0',
+    date: '2026-11-17',
+    title: 'Branch scorecard',
+    added: ['New Branch scorecard page: every branch against its targets, built from Frameworks every Monday at 6am (End of Month in the first week of a month). Green is on target, red is off. Pick an earlier week from the list.', 'Rows that don\'t come from Frameworks yet are marked "typed in": click a cell to enter its number.', 'Copy share link gives a read-only page of the week for branch staff without a portal login: just the scorecard, no menu or other pages.', 'Download Excel on both pages saves the week as a spreadsheet, with the same green/red and any typed-in numbers.'],
+  },
+  {
     version: '1.37.1',
     date: '2026-12-01',
     title: 'A little Christmas',
