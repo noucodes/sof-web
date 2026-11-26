@@ -11,9 +11,11 @@ export type RoutingDetail = {
   kind?: 'pickup' | 'local_delivery' | 'stock';
   shipTo?: string;
   poValue?: number;
-  emailBody?: string;
   poNumber?: string;
   phone?: string;
+  requisitionCodes?: string[];
+  freightLine?: { code: string; cost: number };
+  feeLines?: { code: string; cost: number }[];
   suppliers?: { supplier: string; value: number; min: number | null; kind: 'po' | 'requisition' }[];
   // What the planner first proposed, and the comment left when it was rejected.
   proposedAction?: RoutingAction | null;
@@ -86,33 +88,44 @@ export const DECIDABLE: RoutingState[] = ['awaiting_approval', 'needs_review'];
 export const PO_CC = 'ecommerce@burdens.com.au';
 const DEFAULT_PRINTER = 'dan1';
 
-// What approving does, step by step: auto = the automation does it in
-// Frameworks; otherwise it's still done by hand. Keep in step with
-// burdens-workers jobs/order-routing (STEPS in index.js).
+// What approving does, step by step: auto = the automation does it in Frameworks;
+// otherwise it's still done by hand. Keep in step with burdens-workers jobs/order-routing
+// (STEPS in index.js), which assigns every order it finishes to Claude.
 export function approveSteps(o: RoutingOrder, action: RoutingAction | ''): { text: string; auto: boolean }[] {
   const d = o.detail ?? {};
-  const assign = { text: 'Change the assignee from shopify to Claude, so you can see it was actioned', auto: true };
+  const assign = { text: 'Change the assignee to Claude, so you can see it was actioned', auto: true };
   const supplier = d.supplier ?? 'the supplier';
+  const email = `Email the PO to ${supplier}'s order contact, CC ${PO_CC}`;
   switch (action) {
     case 'pick_slip':
       return [{ text: `Print the pick slip to ${d.printer ?? DEFAULT_PRINTER}`, auto: true }, assign];
     case 'po_branch':
       return [
         { text: `Create a PO for ${supplier} from the order's lines (Linked PO), shipped to Burdens Ecommerce`, auto: true },
-        { text: `Email the PO to ${supplier}'s order contact, CC ${PO_CC}, with the message below`, auto: false },
+        ...(d.requisitionCodes?.length ? [{ text: `Put ${d.requisitionCodes.join(', ')} on a requisition (under the supplier minimum)`, auto: true }] : []),
+        { text: email, auto: true },
         assign,
       ];
     case 'po_direct':
       return [
-        { text: 'Set despatch to SUDEL (supplier direct delivery)', auto: false },
-        { text: `Create a PO for ${supplier}, shipped to the customer${d.shipTo ? `: ${d.shipTo}` : ''}`, auto: false },
-        { text: `Email the PO to ${supplier}'s order contact, CC ${PO_CC}, with the message below`, auto: false },
-        { ...assign, auto: false }, // the automation stops before assigning a direct delivery
+        { text: "Set despatch to SUDEL with 'Deliver direct to end customer' and the customer's phone", auto: true },
+        { text: `Create a PO for ${supplier}, shipped to the customer`, auto: true },
+        ...(d.freightLine || d.feeLines?.length ? [{ text: 'Add the DEL0020 freight / minimum order fee line to the PO', auto: false }] : []),
+        { text: `${email}, marked DIRECT SHIP`, auto: true },
+        assign,
       ];
     case 'requisition':
-      return [{ text: `Add the lines to a requisition for ${supplier}; it's under the supplier minimum, so it waits to be combined into a PO`, auto: false }];
+      return [
+        { text: `Put the lines on a requisition for ${supplier}`, auto: true },
+        { text: "Combine it into a PO once the supplier's minimum is reached", auto: false },
+        assign,
+      ];
     case 'handover':
-      return [{ text: `Email ${d.branch ?? 'the branch'} the handover (Outlook template)${d.kind === 'pickup' ? ' for customer pick-up' : d.kind === 'local_delivery' ? ' for local delivery' : ''}`, auto: false }];
+      return [
+        { text: `Change the order branch to ${d.branch ?? 'the store'}${d.kind === 'local_delivery' ? ' and despatch to DELIV' : ''}`, auto: true },
+        { text: `Email ${d.branch ?? 'the store'} the Order Confirmation${d.kind === 'pickup' ? ' for customer pick-up' : d.kind === 'local_delivery' ? ' for local delivery' : ''}, CC ${PO_CC}`, auto: true },
+        assign,
+      ];
     default:
       return [];
   }

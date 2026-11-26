@@ -14,8 +14,9 @@ export const CHANGELOG: Release[] = [
   {
     version: '1.38.1',
     date: '2026-11-26',
-    title: 'Link a hand-keyed order to Frameworks',
+    title: 'Link a hand-keyed order to Frameworks; clearer order routing approvals',
     added: ['A failed order now has an "Entered in Frameworks" box. When the SKU has been fixed and the order keyed into Frameworks by hand, type its SO number (for example 21855351-0) and press Save. The order is marked processed with that Frameworks number, so it stops showing as failed and the price, contribution and invoiced checks pick it up.', 'The invalid-SKU alert email has a button that opens the order with this box ready to type in.'],
+    improved: ['Order routing: "When you approve" now matches what the automation really does. Direct delivery POs, handovers to a store and requisitions are done for you; only adding a freight or minimum order fee line and combining requisitions are still by hand.', 'Order routing: the "Email to supplier" box and Subject are gone. The supplier email is sent from Frameworks with the standard wording, so nothing typed there was ever used.'],
   },
   {
     version: '1.38.0',
