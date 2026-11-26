@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
+import "./christmas.css"; // Christmas 2026 only (festive touch), delete after the season
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

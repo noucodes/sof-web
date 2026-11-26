@@ -1,0 +1,94 @@
+/* Christmas 2026 (event only): minimal festive touch from the "Create Christmas Design" reference.
+   components/Christmas.tsx turns it on (html[data-xmas]) from 1 Dec 2026 to 6 Jan 2027 (NEXT_PUBLIC_XMAS=off: never).
+   To remove: delete this file + its import in app/layout.tsx, components/Christmas.tsx (and its use in
+   AppShell), public/xmas/, data-page-header in components/PageHeader.tsx and the xmas-dash class on the
+   dashboard. Everything here is decoration only: no layout or content changes. */
+
+/* Festive red accent instead of blue (buttons, links, active menu item). */
+html[data-xmas] {
+  --color-primary:      #c8102e;
+  --color-primary-deep: #a10c25;
+  --color-primary-wash: #fde8ea;
+}
+
+/* ---- Sidebar ------------------------------------------------------------------------------------ */
+/* Santa hat on the Burdens logo. */
+html[data-xmas] [data-sidebar=header] { position: relative; }
+html[data-xmas] [data-sidebar=header]::after {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  top: 0.35rem;
+  width: 1.9rem;
+  height: 1.35rem;
+  background: url(/xmas/santa-hat.webp) center / contain no-repeat;
+  transform: rotate(-14deg);
+  pointer-events: none;
+}
+/* Faint snowy trees just above the profile at the bottom. */
+html[data-xmas] [data-sidebar=footer] { position: relative; }
+html[data-xmas] [data-sidebar=footer]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 8rem;
+  background: url(/xmas/trees.webp) left bottom / 100% auto no-repeat;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* ---- Top bar: lush garland, bow in the middle, faint sleigh ------------------------------------- */
+html[data-xmas] [data-page-header] {
+  position: sticky;
+  padding-top: 2.6rem;
+  background-image: url(/xmas/bow.webp), url(/xmas/sleigh.webp), url(/xmas/garland.webp);
+  background-size: auto 3.6rem, auto 2rem, auto 3.1rem;
+  background-position: center 0.1rem, right 30% bottom 0.6rem, left top;
+  background-repeat: no-repeat, no-repeat, repeat-x;
+}
+
+/* ---- Page: faint trees top-right, soft snow and a pine-and-gift corner at the end of the page ------ */
+html[data-xmas] main {
+  padding-bottom: 4.5rem;
+  background-image: url(/xmas/corner.webp), url(/xmas/snow-drift.webp), url(/xmas/trees.webp);
+  background-size: auto 8rem, auto 4.5rem, auto 7rem;
+  background-position: right bottom, left bottom, right 1rem top 6.5rem;
+  background-repeat: no-repeat, repeat-x, no-repeat;
+  background-attachment: local;
+}
+
+/* ---- Dashboard extras: baubles hanging from the garland, snow on the bars, a gift by the chart ---- */
+html[data-xmas] main:has(.xmas-dash) [data-page-header]::after {
+  content: "";
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+  width: 3.5rem;
+  height: 6rem;
+  background: url(/xmas/baubles.webp) right top / contain no-repeat;
+  pointer-events: none;
+}
+html[data-xmas] .xmas-dash .rounded-t { position: relative; }
+html[data-xmas] .xmas-dash .rounded-t::before {
+  content: "";
+  position: absolute;
+  top: -0.55rem;
+  left: -10%;
+  right: -10%;
+  height: 1rem;
+  background: url(/xmas/bar-snow.webp) center top / 100% 100% no-repeat;
+  pointer-events: none;
+}
+html[data-xmas] .xmas-dash figure { position: relative; }
+html[data-xmas] .xmas-dash figure::after {
+  content: "";
+  position: absolute;
+  right: -0.9rem;
+  bottom: 1.1rem;
+  width: 2.6rem;
+  height: 2.2rem;
+  background: url(/xmas/gift.webp) center bottom / contain no-repeat;
+  pointer-events: none;
+}

@@ -131,7 +131,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   return (
     <AppShell>
       <PageHeader crumbs={['Dashboard']}>{(await getEmail()) === DEV_EMAIL && <RetryAllFailedButton />}</PageHeader>
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="xmas-dash p-4 md:p-6 space-y-6">
         <div className="space-y-0.5">
           <h1 className="text-[0.9375rem] font-semibold text-ink tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted">What needs doing, how orders are flowing, and whether every sync is running.</p>

@@ -12,6 +12,12 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.37.1',
+    date: '2026-12-01',
+    title: 'A little Christmas',
+    improved: ['From 1 December to 6 January the portal wears a small Christmas look: a garland and bow on the top bar, a Santa hat on the logo and a few decorations. Nothing moves or changes how anything works.'],
+  },
+  {
     version: '1.37.0',
     date: '2026-11-26',
     title: 'Supplier credits: Needs action and Pipeline views',

@@ -19,7 +19,7 @@ type Crumb = string | { label: string; href: string };
 
 export default function PageHeader({ crumbs, children }: { crumbs: Crumb[]; children?: React.ReactNode }) {
   return (
-    <header className="sticky top-0 z-10 flex shrink-0 flex-wrap items-center gap-x-2 border-b border-frame bg-white px-4">
+    <header data-page-header className="sticky top-0 z-10 flex shrink-0 flex-wrap items-center gap-x-2 border-b border-frame bg-white px-4">
       <SidebarTrigger className="-ml-2 md:-ml-1" />
       <Separator orientation="vertical" className="mr-1 !h-4 bg-frame" />
       <Breadcrumb className="flex h-14 min-w-0 flex-1 items-center">
