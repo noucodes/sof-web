@@ -12,10 +12,17 @@ export type Release = {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.37.0',
+    date: '2026-11-26',
+    title: 'Supplier credits: Needs action and Pipeline views',
+    added: ['Supplier credits has two views: Needs action (tabs for Needs approval, Waiting on store, With supplier, Problems and Done) and Pipeline (a board with one column per step). Pick one with the switch at the top; the page remembers your choice.', 'Each credit says in one line what approving will do, shows its lines and any warnings, and has Approve and Reject right on it.', 'Raised credits show where they are up to (store, supplier, receipted out) and the day the Stock Return is receipted out.', 'Search by credit, Stock Return number, customer, product or supplier.'],
+    improved: ['Credits that need someone to step in (not raised, partly raised, supplier email failed) are collected under Problems, with a banner on the Pipeline view.', 'The page no longer says test mode: supplier credits are live.'],
+  },
+  {
     version: '1.36.4',
     date: '2026-11-24',
     title: 'Order routing: branch names in the stock table',
-    fixed: ['On an order's routing page, the stock table now labels branch 11 as Warehouse and branch 8 as Dandenong (they were mixed up).'],
+    fixed: ['On an order’s routing page, the stock table now labels branch 11 as Warehouse and branch 8 as Dandenong (they were mixed up).'],
   },
   {
     version: '1.36.3',

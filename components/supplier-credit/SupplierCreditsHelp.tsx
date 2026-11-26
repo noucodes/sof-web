@@ -23,16 +23,17 @@ export default function SupplierCreditsHelp() {
       <DialogContent className="max-w-2xl">
         <DialogHeader className="border-b border-frame px-4 pb-4 pt-6 sm:px-6">
           <DialogTitle>How supplier credits work</DialogTitle>
-          <DialogDescription>Customer credits checked for a supplier Stock Return. Test mode: approving raises the Stock Return on Frameworks TEST, not live.</DialogDescription>
+          <DialogDescription>Customer credits checked for a supplier Stock Return. Approving raises the Stock Return in Frameworks and emails the store, then the supplier.</DialogDescription>
         </DialogHeader>
         <div className="space-y-6 overflow-y-auto px-4 py-5 sm:px-6">
           <Section title="Steps">
             <ol className="list-decimal space-y-1 pl-5 text-sm text-muted">
               <li>Add completed customer credit numbers at the top.</li>
               <li>The automation reads a credit from Frameworks within a minute of it being added and writes a plan. Every 30 minutes in business hours it checks the ones awaiting approval again.</li>
-              <li>Open a credit (the arrow) to see each line, its stock type at the branch, stock on hand and what to do.</li>
+              <li>Credits waiting for you are under <span className="font-medium text-ink">Needs action</span> (or the first column of <span className="font-medium text-ink">Pipeline</span>), each with its lines, stock on hand and what to do.</li>
               <li>Approve the plan, or reject it with what should happen instead. Rejection comments are how the rules get fixed.</li>
-              <li>Approving raises the Stock Return on Frameworks TEST within a minute (one per supplier, ref = branch prefix + original PO). Its PO number shows in the credit&apos;s history. If it fails, the reason shows there and you can approve again to retry.</li>
+              <li>Approving raises the Stock Return in Frameworks within a minute (one per supplier, ref = branch prefix + original PO) and emails the store. Once the store enters cartons and pallets on its link, the supplier is emailed, and 7 days later the Stock Return is receipted out.</li>
+              <li>If a step fails, the credit moves to <span className="font-medium text-ink">Problems</span> with the reason. A credit that failed before anything was raised can be approved again to retry.</li>
             </ol>
           </Section>
           <Section title="What each line gets">
