@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -106,7 +107,59 @@ function Facts({ title, rows }: { title: string; rows: [string, React.ReactNode]
   );
 }
 
-function Summary({ order }: { order: any }) {
+// A failed order (usually an invalid SKU) that staff fixed and keyed into
+// Frameworks by hand: typing the SO number here links it (sof-api checks the SO
+// exists in Frameworks), so it stops showing as failed and the contribution,
+// invoiced and stuck-order jobs pick it up. The invalid-SKU email links here
+// (/orders?search=<shopify id>&open=<order id>).
+function FrameworksEntry({ order, autoFocus, onLinked }: { order: any; autoFocus: boolean; onLinked: (o: any) => void }) {
+  const [so, setSo] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/orders/${order.id}/frameworks-no`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ soNumber: so }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error([data.message].flat().join(', ') || 'Could not save');
+      toast.success(`Linked to Frameworks SO ${data.orderNo}-${data.orderSuffix}${data.custOrderRef ? ` (${data.custOrderRef})` : ''}`);
+      onLinked({ status: 'success', statusLabel: 'Processed', error: null, frameworksOrderNo: data.orderNo, frameworksOrderSuffix: data.orderSuffix });
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form id="frameworks-entry" onSubmit={save} className="space-y-2 rounded-lg border border-frame bg-surface p-3">
+      <label htmlFor="frameworks-so" className="block text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">Entered in Frameworks</label>
+      <p className="text-[0.8125rem] text-muted">Fixed the SKU and keyed this order into Frameworks by hand? Enter the SO number to link it.</p>
+      <div className="flex gap-2">
+        <Input
+          id="frameworks-so"
+          value={so}
+          onChange={e => setSo(e.target.value)}
+          placeholder="e.g. 21855351-0"
+          inputMode="numeric"
+          autoComplete="off"
+          autoFocus={autoFocus}
+          className="max-w-56 font-mono"
+        />
+        <Button type="submit" size="sm" className="h-10 md:h-9" disabled={saving || !so.trim()}>
+          {saving ? 'Checking…' : 'Save'}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function Summary({ order, entry }: { order: any; entry?: React.ReactNode }) {
   const fw = order.frameworksPrice != null ? Number(order.frameworksPrice) : null;
   const diff = fw != null && order.total != null ? Math.round((fw - Number(order.total)) * 100) / 100 : null;
   const lastEvent = order.error ?? order.paymentError ?? (
@@ -117,6 +170,7 @@ function Summary({ order }: { order: any }) {
 
   return (
     <div className="space-y-5">
+      {entry}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-lg border border-frame bg-surface p-3 text-center max-sm:grid-cols-2 max-sm:[&>:nth-child(2)]:order-last max-sm:[&>:nth-child(2)]:col-span-2 max-sm:[&>:nth-child(2)]:justify-self-center">
         <div>
           <p className="text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-muted">Customer paid</p>
@@ -175,8 +229,8 @@ function Summary({ order }: { order: any }) {
   );
 }
 
-function TabContent({ order, tab }: { order: any; tab: Tab }) {
-  if (tab === 'summary') return <Summary order={order} />;
+function TabContent({ order, tab, entry }: { order: any; tab: Tab; entry?: React.ReactNode }) {
+  if (tab === 'summary') return <Summary order={order} entry={entry} />;
 
   if (tab === 'shopify') {
     return (
@@ -302,6 +356,13 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
 
   // Selection belongs to the rows on screen; a new page, sort or filter clears it.
   useEffect(() => setPicked(new Set()), [orders]);
+
+  // ?open=<order id> (the invalid-SKU email link) opens that order straight away.
+  const openParam = searchParams.get('open');
+  useEffect(() => {
+    const idx = openParam ? orders.findIndex(o => String(o.id) === openParam) : -1;
+    if (idx >= 0) open(idx);
+  }, [openParam]);
 
   const allOn = orders.length > 0 && orders.every(o => picked.has(o.id));
   const someOn = !allOn && orders.some(o => picked.has(o.id));
@@ -551,7 +612,21 @@ export default function OrdersTable({ orders, gaps = [] }: { orders: any[]; gaps
                   <Skeleton className="h-48 w-full" />
                 </div>
               ) : (
-                <TabContent order={order} tab={tab} />
+                <TabContent
+                  order={order}
+                  tab={tab}
+                  entry={order.status === 'failed' && canAct && !order.frameworksOrderNo && (
+                    <FrameworksEntry
+                      key={order.id}
+                      order={order}
+                      autoFocus={String(order.id) === openParam}
+                      onLinked={patch => {
+                        setDetails(d => (d[order.id] ? { ...d, [order.id]: { ...d[order.id], ...patch } } : d));
+                        router.refresh();
+                      }}
+                    />
+                  )}
+                />
               )}
             </div>
 
